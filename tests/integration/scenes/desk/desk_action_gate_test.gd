@@ -33,6 +33,20 @@ func test_a_no_seam_pin_that_ends_the_day_keeps_the_horns_caption() -> void:
 	)
 
 
+func test_an_answer_that_ends_the_day_never_replaces_the_horn() -> void:
+	_click(_system.claim_panel.area("C1"))
+	_click(_system.witness_panel.area("W1"))
+	_click(_knot(0))
+	_system._process(Fixture.CLOCK_SECONDS - 3.0)
+	assert_eq(_desk.commands().phase(), RunState.DESK, "3 s left")
+	_click(_system.ask_huginn)
+	assert_ne(_desk.commands().phase(), RunState.DESK, "the 5 s answer ended the day")
+	var strip: CaptionStrip = _system.caption_strip
+	strip._process(strip.hold_seconds + 1.0)
+	strip._process(strip.hold_seconds + 1.0)
+	assert_eq(strip.shown_text(), DeskSystem.HORN_TEXT, "past the hold, the horn still stands")
+
+
 func test_an_open_stamp_prompt_lets_no_pin_through() -> void:
 	_click(_door(&"hel"))
 	assert_true(_system.stamp_prompt.visible)

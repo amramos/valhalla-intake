@@ -273,7 +273,8 @@ func _on_ask_huginn() -> void:
 		caption_strip.take_over("Pick a grey thread's knot first.")
 		return
 	var answer: String = commands.ask_huginn(huginn_thread)
-	if answer != "":
+	# An answer whose cost ended the day is not queued over the horn's announcement.
+	if answer != "" and commands.phase() == RunState.DESK:
 		caption_strip.post(answer, CaptionStrip.Priority.HUGINN)
 
 
