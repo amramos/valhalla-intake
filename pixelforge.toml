@@ -21,7 +21,7 @@ allow_in = ["assets/art/scenes/**", "assets/art/doors/**"]
 [[palette.reserved]]
 name = "blood"
 colors = ["#4a1418", "#8e2a2a"]
-allow_in = ["assets/art/scenes/**", "assets/art/souls/**", "assets/art/body-charts/**"]
+allow_in = ["assets/art/scenes/**", "assets/art/souls/**", "assets/art/body-charts/**", "assets/art/body/**"]
 
 [[canvas]]
 name = "scene"
@@ -61,3 +61,49 @@ paths = ["assets/art/ui/law-scroll*.png"]
 max_colors = 12
 hard_alpha = true
 anchor = "center"
+
+# A door sprite: the leaf (lit or barred) plus the arch stones its glow reaches, opaque, placed
+# over the gate-desk backdrop where the built desk puts its doors: (89, 9) Valhalla, (196, 9) Hel,
+# (318, 9) Folkvangr.
+[[canvas]]
+name = "door"
+size = [60, 87]
+paths = ["assets/art/doors/*.png", "assets/art/doors/**/*.png"]
+max_colors = 16
+hard_alpha = true
+
+# One layer of the body chart (base, left hand, fact overlays, identity heads): every layer is the
+# full chart, front view left and back view right, so layers stack at one origin.
+[[canvas]]
+name = "body-layer"
+size = [128, 100]
+paths = ["assets/art/body/*.png", "assets/art/body/**/*.png"]
+max_colors = 20
+hard_alpha = true
+
+# The mentor's portrait, in the built desk's 32x32 frame under the body chart, at (2, 204).
+[[canvas]]
+name = "portrait"
+size = [32, 32]
+paths = ["assets/art/portraits/mentor*.png"]
+max_colors = 16
+hard_alpha = true
+anchor = "bottom"
+
+# Huginn, sitting on the backdrop's perch post at (268, 34), feet on the post top at y 72.
+[[canvas]]
+name = "huginn"
+size = [48, 40]
+paths = ["assets/art/portraits/huginn*.png"]
+max_colors = 12
+hard_alpha = true
+anchor = "bottom"
+
+# The soul's name plate, where the built desk's WaitingSoul draws it: (2, 86), 60x10.
+# The engine writes the name.
+[[canvas]]
+name = "nameplate"
+size = [60, 10]
+paths = ["assets/art/ui/nameplate*.png"]
+max_colors = 10
+hard_alpha = true

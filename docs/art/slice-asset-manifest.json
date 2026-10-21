@@ -1,0 +1,156 @@
+{
+ "body_chart_canvas": [
+  128,
+  100
+ ],
+ "soul_canvas": [
+  48,
+  96
+ ],
+ "soul_crop_from_chart": [
+  8,
+  4,
+  56,
+  100
+ ],
+ "layer_order": "listed bottom to top",
+ "encounters": {
+  "ulf": [
+   "base-tunic",
+   "hand-left-calloused",
+   "wound-front",
+   "sword",
+   "heads/ulf"
+  ],
+  "kolbeinn": [
+   "base-nightshirt",
+   "hand-left-calloused",
+   "heads/kolbeinn"
+  ],
+  "hallr": [
+   "base-tunic",
+   "hand-left-calloused",
+   "sword",
+   "neck-broken",
+   "heads/hallr"
+  ],
+  "asa": [
+   "base-tunic",
+   "hand-left-calloused",
+   "wound-front",
+   "heads/asa"
+  ],
+  "sigvaldi": [
+   "base-tunic",
+   "hand-left-calloused",
+   "wound-front",
+   "wound-back",
+   "sword",
+   "heads/sigvaldi"
+  ],
+  "hakon": [
+   "base-tunic",
+   "hand-left-calloused",
+   "wound-back",
+   "sword",
+   "heads/hakon"
+  ],
+  "grim": [
+   "base-tunic",
+   "hand-left-calloused",
+   "wet-knee",
+   "wound-back",
+   "heads/grim"
+  ],
+  "brand": [
+   "base-tunic",
+   "hand-left-soft",
+   "wound-front",
+   "heads/brand"
+  ],
+  "freydis": [
+   "base-tunic",
+   "hand-left-soft",
+   "wound-back",
+   "sword",
+   "heads/freydis"
+  ],
+  "hakon-returned": [
+   "base-tunic",
+   "hand-left-calloused",
+   "wound-back",
+   "sword",
+   "heads/hakon-frost"
+  ],
+  "egil": [
+   "base-nightshirt",
+   "hand-left-calloused",
+   "wound-front",
+   "sword",
+   "heads/egil"
+  ],
+  "ragna": [
+   "base-nightshirt",
+   "hand-left-calloused",
+   "sword",
+   "neck-broken-left",
+   "heads/ragna"
+  ],
+  "ketil": [
+   "base-tunic",
+   "hand-left-calloused",
+   "wet-knee",
+   "wound-front",
+   "sword",
+   "heads/ketil"
+  ]
+ },
+ "placements_top_left": {
+  "layout": "scenes/desk/desk.tscn (the built desk; ruling D51)",
+  "scenes/gate-desk.png": [
+   0,
+   0
+  ],
+  "doors/valhalla-*.png": [
+   89,
+   9
+  ],
+  "doors/hel-*.png": [
+   196,
+   9
+  ],
+  "doors/folkvangr-*.png": [
+   318,
+   9
+  ],
+  "souls (48x96)": [
+   6,
+   -2
+  ],
+  "ui/nameplate-*.png": [
+   2,
+   86
+  ],
+  "body chart (128x100)": [
+   2,
+   100
+  ],
+  "portraits/huginn.png": [
+   268,
+   34
+  ],
+  "portraits/mentor.png": [
+   2,
+   204
+  ],
+  "props/feather-black.png": [
+   36,
+   204
+  ],
+  "notes": [
+   "the built desk's WaitingSoul puts the figure at (6, -8), which cuts up to 6 px of hair; (6, -2) shows the head and lets the plate cover the soles",
+   "the Hel door node is 58 wide; the sprite is 60 (196-256)",
+   "the feather prop is 32x32; the built desk's feather slot is 12x12 at (38, 204)"
+  ]
+ }
+}
