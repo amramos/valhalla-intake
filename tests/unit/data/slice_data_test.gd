@@ -209,3 +209,23 @@ func test_the_three_guided_souls_carry_the_mentors_script() -> void:
 	assert_eq(_soul(&"ulf").mentor_steps[3].door, Realm.VALHALLA)
 	assert_eq(_soul(&"asa").mentor_steps.size(), 0)
 	assert_eq(_slice.rules_to_core().mentor_promise_format, "%s. Hel pays well.")
+
+
+func test_the_dawn_cards_explain_the_tide_and_what_a_citation_needs() -> void:
+	# D53, from the WP6 playtest.
+	var days: Array[DayRules] = _days()
+	assert_true(
+		(
+			days[0]
+			. dawn_lines
+			. has(
+				"Send a worthy soul to Hel and they join her tide. At three, they break the line at Ragnarok."
+			)
+		)
+	)
+	assert_true(
+		days[1].dawn_lines.has(
+			"Citations begin today: 2 feathers for any stamp against what the desk can show you."
+		)
+	)
+	assert_eq(_slice.rules_to_core().mentor_tide_line, "The Law is kept. Hel's tide grows by one.")

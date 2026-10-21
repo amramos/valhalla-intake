@@ -179,10 +179,12 @@ func test_the_ending_puts_a_blank_line_between_its_sections() -> void:
 	_play_to_dusk(3)
 	_press(_system.phase_card.skip_button())
 	var sections: PackedStringArray = _card().split("\n\n")
-	assert_eq(sections.size(), 4, "outcome, rows, ledger, standing")
+	assert_eq(sections.size(), 5, "outcome, rows, ledger, the last day's feathers, standing")
 	var report: EndingReport = _commands().ending()
 	assert_eq(sections[1].split("\n").size(), report.entries.size(), "one row per encounter")
 	assert_eq(sections[2], report.promise_line)
+	var expected: Array[String] = ScreenText.ending_sections(report, _rules())
+	assert_eq(Array(sections), Array(expected), "D53: the sections ScreenText composes")
 
 
 func test_the_ending_follows_day_threes_dusk_and_play_again_restarts() -> void:

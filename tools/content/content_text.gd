@@ -25,6 +25,10 @@ static func days() -> Array[Dictionary]:
 				"Untimed today.",
 				"The Law: L1, L2, L3.",
 				"Doors: Valhalla and Hel. Fólkvangr is barred.",
+				(
+					"Send a worthy soul to Hel and they join her tide. At three, they break"
+					+ " the line at Ragnarok."
+				),
 				"The senior valkyrie will show you the first three.",
 			],
 		},
@@ -52,7 +56,7 @@ static func days() -> Array[Dictionary]:
 				"The clock: {clock}. It runs while a soul is at the desk.",
 				"NEW L4: Even so, those who fled the battle go to Hel.",
 				"Witnesses arrive. Claim against witness makes a grey thread.",
-				"Citations begin today: 2 feathers for a stamp against a seam you could see.",
+				"Citations begin today: 2 feathers for any stamp against what the desk can show you.",
 			],
 		},
 		{
@@ -133,6 +137,8 @@ static func slice() -> SliceData:
 	slice.mentor_promise_format = "%s. Hel pays well."
 	slice.mentor_grey_line = "One of them lies. The body may say which."
 	slice.mentor_grey_huginn_line = "Huginn answers that. Two a day."
+	slice.mentor_tide_line = "The Law is kept. Hel's tide grows by one."
+	slice.mentor_tide_suffix = "Hel's tide grows by one."
 	slice.desk_text = desk_text()
 	return slice
 

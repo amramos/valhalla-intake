@@ -217,3 +217,10 @@ func test_every_witness_heading_fits_its_panel() -> void:
 		problems.append_array(_checker.check_witness_heading(pair[0]))
 	assert_gt(_checker.witness_heading_room(), 0, "the panel's width is read from the desk scene")
 	assert_eq(problems, [] as Array[String])
+
+
+func test_every_dawn_card_fits_the_screen() -> void:
+	var problems: Array[String] = []
+	for day: DayData in _slice.days:
+		problems.append_array(_checker.check_dawn_card(day.to_core()))
+	assert_eq(problems, [] as Array[String])

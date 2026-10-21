@@ -18,4 +18,4 @@ quota = 1
 doors_open = Array[StringName]([&"valhalla", &"hel"])
 decrees = Array[ExtResource("1_5u7sl")]([ExtResource("2_l4lrq"), ExtResource("3_q24my"), ExtResource("4_o05bc")])
 encounters = Array[ExtResource("5_f0opt")]([ExtResource("6_x7h46"), ExtResource("7_18lxk"), ExtResource("8_4od4i"), ExtResource("9_nf14u")])
-dawn_lines = Array[String](["Day 1.", "Odin wants 1 soul for Valhalla.", "Untimed today.", "The Law: L1, L2, L3.", "Doors: Valhalla and Hel. Fólkvangr is barred.", "The senior valkyrie will show you the first three."])
+dawn_lines = Array[String](["Day 1.", "Odin wants 1 soul for Valhalla.", "Untimed today.", "The Law: L1, L2, L3.", "Doors: Valhalla and Hel. Fólkvangr is barred.", "Send a worthy soul to Hel and they join her tide. At three, they break the line at Ragnarok.", "The senior valkyrie will show you the first three."])

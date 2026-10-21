@@ -178,7 +178,7 @@ func _rebuild_threads() -> void:
 
 
 func _on_item_clicked(item_id: String) -> void:
-	if commands.awaiting_next():
+	if _input_held():
 		return
 	_lit.clear()
 	var pair: Array[String] = selection.click(item_id)
@@ -189,6 +189,10 @@ func _on_item_clicked(item_id: String) -> void:
 
 func _pin(a: String, b: String) -> void:
 	var result: PinResult = commands.pin(a, b)
+	if commands.phase() != RunState.DESK:
+		# The pin's cost ended the day: the horn's announcement stands.
+		_apply_highlights()
+		return
 	match result.kind:
 		PinResult.Kind.THREAD:
 			caption_strip.post(_caption(result.seam), CaptionStrip.Priority.THREAD)
@@ -275,7 +279,7 @@ func _on_clock_warning() -> void:
 ## A click on a knot or bead shows its thread's caption again (D33); a grey knot also selects
 ## the thread for Huginn, and shows his answer once given.
 func _on_knot_clicked(thread_index: int) -> void:
-	if commands.awaiting_next():
+	if _input_held():
 		return
 	var threads: Array[Seam] = commands.threads()
 	if thread_index < 0 or thread_index >= threads.size():
@@ -288,9 +292,18 @@ func _on_knot_clicked(thread_index: int) -> void:
 
 
 func _on_ask_huginn() -> void:
-	if commands.awaiting_next() or huginn_thread < 0:
+	if _input_held() or huginn_thread < 0:
 		return
-	caption_strip.post(HuginnAsk.ask(commands, huginn_thread), CaptionStrip.Priority.HUGINN)
+	var line: String = HuginnAsk.ask(commands, huginn_thread)
+	# An answer whose cost ended the day is not queued over the horn's announcement.
+	if commands.phase() == RunState.DESK:
+		caption_strip.post(line, CaptionStrip.Priority.HUGINN)
+
+
+## No pin, knot or Huginn answer while a stamped soul waits (D48) or the stamp preview is open
+## (D9): nothing may change, or charge the clock, under a pending stamp.
+func _input_held() -> bool:
+	return commands.awaiting_next() or stamp_flow.stamp_prompt.visible
 
 
 func _on_ask_huginn_hovered() -> void:

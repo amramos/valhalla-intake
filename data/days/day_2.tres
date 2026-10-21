@@ -23,4 +23,4 @@ citations = true
 new_decree_ids = Array[String](["L4"])
 encounters = Array[ExtResource("6_uquws")]([ExtResource("7_5xrv2"), ExtResource("8_e2atf"), ExtResource("9_6kbr0"), ExtResource("10_cgcyd")])
 dusk_story = "A prayer at your shrine, from Eyvind, your brother: 'Sister. Father's ring is mine now. I wear it on my oar hand. If I fall, know me by it.'"
-dawn_lines = Array[String](["Day 2.", "Odin wants 1 soul for Valhalla.", "The clock: {clock}. It runs while a soul is at the desk.", "NEW L4: Even so, those who fled the battle go to Hel.", "Witnesses arrive. Claim against witness makes a grey thread.", "Citations begin today: 2 feathers for a stamp against a seam you could see."])
+dawn_lines = Array[String](["Day 2.", "Odin wants 1 soul for Valhalla.", "The clock: {clock}. It runs while a soul is at the desk.", "NEW L4: Even so, those who fled the battle go to Hel.", "Witnesses arrive. Claim against witness makes a grey thread.", "Citations begin today: 2 feathers for any stamp against what the desk can show you."])

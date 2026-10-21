@@ -6,9 +6,13 @@ extends GutTest
 
 const Fixture := preload("res://tests/unit/core/slice_fixture.gd")
 const Harness := preload("res://tools/harness/harness.gd")
-## Words that would name hidden fields; none may appear before dusk as a whole word ("liar" is
-## not among them: the mentor asks "Where does a liar go?" on the desk).
-const HIDDEN_WORDS: Array[String] = ["legal", "worthy", "deserved", "truth", "seams"]
+## Words that would name hidden fields; none may appear before dusk as a whole word. "liar" and
+## "worthy" are not among them, because the desk says them: the mentor asks "Where does a liar
+## go?", and day 1's dawn card says "Send a worthy soul to Hel" (D53). The worthy realm itself
+## would read "worthy realm" or "worthy destination".
+const HIDDEN_WORDS: Array[String] = [
+	"legal", "worthy realm", "worthy destination", "deserved", "truth", "seams"
+]
 
 var _checked: int = 0
 var _leaks: Array[String] = []

@@ -54,3 +54,7 @@ var mentor_promise_format: String = "%s. Hel pays well."
 ## On the day's first grey thread: without Huginn on the desk, then with him.
 var mentor_grey_line: String = "One of them lies. The body may say which."
 var mentor_grey_huginn_line: String = "Huginn answers that. Two a day."
+## On the stamp that adds the first figure to Hel's tide (D53): alone after a lawful stamp, or
+## after her comment on an unlawful one.
+var mentor_tide_line: String = "The Law is kept. Hel's tide grows by one."
+var mentor_tide_suffix: String = "Hel's tide grows by one."

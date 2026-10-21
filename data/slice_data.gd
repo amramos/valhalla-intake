@@ -48,6 +48,8 @@ extends Resource
 @export var mentor_promise_format: String = ""
 @export var mentor_grey_line: String = ""
 @export var mentor_grey_huginn_line: String = ""
+@export var mentor_tide_line: String = ""
+@export var mentor_tide_suffix: String = ""
 @export_group("Law and desk text")
 @export var liar_decree_id: String = ""
 @export var liar_realm: StringName = &""
@@ -95,6 +97,8 @@ func rules_to_core() -> SliceRules:
 	rules.mentor_promise_format = mentor_promise_format
 	rules.mentor_grey_line = mentor_grey_line
 	rules.mentor_grey_huginn_line = mentor_grey_huginn_line
+	rules.mentor_tide_line = mentor_tide_line
+	rules.mentor_tide_suffix = mentor_tide_suffix
 	rules.liar_decree_id = liar_decree_id
 	rules.liar_realm = liar_realm
 	rules.huginn_claim_answer = huginn_claim_answer

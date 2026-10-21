@@ -77,17 +77,10 @@ func skip(card: PhaseCard, commands: DeskCommands) -> void:
 		_finish(card, commands)
 
 
-## The ending's lines with one blank line between its sections: the outcome (title and text), the
-## rows, the ledger's line (when Hel made an offer), the standing.
+## The ending with one blank line between the sections ScreenText composes (D53): the outcome,
+## the rows, the ledger's line, the last day's feathers, the standing.
 static func ending_text(report: EndingReport, rules: SliceRules) -> String:
-	var lines: Array[String] = ScreenText.ending_lines(report, rules)
-	var rows_end: int = mini(2 + report.entries.size(), lines.size())
-	var sections: Array[String] = [
-		"\n".join(lines.slice(0, 2)), "\n".join(lines.slice(2, rows_end))
-	]
-	for line: String in lines.slice(rows_end):
-		sections.append(line)
-	return "\n\n".join(sections)
+	return "\n\n".join(ScreenText.ending_sections(report, rules))
 
 
 ## Which card shows: its index within the dusk, or -1 on the ending (tests).

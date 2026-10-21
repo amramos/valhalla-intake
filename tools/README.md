@@ -11,3 +11,6 @@ Development-only scripts and harnesses, **never shipped** and never referenced b
   `godot --path . --resolution 480x270 -s tools/fitcheck/fit_check.gd`.
 - `desk_shots/desk_shots.gd` — plays the real desk with real mouse events, checks each step (exit 1 on a failure) and saves a 1:1
   screenshot per step: `godot --path . --resolution 480x270 -s tools/desk_shots/desk_shots.gd -- <folder>`.
+- `audit_kit/audit_kit.gd` — the evidence auditor's kit (D26): for every encounter, a 1:1 desk PNG and a
+  text file of only what the player can read. Run in a window:
+  `godot --path . --resolution 480x270 -s tools/audit_kit/audit_kit.gd -- <folder>`.
