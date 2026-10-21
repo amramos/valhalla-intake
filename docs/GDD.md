@@ -59,7 +59,7 @@ Two tests make this rule checkable, and any mechanic or case that fails them is 
 - **Win and loss:** there is no game over mid-run. Running out of **feathers** costs you a **rank**.
   Running out at the lowest rank is the *Cast down* ending, and you may retry the current day.
 
-## 3. Mechanics **[BUILT]** in the vertical slice, except Rán, Loki's forgeries, Freyja's asks and the Cast down ending, which stay **[DESIGNED]** (`docs/plans/vertical-slice-plan.md` §1)
+## 3. Mechanics **[BUILT]** in the vertical slice, except Rán, Loki's forgeries, Freyja's asks and the Cast down ending, which stay **[DESIGNED]** (`docs/plans/vertical-slice-plan.md` §1). The slice also compresses two rules: citations start on day 2, not day 3 (ledger D28), and Hel's offer comes at day-2 dusk (D3, D29)
 
 ### 3.1 The desk
 One screen, no page-flipping, at 480×270. This is layout A3; see
