@@ -25,7 +25,8 @@ canvas globs miss files directly in a folder, so each canvas lists both patterns
 **2026-10-21** — The vertical slice (epic #2) was planned hands-off (ledger D1–D54) and built by an
 agent team in seven stacked PRs (#11–#17), each reviewed adversarially and merged by the lead under
 ADR-0007. Codex reviewed every PR's first round. Codex then ran out of quota, so the fix rounds of
-#14–#16 were approved by the fallback reviewer (Sonnet) and merged on that, against D20, so Codex
-re-reviews them once its quota returns. Blind AI playtest median 7 (bar 6); evidence audit 13 of 14.
+#14–#16 were approved by the fallback reviewer (Sonnet) and merged on that, against D20. When its
+quota returned, Codex reviewed those fix rounds after the fact and approved all three, then approved
+#17 before it merged. Blind AI playtest median 7 (bar 6); evidence audit 13 of 14.
 Review caught: lie seams that weren't strict (D47); an authoring check whose rules couldn't fail; the
 harness skipping day 3's dusk, which had misled the playtest; and gates missing under the stamp prompt.

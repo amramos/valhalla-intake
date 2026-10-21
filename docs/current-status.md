@@ -18,7 +18,8 @@ second narrative beside an old one. Detail lives where it can be found on purpos
 ## Phase
 
 The vertical slice is built: 3 days, 12 encounters, from the title to the ending. It has one return
-arc (Hakon), one god promise (Hel's offer for Ragna) and the endings Hel's tide and The Hall holds.
+arc (Hakon), one god promise (Hel's offer for Ragna) and three endings: Hel's tide, the Hollow hall
+and The Hall holds.
 The plan and its decisions ledger (D1–D54) are in `docs/plans/vertical-slice-*`. Next: the owner
 plays the slice, then sets the full encounter count (GDD §11, question 1).
 
@@ -26,7 +27,7 @@ plays the slice, then sets the full encounter count (GDD §11, question 1).
 
 | Epic | State | Notes |
 |---|---|---|
-| #2 Vertical slice of the inspection desk | In Review | WP0–WP5 (#3–#8) merged by the hands-off lead under ADR-0007; WP6 (#9) is PR #17 |
+| #2 Vertical slice of the inspection desk | In Review (until the owner plays it) | WP0–WP6 (#3–#9) merged by the hands-off lead under ADR-0007 |
 
 ## Open and owed
 
@@ -46,7 +47,7 @@ plays the slice, then sets the full encounter count (GDD §11, question 1).
 
 ## Validation
 
-**GUT baseline:** 29 scripts, 247 tests, all passing (2026-10-21, Godot 4.7.1, on the WP6 branch). A
+**GUT baseline:** 29 scripts, 248 tests, all passing (2026-10-21, Godot 4.7.1, `main`). A
 script count that drops for no visible reason means a test file failed to load (`docs/gotchas.md`).
 Other checks: lint, art coverage and `tools/desk_shots/`. The authoring check runs inside the
 suite.
