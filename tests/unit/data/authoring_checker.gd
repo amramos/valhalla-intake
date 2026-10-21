@@ -18,6 +18,30 @@ const BUBBLE_TEXT_WIDTH := 52
 const BUBBLE_TEXT_HEIGHT_READ := 48
 const BUBBLE_TEXT_HEIGHT := 61
 const THEME_PATH := "res://scenes/desk/desk_theme.tres"
+## R1 (matrix §0, "What makes a law thread"): the evidence that shows each decree's condition.
+## Whether a line states a death in battle is the author's reading, not something a check can
+## parse, so the matrix's reading is held here, apart from the seams, and a law thread on any other
+## line fails. L1 takes a claim line, L4 and L5 a claim or witness line, L3 the body fact; L2 has
+## none (a lie seam reaches it). A new condition line is added here on purpose.
+const CONDITION_GROUPS: Dictionary = {
+	"L1": [EvidenceItem.Group.CLAIM],
+	"L3": [EvidenceItem.Group.BODY],
+	"L4": [EvidenceItem.Group.CLAIM, EvidenceItem.Group.WITNESS],
+	"L5": [EvidenceItem.Group.CLAIM, EvidenceItem.Group.WITNESS],
+}
+const CONDITION_TEXTS: Dictionary = {
+	"L1": ["Speared, in battle.", "Fell in battle. Ness.", "Slain in a sea-battle."],
+	"L3": ["nothing in hand"],
+	"L4": ["Left the fight.", "Carried me out of it."],
+	"L5":
+	[
+		"I held the door.",
+		"My boys behind me.",
+		"She held that door.",
+		"I held our door.",
+		"Held his door. Long.",
+	],
+}
 
 var _font: Font = null
 var _font_size: int = 16
@@ -199,7 +223,7 @@ func _check_seams(soul: Encounter, day: DayRules, tag: String) -> Array[String]:
 		var groups: Array = [a.group, b.group]
 		match seam.kind:
 			Seam.Kind.RED:
-				if not groups.has(EvidenceItem.Group.BODY) or groups.has(EvidenceItem.Group.LAW):
+				if not _body_against_testimony(a, b):
 					problems.append(
 						"%s: red %s-%s is not body against testimony" % [tag, a.id, b.id]
 					)
@@ -223,8 +247,10 @@ func _check_law_threads(
 	var reds: int = 0
 	for seam: Seam in soul.seams:
 		if seam.kind == Seam.Kind.RED:
-			reds += 1
 			var first: EvidenceItem = _item(soul, day, seam.a)
+			# Only a valid red seam counts toward R7 (the review's case: a body-body "red seam").
+			if _body_against_testimony(first, _item(soul, day, seam.b)):
+				reds += 1
 			var body_first: bool = first != null and first.group == EvidenceItem.Group.BODY
 			lie_lines.append(seam.b if body_first else seam.a)
 		elif seam.kind == Seam.Kind.GREY:
@@ -274,15 +300,22 @@ func _check_law_threads(
 	return problems
 
 
-## R1, per decree (matrix §0): L1, L4 and L5 read a testimony line, L3 the empty hand; L2 none.
+## R1, per decree: the evidence is of the decree's group and is a line the matrix reads as
+## stating its condition (CONDITION_TEXTS).
 func _shows_condition(evidence: EvidenceItem, decree_id: String) -> bool:
-	var testimony: bool = evidence.group in [EvidenceItem.Group.CLAIM, EvidenceItem.Group.WITNESS]
-	match decree_id:
-		"L1", "L4", "L5":
-			return testimony
-		"L3":
-			return evidence.group == EvidenceItem.Group.BODY and evidence.text == "nothing in hand"
-	return false
+	var groups: Array = CONDITION_GROUPS.get(decree_id, [])
+	var texts: Array = CONDITION_TEXTS.get(decree_id, [])
+	return groups.has(evidence.group) and texts.has(evidence.text)
+
+
+## A red seam: exactly one body fact, against one claim or witness line.
+func _body_against_testimony(a: EvidenceItem, b: EvidenceItem) -> bool:
+	if a == null or b == null:
+		return false
+	var testimony: Array = [EvidenceItem.Group.CLAIM, EvidenceItem.Group.WITNESS]
+	if a.group == EvidenceItem.Group.BODY:
+		return testimony.has(b.group)
+	return b.group == EvidenceItem.Group.BODY and testimony.has(a.group)
 
 
 ## R6: no red seam shows the liars' realm, so only a grey seam can decide the soul (Ketil).

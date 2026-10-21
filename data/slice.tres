@@ -10,7 +10,7 @@
 [ext_resource type="Resource" path="res://data/encounters/hakon_missed.tres" id="8_vr30s"]
 [ext_resource type="Script" path="res://data/slice_data.gd" id="9_sndyr"]
 
-[sub_resource type="Resource" id="Resource_0aw3e"]
+[sub_resource type="Resource" id="desk_text"]
 script = ExtResource("5_s6ag8")
 thread_format = "%s against %s: %s"
 no_seam_line = "No seam: those two agree."
@@ -56,7 +56,7 @@ huginn_seconds = 5.0
 clock_warning_seconds = 30.0
 tide_threshold = 3
 hollow_threshold = 2
-desk_text = SubResource("Resource_0aw3e")
+desk_text = SubResource("desk_text")
 recap_agree_format = "%s, as the Law and the truth agree."
 recap_legal_format = "The Law sent %s to %s. The truth was %s."
 recap_mercy_format = "You sent %s to %s against %s. The truth agrees."

@@ -22,7 +22,7 @@ place = &"torso_back"
 [sub_resource type="Resource" id="fact_B3"]
 script = ExtResource("1_17yfe")
 id = "B3"
-label = "sword in hand"
+label = "drawn sword in hand"
 view = &"front"
 place = &"hand_right"
 
