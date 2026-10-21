@@ -47,7 +47,7 @@ plays the slice, then sets the full encounter count (GDD §11, question 1).
 
 ## Validation
 
-**GUT baseline:** 29 scripts, 247 tests, all passing (2026-10-21, Godot 4.7.1, `main`). A
+**GUT baseline:** 29 scripts, 248 tests, all passing (2026-10-21, Godot 4.7.1, `main`). A
 script count that drops for no visible reason means a test file failed to load (`docs/gotchas.md`).
 Other checks: lint, art coverage and `tools/desk_shots/`. The authoring check runs inside the
 suite.
