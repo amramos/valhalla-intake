@@ -181,7 +181,7 @@ that isn't in the ledger doesn't belong here.
       - **Asa:** nothing in hand against L3, "the saga is true";
       - **Sigvaldi:** a back-wound red herring, explained by his witness;
       - **Hakon:** admits leaving the line carrying Ivar, who is not his kin and is never carried
-        in defence; L4 and L3 send him to Hel; worthy of Valhalla on both days;
+        in defence; L4 sends him to Hel (he grips a sword, so L3 doesn't apply); worthy of Valhalla on both days;
       - **Grim:** wet to the knee against "I never left the hill";
       - **Brand:** soft hands against "thirty winters at the oar";
       - **Freydis:** a back-wound red herring;
@@ -300,7 +300,8 @@ The packages are stacked: each one's branch starts from the previous one's.
   - whether they ever had to guess.
 
   Logged per run: time per soul, time left at each horn, feathers when entering day 3, whether the
-  return arc fired, and whether Hel's promise was kept.
+  return arc fired, whether Hel's promise was kept, and whether Ketil was admitted with his grey thread
+  unresolved (D37).
 
 ## 6. Traceability
 
