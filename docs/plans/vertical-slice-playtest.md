@@ -49,11 +49,13 @@ light, as D29 expected.
 
 ## The clock (D42)
 
-At each day's last soul the harness clock still showed about 3:30–3:55 of 5:00, so roughly 70–78%
-was left. **This doesn't trigger D42's tuning.** By design (D13) the harness clock counts only action
-costs: the no-seam penalty, Huginn, and 20 s per stamp. It has no reading time, so AI testers can't
-say whether 5 minutes is tight for a person. The clock stays at 5:00 for days 2 and 3, and the
-owner's first play decides it (it is one value in `data/days/`).
+At each day's last soul the harness clock still showed about 3:30–3:55 of 5:00. After that soul's
+20 s stamp, roughly 63–72% was left at the end of the day. That is **over D42's 30%**. But by
+design (D13) the harness clock counts only action costs (the no-seam penalty, Huginn, and 20 s per
+stamp) and no reading time, so AI testers can't say whether 5 minutes is tight for a person.
+**D42's gate is pending, not passed** (D54). The clock stays at 5:00 for days 2 and 3, and it is
+shortened only if the owner's first play also ends those days with more than 30% left (it is one
+value in `data/days/`).
 
 ## Not proven by this test
 
