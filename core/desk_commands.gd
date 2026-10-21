@@ -199,8 +199,18 @@ func stamp(realm: StringName) -> StampResult:
 	var record: VerdictRecord = _state.current
 	var result: StampResult = VerdictRules.judge(record, realm, day, _state.rules)
 	MentorGuide.finish(record, MentorStep.Until.STAMP)
+	var tide_before: int = _state.hel_tide()
 	_state.settle_stamp(record, result)
 	result.mentor_line = VerdictRules.mentor_line(record, result, day, _state.rules)
+	if tide_before == 0 and _state.hel_tide() == 1:
+		# Hel's tide is explained the first time it grows (D53).
+		if result.mentor_line == "" and result.correct:
+			result.mentor_line = _state.rules.mentor_tide_line
+		elif result.mentor_line == "":
+			# A wrong stamp no visible seam showed: no praise for obedience (D37).
+			result.mentor_line = _state.rules.mentor_tide_suffix
+		else:
+			result.mentor_line += " " + _state.rules.mentor_tide_suffix
 	# The stamp has completed (D36); its time applies on every slot alike.
 	_state.clock.charge(_stamp_seconds)
 	# A citation holds the desk even when the stamp ran the clock out: the horn waits for

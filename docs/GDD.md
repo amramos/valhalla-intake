@@ -6,6 +6,7 @@ the appendix are the owner's to confirm.
 **Version:** 0.1 · **Last full revision:** 2026-10-21
 **Amendments:** 2026-10-21 — **core loop chosen by prototype: pins are validated instantly, as threads; a pin with no seam costs extra time (§3.3, Appendix A)**
 2026-10-21 — **vertical-slice planning: the desk becomes layout A3, doors in the gate band; the clock runs in real time plus action costs; claims run 3–4 lines; decree wording made consistent (§3.1, §3.7, §5; `docs/plans/vertical-slice-ledger.md` D4, D7, D10, D21, D32)**
+2026-10-21 — **vertical slice built (days 1–3, 12 encounters): §2 and §3 marked [BUILT] for it; the clock length waits on the owner's first play (ledger D54)**
 
 This is the **single source of truth for design and scope**. Where it conflicts with an older ADR,
 this document wins and the ADR gets a superseded note. Where it conflicts with the code, the code
@@ -41,7 +42,7 @@ Two tests make this rule checkable, and any mechanic or case that fails them is 
    evidence, or between the truth and a decree.
 2. No citation is ever given for a contradiction the player could not have seen at the desk.
 
-## 2. Core loop **[DESIGNED]**
+## 2. Core loop **[BUILT]** for days 1–3 (the vertical slice); days 4–8 **[DESIGNED]**
 
 - **Moment to moment:** a soul stands at the desk. You read the **body**, the **claim** and, from
   day 2, a **witness**. You **pin** pairs of evidence that contradict each other (or contradict the
@@ -58,7 +59,7 @@ Two tests make this rule checkable, and any mechanic or case that fails them is 
 - **Win and loss:** there is no game over mid-run. Running out of **feathers** costs you a **rank**.
   Running out at the lowest rank is the *Cast down* ending, and you may retry the current day.
 
-## 3. Mechanics **[DESIGNED]**
+## 3. Mechanics **[BUILT]** in the vertical slice, except Rán, Loki's forgeries, Freyja's asks and the Cast down ending, which stay **[DESIGNED]** (`docs/plans/vertical-slice-plan.md` §1)
 
 ### 3.1 The desk
 One screen, no page-flipping, at 480×270. This is layout A3; see
@@ -374,7 +375,9 @@ still frames, and no fourth-wall or meta tricks.
 
 1. **Final encounter count.** The options are about 50, 60 or 70. Recommendation: build the
    12-encounter vertical slice (one return arc, one god promise, one ending consequence), measure
-   authoring and verification time, then set the count.
+   authoring and verification time, then set the count. The slice is built and measured
+   (`docs/plans/vertical-slice-measurements.md`): about 6–7 agent-minutes per encounter, and its
+   recommendation is about 56 (7 a day). The count is still the owner's call.
 2. **Ending thresholds** (how many wrongly damned souls for Hel's tide, how many liars admitted for
    the hollow hall). Recommendation: set them after playtesting the full 8 days, so that strict
    obedience of the Law and lenient mercy both lead somewhere bad.

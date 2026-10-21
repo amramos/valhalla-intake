@@ -109,3 +109,33 @@ func test_a_returned_soul_is_marked_on_its_ending_entry() -> void:
 		if entry.returned:
 			returned.append("%s day %d" % [entry.soul_name, entry.day])
 	assert_eq(returned, ["Hakon day 3"] as Array[String])
+
+
+## Day 3's quota and feathers are told on its own dusk card, which shows before the ending; the
+## ending does not repeat them (D53's ending section, withdrawn once the harness showed that card).
+func test_day_threes_quota_and_feathers_are_on_its_dusk_card_not_the_ending() -> void:
+	var desk: DeskCommands = Fixture.desk()
+	desk.debug_jump(3, 4)
+	desk.stamp(Realm.HEL)
+	var quota: String = "Odin wanted 2. Valhalla took 1. -1 feathers."
+	var dusk: Array[String] = ScreenText.dusk_cards(desk.dusk_report(), _rules)
+	assert_true(dusk[1].begins_with(quota + "\n"), "day 3's dusk card names the quota")
+	var lines: Array[String] = ScreenText.ending_lines(desk.ending(), _rules)
+	assert_false(lines.has(quota), "the ending leaves it to the dusk card")
+	assert_false(lines.has("Quota: -1."), "and the day's feather changes")
+
+
+func test_the_ending_sections_group_its_lines() -> void:
+	var desk: DeskCommands = Fixture.desk()
+	desk.debug_jump(3, 4)
+	desk.stamp(Realm.HEL)
+	var report: EndingReport = desk.ending()
+	var sections: Array[String] = ScreenText.ending_sections(report, _rules)
+	assert_eq(sections.size(), 4, "outcome, rows, ledger, standing")
+	assert_true(sections[0].begins_with("Hel's tide\n"))
+	assert_eq(sections[1].split("\n").size(), report.entries.size())
+	assert_eq(sections[2], "Broken. Ragna went to Fólkvangr.")
+	assert_eq(sections[3], "Feathers: %d. Rank: %s." % [desk.feathers(), desk.rank_name()])
+	assert_eq(
+		"\n".join(sections).split("\n"), PackedStringArray(ScreenText.ending_lines(report, _rules))
+	)

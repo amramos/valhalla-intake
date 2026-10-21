@@ -5,6 +5,9 @@ extends Control
 ## least `hold_seconds`; what arrives meanwhile waits, the most urgent first. A deliberate click
 ## (a thread, the mentor, the feather) takes the strip over at once.
 
+## A message reached the strip (posted, taken over, or out of the queue).
+signal text_shown(text: String)
+
 ## Lower is more urgent.
 enum Priority { CITATION, THREAD, HUGINN, MENTOR }
 
@@ -81,6 +84,7 @@ func _take_most_urgent() -> String:
 func _show(text: String) -> void:
 	_label.text = text
 	_held = 0.0
+	text_shown.emit(text)
 
 
 func _draw() -> void:

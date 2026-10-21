@@ -20,6 +20,13 @@ const BUBBLE_TEXT_WIDTH := 52
 const DESK_SCENE := "res://scenes/desk/desk.tscn"
 const PANEL_PADDING := 2
 const WITNESS_PREFIX := "WITNESS "
+## The phase card's dawn layout: 320 px wide, padding 6, 10 px a line, then a gap and the button.
+const CARD_WIDTH := 320
+const CARD_PADDING := 6
+const CARD_LINE_PITCH := 10
+const CARD_GAP := 4
+const CARD_BUTTON := 14
+const CARD_MAX_HEIGHT := 266
 const BUBBLE_TEXT_HEIGHT_READ := 48
 const BUBBLE_TEXT_HEIGHT := 61
 const THEME_PATH := "res://scenes/desk/desk_theme.tres"
@@ -176,6 +183,30 @@ func witness_heading_room() -> int:
 		var width: float = edges.get(&"offset_right", 0.0) - edges.get(&"offset_left", 0.0)
 		return int(width) - PANEL_PADDING * 2
 	return 0
+
+
+## The dawn card (entities/phase_card/phase_card.gd) wraps its text at the card's inner width
+## and grows to fit, up to the 270 px screen less 4; more lines than that would be cut off.
+func check_dawn_card(day: DayRules) -> Array[String]:
+	if _font == null:
+		return []
+	var lines: int = 0
+	for line: String in ScreenText.dawn_lines(day):
+		lines += wrapped_lines(line, CARD_WIDTH - CARD_PADDING * 2)
+	var room: int = int(
+		(CARD_MAX_HEIGHT - CARD_PADDING * 2 - CARD_GAP - CARD_BUTTON) / float(CARD_LINE_PITCH)
+	)
+	if lines <= room:
+		return []
+	return ["the dawn card of day %d needs %d lines; the screen holds %d" % [day.day, lines, room]]
+
+
+func wrapped_lines(text: String, width: int) -> int:
+	var paragraph := TextParagraph.new()
+	paragraph.add_string(text, _font, _font_size)
+	paragraph.width = width
+	paragraph.break_flags = TextServer.BREAK_MANDATORY | TextServer.BREAK_WORD_BOUND
+	return paragraph.get_line_count()
 
 
 ## The souls whose wrong stamp is cited only once Huginn has answered a grey thread (D30).

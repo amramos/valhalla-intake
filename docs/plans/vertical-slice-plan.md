@@ -360,7 +360,8 @@ The packages are stacked: each one's branch starts from the previous one's.
 - **The mentor covers for unclear affordances.** Caught by checking that blind testers complete
   soul 4 and day 2 without guidance (D16).
 - **The clock never bites again** (GDD §12). Caught by logging time left at each horn; if careful
-  testers keep more than 30%, the clock length in data is tuned before WP6 ends (D10, D42).
+  testers keep more than 30%, the clock length in data is tuned before WP6 ends (D10, D42; amended by D54: AI testers can't
+  measure reading time, so the tuning waits on the owner's first play).
 - **The return arc or the promise never fires.** Caught by measuring how often they fire and
   reporting it to the owner; mercy is a valid result (D2, D28, D29, D43).
 

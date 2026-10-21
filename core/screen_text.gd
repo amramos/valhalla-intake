@@ -30,13 +30,7 @@ static func dusk_cards(report: DuskReport, rules: SliceRules) -> Array[String]:
 		citations = [text.dusk_citations_format % report.citations.size()]
 		citations.append_array(report.citations)
 	cards.append("\n".join(citations))
-	var quota: Array[String] = []
-	if report.quota_delta >= 0:
-		quota.append(text.quota_met_format % [report.quota, report.admitted, report.quota_delta])
-	else:
-		quota.append(text.quota_short_format % [report.quota, report.admitted, -report.quota_delta])
-	quota.append(text.feathers_dawn_format % [report.feathers_at_dawn, report.feathers])
-	quota.append_array(report.feather_lines)
+	var quota: Array[String] = _quota_lines(report, text)
 	quota.append(text.rank_format % report.rank_name)
 	cards.append("\n".join(quota))
 	for block: Array[String] in [report.recap, report.requests, _story(report)]:
@@ -68,6 +62,21 @@ static func ending_lines(report: EndingReport, rules: SliceRules) -> Array[Strin
 	return lines
 
 
+## ending_lines grouped for a card with blank lines between: the outcome, the rows, the ledger
+## (when Hel made an offer), the standing. Day 3's quota and feathers are on its own dusk card,
+## which shows before the ending.
+static func ending_sections(report: EndingReport, rules: SliceRules) -> Array[String]:
+	var lines: Array[String] = ending_lines(report, rules)
+	var rows_end: int = 2 + report.entries.size()
+	var sections: Array[String] = [
+		"\n".join(lines.slice(0, 2)), "\n".join(lines.slice(2, rows_end))
+	]
+	if report.promise_line != "":
+		sections.append(lines[rows_end])
+	sections.append(lines[-1])
+	return sections
+
+
 ## "{name}: {verdict}. Truth: {worthy}." plus " Ignored." or " Missed." on a wrong stamp.
 static func row(entry: EndingEntry, text: DeskText) -> String:
 	var name: String = display_name(entry, text)
@@ -95,6 +104,18 @@ static func _names(report: EndingReport, realm: StringName, text: DeskText) -> A
 		if entry.verdict == realm and entry.worthy != realm:
 			names.append(display_name(entry, text))
 	return names
+
+
+## The quota result, then the day's feathers: at dawn and now, and every change between.
+static func _quota_lines(report: DuskReport, text: DeskText) -> Array[String]:
+	var lines: Array[String] = []
+	if report.quota_delta >= 0:
+		lines.append(text.quota_met_format % [report.quota, report.admitted, report.quota_delta])
+	else:
+		lines.append(text.quota_short_format % [report.quota, report.admitted, -report.quota_delta])
+	lines.append(text.feathers_dawn_format % [report.feathers_at_dawn, report.feathers])
+	lines.append_array(report.feather_lines)
+	return lines
 
 
 static func _story(report: DuskReport) -> Array[String]:

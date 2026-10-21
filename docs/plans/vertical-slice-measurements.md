@@ -57,10 +57,42 @@ the data pass, setup included (15 of them setup). Per encounter, data plus verif
 **Unused branches:** returned Hakon (both variants) and Egil are authored in full, though one run
 sees only one of the three; their minutes are included above.
 
-**Reworked after the first check:** Ulf's first mentor bubble, "Read the body first. Hover each
-mark.", wrapped to 6 lines where the bubble holds 4; it now reads "Hover each mark." (matrix A2,
-then a rebuild), and the authoring check passes on it.
+**Fixed since:** Ulf's first mentor bubble (it wrapped to 6 lines in a 4-line bubble) was shortened
+in the matrix and rebuilt. About 2 minutes of rework, which included giving every guided step a
+spare line.
 
-## Open
+## The other passes, from the agents' run times (2026-10-21)
 
-- WP6 adds the playtester time per soul and the range by case complexity.
+These are wall-clock minutes for each pass by a single agent, split evenly across the encounters it
+covered, so they are rough.
+
+| Pass | Total (min) | Per encounter (min, about) | Notes |
+|---|---|---|---|
+| WP0: the evidence matrix (design of all 15 variants) | 48 | 3.2 | The first full pass |
+| WP0: rework from the gate check and four review rounds | 15 | 1.0 | Review found about 15 pairs that weren't strict contradictions, roughly 40% of the first draft's lie seams (D47) |
+| WP2: art (one body build, 13 identity heads, overlays) | 46 | 1.5 (heads and overlays) | Includes two re-placement passes (D51) and the spear-wound redraw. Shared art (backdrop, doors, portraits) is setup |
+| WP4: matrix text pass | 14 | 0.3–0.6 | From the table above |
+| WP4: data and verification | 21 (15 of them setup) | 0.4–0.8 | From the table above |
+| WP6: blind evidence audit | 5 | 0.3 | 14 encounters, one model |
+
+**Blind playtest pace (WP6):** three AI testers took 164–266 s for all three days, about 13–22 s a
+soul. That is the harness's pace, not a reader's: it says nothing about human reading time (see
+`vertical-slice-playtest.md`).
+
+## What an encounter costs
+
+- **Per encounter, design through verified data and art:** about **6–7 agent-minutes**, with
+  guided, branch and Huginn souls at the top of the range.
+- **Fixed cost per batch:** about an hour of setup, first spent here, mostly reusable. It covers the
+  schema, the generator, the authoring check, the art pipeline and the shared art.
+- **The real cost is strictness, not typing.** A first draft gets about 40% of its lie seams non-strict,
+  and only adversarial review caught them. The authoring check catches structure (pairs, coverage,
+  widths, doors), not whether two lines can both be true.
+
+**For GDD §11, open question 1 (the full count):** at this rate, a full game of 8 days × 7–9 souls
+(about 56–70 encounters) is about 6–8 agent-hours of content and art. Then there is a review of
+every encounter for strictness, at about 1 agent-minute each plus its rework. The owner's playtime
+to judge feel and fairness is the bottleneck, not authoring. **Recommendation:** about 56
+encounters (7 a day), written in batches of one or two days. Each batch gets the authoring check, a
+blind strictness review and an evidence audit before the next starts. The decision stays the
+owner's (GDD §11).

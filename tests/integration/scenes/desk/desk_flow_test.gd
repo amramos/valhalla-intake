@@ -181,6 +181,8 @@ func test_the_ending_puts_a_blank_line_between_its_sections() -> void:
 	var report: EndingReport = _commands().ending()
 	assert_eq(sections[1].split("\n").size(), report.entries.size(), "one row per encounter")
 	assert_eq(sections[2], report.promise_line)
+	var expected: Array[String] = ScreenText.ending_sections(report, _rules())
+	assert_eq(Array(sections), Array(expected), "the sections ScreenText composes")
 
 
 func test_the_ending_follows_day_threes_dusk_and_play_again_restarts() -> void:

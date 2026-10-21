@@ -6,9 +6,13 @@ extends GutTest
 
 const Fixture := preload("res://tests/unit/core/slice_fixture.gd")
 const Harness := preload("res://tools/harness/harness.gd")
-## Words that would name hidden fields; none may appear before dusk as a whole word ("liar" is
-## not among them: the mentor asks "Where does a liar go?" on the desk).
-const HIDDEN_WORDS: Array[String] = ["legal", "worthy", "deserved", "truth", "seams"]
+## Words that would name hidden fields; none may appear before dusk as a whole word. "liar" and
+## "worthy" are not among them, because the desk says them: the mentor asks "Where does a liar
+## go?", and day 1's dawn card says "Send a worthy soul to Hel" (D53). The worthy realm itself
+## would read "worthy realm" or "worthy destination".
+const HIDDEN_WORDS: Array[String] = [
+	"legal", "worthy realm", "worthy destination", "deserved", "truth", "seams"
+]
 
 var _checked: int = 0
 var _leaks: Array[String] = []
@@ -288,6 +292,28 @@ func test_play_again_at_the_ending_needs_no_confirm() -> void:
 	harness.act("skip")
 	harness.act("restart")
 	assert_string_contains(harness.describe(), "== Day 1, dawn ==")
+
+
+## The review's case: Esc opens the pause on the desk's ending card, so the harness pauses there
+## too (D13, D31), and Resume returns to the ending.
+func test_pause_opens_at_the_ending_as_on_the_desk() -> void:
+	var harness := Harness.new(Fixture.desk())
+	harness.act("jump 3 4")
+	harness.act("stamp hel")
+	harness.act("skip")
+	var rules: SliceRules = harness.desk.slice_rules()
+	var ending: String = PhaseFlow.ending_text(harness.desk.ending(), rules)
+	assert_eq(harness.describe(), ending, "the ending shows")
+	assert_string_contains(harness.actions(), "pause")
+	assert_eq(harness.act("pause"), rules.text.pause_title)
+	assert_true(harness.last_ok, "the pause opens at the ending")
+	assert_eq(harness.describe(), "== Paused ==\n  Resume\n  Restart the run\n  Quit")
+	harness.act("resume")
+	assert_eq(harness.describe(), ending, "Resume returns to the ending")
+	harness.act("pause")
+	harness.act("restart")
+	harness.act("yes")
+	assert_string_contains(harness.describe(), "== Day 1, dawn ==", "Restart from the pause")
 
 
 ## The review's case: day 3's last stamp shows day 3's dusk, as the desk does (D13), and only

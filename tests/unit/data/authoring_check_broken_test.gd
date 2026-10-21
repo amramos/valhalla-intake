@@ -190,3 +190,10 @@ func test_a_witness_heading_too_wide_for_its_panel_fails() -> void:
 	assert_string_contains(
 		problems, "the witness heading 'WITNESS Bjornolfr Thorgrimsson Longbeard'"
 	)
+
+
+func test_a_dawn_card_too_long_for_the_screen_fails() -> void:
+	var day: DayRules = _slice.days[0].to_core()
+	for _line: int in 30:
+		day.dawn_lines.append("One more line on the dawn card.")
+	assert_string_contains("\n".join(_checker.check_dawn_card(day)), "the dawn card of day 1")

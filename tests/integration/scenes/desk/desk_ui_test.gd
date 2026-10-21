@@ -75,15 +75,32 @@ func test_the_extra_answer_note_shows_once_todays_answers_are_spent() -> void:
 	assert_eq(_system.hud.extra_note(), "extra answer:\n2 feathers", "D29, D30")
 	var before: int = _desk.commands().feathers()
 	_knot(2).press()
+	var text: DeskText = _desk.commands().slice_rules().text
+	_system._on_ask_huginn_hovered()
+	assert_eq(_system.hover_label.shown_text(), text.huginn_extra_hover, "A4: an unanswered one")
 	_system.ask_huginn.pressed.emit()
 	assert_ne(_desk.commands().thread_answer(2), "", "the third answer is bought and given")
 	assert_eq(_desk.commands().feathers(), before - 2)
-	var text: DeskText = _desk.commands().slice_rules().text
 	var bought: String = text.huginn_bought_format % _desk.commands().thread_answer(2)
 	_system.caption_strip._process(_system.caption_strip.hold_seconds)
 	assert_eq(_system.caption_strip.shown_text(), bought, "A4: the bought answer says its price")
+
+
+## The review's case: re-asking about an answered thread is free, so its hover names no price.
+func test_the_extra_answer_hover_is_silent_on_an_already_answered_thread() -> void:
+	_open(Fixture.commands())
+	_pin("C1", "W1")
+	_pin("C3", "W3")
+	for thread: int in [0, 1]:
+		_knot(thread).press()
+		_system.ask_huginn.pressed.emit()
+	assert_eq(_desk.commands().huginn_left(), 0, "today's answers are spent")
+	assert_eq(_system.huginn_thread, 1, "the answered thread 1 is still selected")
+	var before: int = _desk.commands().feathers()
 	_system._on_ask_huginn_hovered()
-	assert_eq(_system.hover_label.shown_text(), text.huginn_extra_hover, "A4")
+	assert_eq(_system.hover_label.shown_text(), "", "no price on a thread already answered")
+	_system.ask_huginn.pressed.emit()
+	assert_eq(_desk.commands().feathers(), before, "and asking again costs nothing")
 
 
 func test_ask_huginn_is_greyed_until_a_grey_thread_is_selected() -> void:
