@@ -5,6 +5,7 @@ the appendix are the owner's to confirm.
 
 **Version:** 0.1 · **Last full revision:** 2026-10-21
 **Amendments:** 2026-10-21 — **core loop chosen by prototype: pins are validated instantly, as threads; a pin with no seam costs extra time (§3.3, Appendix A)**
+2026-10-21 — **vertical-slice planning: the desk becomes layout A3, doors in the gate band; the clock runs in real time plus action costs; claims run 3–4 lines; decree wording made consistent (§3.1, §3.7, §5; `docs/plans/vertical-slice-ledger.md` D4, D7, D10, D21, D32)**
 
 This is the **single source of truth for design and scope**. Where it conflicts with an older ADR,
 this document wins and the ADR gets a superseded note. Where it conflicts with the code, the code
@@ -60,12 +61,17 @@ Two tests make this rule checkable, and any mechanic or case that fails them is 
 ## 3. Mechanics **[DESIGNED]**
 
 ### 3.1 The desk
-One screen, no page-flipping:
-- **Left:** the body, shown front and back side by side like a coroner's chart.
-- **Centre:** the claim (3–5 short lines in the soul's own voice) and the witness (2–3 lines).
-- **Right:** every active decree in a compact list, and the realm doors.
-- **Top:** Huginn on his perch.
-- **Corner:** a small tray for the god ledger.
+One screen, no page-flipping, at 480×270. This is layout A3; see
+`docs/plans/vertical-slice-sketches/A3-populated-x3.png`.
+- **Gate band** (top): the realm doors with their glyphs; Huginn on his perch; the waiting soul with
+  a name plate. The HUD sits in the top-right corner: clock, feathers, Huginn's answers, and the
+  ledger tray.
+- **Left of the desk:** the body, shown front and back side by side like a coroner's chart; the
+  mentor's portrait below it.
+- **Centre:** the claim (3–4 short lines in the soul's own voice) and the witness (2–3 lines).
+- **Right:** every active decree, word for word.
+- **Bottom:** a caption strip for thread captions, Huginn's answers, citations and the mentor's
+  comments.
 
 Every item that can be part of a contradiction is visible at once. Every body fact has a
 plain-language label on hover. Mood (fog, torchlight) never covers the body.
@@ -136,8 +142,8 @@ Rules that keep it fair (from the prototype, Appendix A):
   Two decrees that contradict each other always mean Loki's forgery.
 
 ### 3.7 Pressure: clock, quota, citations
-- **Day clock:** every action spends time, and the dusk horn ends the day. Souls not judged by dusk
-  simply go unjudged.
+- **Day clock:** real time while a soul is at the desk, plus action costs (a pin with no seam, a
+  Huginn answer). The dusk horn ends the day, and souls not judged by dusk simply go unjudged.
 - **Quota:** Odin wants N souls in Valhalla each day. Meeting it earns +2 feathers; each soul short
   costs −1. It is never an instant fail, and it is the main pressure to ignore a seam.
 - **Citation:** a stamp that breaks the Law where a contradiction was visible costs −2 feathers. A
@@ -212,9 +218,11 @@ The thresholds are tuned by playtest.
 **Day spine** (each day changes exactly one rule or one tension):
 
 1. Valhalla and Hel; body + claim; the mentor hand-holds the first 3 souls. The decrees in force:
-   "Valhalla takes only those slain by a weapon in battle", "Whoever lies to the Gate goes to Hel,
-   whatever else the Law says" and "A warrior dies with a weapon in hand".
-2. Witnesses arrive, and with them grey threads. New decree: "Those who fled the battle go to Hel".
+   "Valhalla takes only those slain by a weapon in battle. Death by sickness, age or accident goes
+   to Hel", "Whoever lies to the Gate goes to Hel, whatever else the Law says" and "Even so, a
+   warrior without a weapon in hand goes to Hel".
+2. Witnesses arrive, and with them grey threads. New decree: "Even so, those who fled the battle go
+   to Hel".
    Eyvind's prayer reaches your shrine.
 3. Fólkvangr opens, Huginn arrives, and Freyja makes her first ask. Dusk ends on **Hel's first
    offer, naming a soul you damned**, which is the demo's last scene.
