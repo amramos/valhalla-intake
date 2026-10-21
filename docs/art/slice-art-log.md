@@ -7,7 +7,9 @@ Generator: local ComfyUI 0.37, Z-Image Turbo (int8), the art direction's prompt 
 Critic: a second model through `codex exec -s read-only`, which saw only the review sheets, the
 target and the art-direction rules. Its briefs and replies are in `critic/`.
 
-Everything is rebuilt by the scripts in `tools/` (in order: `build_base.py`, `heads.py` is imported
+The generation scripts and the critic's briefs are **not in this repository**: they live in the art
+working folder on the machine that made the set (`comfyui-work/valhalla-intake/wp2/`), so only that
+machine can rebuild the set. Everything is rebuilt by the scripts in that folder's `tools/` (in order: `build_base.py`, `heads.py` is imported
 by `layers.py`, `build_scene.py`, `finish_props.py`, `nameplates.py`, `layers.py`, `composite.py`,
 `review.py`, `lint.sh`). The scripts in `tools/applied/` are the round-2 and round-3 hand fixes,
 already applied to `heads.py`, `layers.py`, `glyphs.py` and `build_scene.py`. Do not run them again.

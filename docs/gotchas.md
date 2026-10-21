@@ -52,6 +52,20 @@ files; a comma list selects nothing useful. Run one file per invocation and read
 
 **A wide tolerance swallows the bug it points at.** Assert exact equality where a value is exact.
 
+## Scripts and nodes
+
+**`_ready()` overwrites what a caller set before `add_child()`.** A component that sets a default in
+`_ready()` (e.g. `mouse_filter = STOP`) silently clobbers a value its creator set before adding it,
+such as a decorative copy set to `IGNORE`. Set defaults in `_init()` or as the property default.
+
+**A lambda that captures a node logs "Lambda capture ... was freed" once the node is freed.** An
+`is_instance_valid()` check inside the lambda is too late. Capture a `WeakRef` instead (it bites in
+GUT `wait_until` callables).
+
+**The text harness must share the desk's flow, not only its words.** The harness once re-implemented
+the phase flow and skipped day 3's dusk; blind testers then reported a gap the game didn't have. The
+harness drives `PhaseFlow` and `ScreenText` itself (D13). Reuse them for any new screen.
+
 ## Assets and UIDs
 
 **Moving assets invalidates every `uid=` that referenced them.** Strip the stale `uid=` and let Godot
