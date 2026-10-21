@@ -21,8 +21,6 @@ var promise_soul: String = ""
 var promise_state: StringName = &"none"
 ## The ledger's line for that promise (A6); "" when none was offered.
 var promise_line: String = ""
-## The last day's dusk, which the ending replaces (D15): its quota and feather changes (D53).
-var last_dusk: DuskReport = null
 var feathers: int = 0
 var rank: int = 0
 var rank_name: String = ""

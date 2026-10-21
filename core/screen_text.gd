@@ -58,26 +58,21 @@ static func ending_lines(report: EndingReport, rules: SliceRules) -> Array[Strin
 		lines.append(row(entry, text))
 	if report.promise_line != "":
 		lines.append(report.promise_line)
-	if report.last_dusk != null:
-		lines.append_array(_quota_lines(report.last_dusk, text))
 	lines.append(text.standing_format % [report.feathers, report.rank_name])
 	return lines
 
 
 ## ending_lines grouped for a card with blank lines between: the outcome, the rows, the ledger
-## (when Hel made an offer), the last day's quota and feathers (D53), the standing.
+## (when Hel made an offer), the standing. Day 3's quota and feathers are on its own dusk card,
+## which shows before the ending.
 static func ending_sections(report: EndingReport, rules: SliceRules) -> Array[String]:
 	var lines: Array[String] = ending_lines(report, rules)
 	var rows_end: int = 2 + report.entries.size()
 	var sections: Array[String] = [
 		"\n".join(lines.slice(0, 2)), "\n".join(lines.slice(2, rows_end))
 	]
-	var next: int = rows_end
 	if report.promise_line != "":
-		sections.append(lines[next])
-		next += 1
-	if lines.size() - 1 > next:
-		sections.append("\n".join(lines.slice(next, lines.size() - 1)))
+		sections.append(lines[rows_end])
 	sections.append(lines[-1])
 	return sections
 

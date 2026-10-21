@@ -155,9 +155,8 @@ func _cmd_restart(_words: PackedStringArray) -> String:
 	return _text().restart_confirm
 
 
+## The pause opens on every screen of the run, the ending's included, as Esc does on the desk.
 func _cmd_pause(_words: PackedStringArray) -> String:
-	if _at_ending():
-		return ""
 	_pause()
 	return _text().pause_title
 

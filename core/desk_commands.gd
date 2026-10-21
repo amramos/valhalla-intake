@@ -333,8 +333,6 @@ func ending() -> EndingReport:
 	report.promise_soul = _state.promise_soul
 	report.promise_state = _state.promise
 	report.promise_line = _state.ledger_line()
-	if _state.phase == RunState.ENDING:
-		report.last_dusk = _state.dusk
 	return report
 
 

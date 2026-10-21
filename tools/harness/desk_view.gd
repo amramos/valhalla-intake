@@ -82,10 +82,11 @@ func actions() -> String:
 				lines.append_array(_desk_actions())
 		&"dusk", &"ending":
 			var card: PhaseFlow.Card = phases.card(desk)
+			# The ending's one button is "Play again"; the pause still opens there (D31).
 			if phases.showing_ending():
 				lines.append("  restart               %s" % card.next_label)
-				return "\n".join(lines)
-			lines.append("  next                  %s" % card.next_label)
+			else:
+				lines.append("  next                  %s" % card.next_label)
 			if card.skip_label != "":
 				lines.append("  skip                  %s" % card.skip_label)
 	lines.append("  pause                 %s" % text().pause_title)

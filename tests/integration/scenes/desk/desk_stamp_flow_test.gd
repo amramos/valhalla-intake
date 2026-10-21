@@ -2,7 +2,8 @@ extends GutTest
 ## The stamp's aftermath, with real clicks pushed through the desk's own SubViewport and real time
 ## for the walk: a second walk after the first has ended, the citation before the mentor's comment
 ## (D33), a new run that forgets the last one's comment, the mentor's Next held under a pending
-## stamp (D9), and the walking soul letting clicks through to the doors.
+## stamp (D9), the walking soul letting clicks through to the doors, her portrait never replaying
+## over the horn, and her comment on a held stamp carried to the next soul, never behind the horn.
 
 const DESK_SCENE := preload("res://scenes/desk/desk.tscn")
 const Fixture := preload("res://tests/integration/scenes/desk/desk_fixture.gd")
@@ -86,14 +87,94 @@ func test_the_walking_soul_lets_a_click_through_to_the_door_under_it() -> void:
 	var walker: DragSource = walkers[0]
 	assert_eq(walker.mouse_filter, Control.MOUSE_FILTER_IGNORE, "the walker is decoration")
 	var hel: Door = _door(&"hel")
+	# The walk frees its figure when it ends: a walk that ends early fails here, never errors. The
+	# wait holds a weak reference, since a lambda's captured node that is freed is itself an error.
+	var walker_ref: WeakRef = weakref(walker)
 	var over_door: Callable = func() -> bool:
-		return walker.get_global_rect().intersection(hel.get_global_rect()).get_area() >= 16.0
+		var walking: DragSource = walker_ref.get_ref() as DragSource
+		if not is_instance_valid(walking):
+			return false
+		return walking.get_global_rect().intersection(hel.get_global_rect()).get_area() >= 16.0
 	await wait_until(over_door, StampFlow.HOLD_SECONDS + StampFlow.WALK_SECONDS)
+	if not is_instance_valid(walker_ref.get_ref()):
+		fail_test("the walk ended before the walker reached Hel's door")
+		return
 	var overlap: Rect2 = walker.get_global_rect().intersection(hel.get_global_rect())
 	assert_true(overlap.has_area(), "the walker is over Hel's door")
 	watch_signals(hel)
 	_click_at(overlap.get_center())
 	assert_signal_emitted(hel, "door_clicked", "the click under the walker reaches the door")
+
+
+## The review's case: a stamp drew her comment, then the clock ran out; a click on her portrait
+## must not replay the old comment over the horn's announcement.
+func test_a_click_on_the_mentor_after_the_horn_keeps_the_horns_caption() -> void:
+	_open(Fixture.commands())
+	_pin("B1", "W2")
+	_stamp(&"valhalla")
+	assert_ne(_system.stamp_flow.mentor_line(), "", "the illegal stamp drew her comment")
+	_click(_system.stamp_flow.next_soul_button)
+	_desk.commands().advance_time(Fixture.CLOCK_SECONDS)
+	assert_ne(_desk.commands().phase(), RunState.DESK, "the clock ran out")
+	var strip: CaptionStrip = _system.caption_strip
+	assert_eq(strip.shown_text(), DeskSystem.HORN_TEXT, "the horn's announcement shows")
+	_click(_system.mentor_portrait)
+	assert_eq(strip.shown_text(), DeskSystem.HORN_TEXT, "a click on her never covers the horn")
+
+
+## The review's case: her comment on a held stamp waits behind the citation's hold; "Next soul"
+## clicked inside that hold carries it to the next soul instead of dropping it.
+func test_her_comment_on_a_held_stamp_follows_a_next_soul_clicked_inside_the_hold() -> void:
+	_open(Fixture.commands())
+	_pin("B1", "W2")
+	var strip: CaptionStrip = _system.caption_strip
+	strip.clear()
+	_stamp(&"valhalla")
+	var stamp: StampResult = _desk.commands().pending_stamp()
+	assert_eq(strip.shown_text(), stamp.citation_text, "the citation holds the strip")
+	_click(_system.stamp_flow.next_soul_button)
+	assert_eq(_soul(), "Second", "the next soul is seated inside the hold")
+	assert_eq(strip.shown_text(), stamp.mentor_line, "her comment arrives with the next soul")
+
+
+func test_her_comment_follows_the_next_soul_after_the_feather_retook_the_strip() -> void:
+	_open(Fixture.commands())
+	_pin("B1", "W2")
+	_stamp(&"valhalla")
+	var stamp: StampResult = _desk.commands().pending_stamp()
+	_click(_system.stamp_flow.feather)
+	assert_eq(_system.caption_strip.shown_text(), stamp.citation_text, "the feather re-shows it")
+	_click(_system.stamp_flow.next_soul_button)
+	assert_eq(_system.caption_strip.shown_text(), stamp.mentor_line, "her comment is not lost")
+
+
+func test_her_comment_once_shown_is_not_repeated_on_the_next_soul() -> void:
+	_open(Fixture.commands())
+	_pin("B1", "W2")
+	var strip: CaptionStrip = _system.caption_strip
+	strip.hold_seconds = 0.2
+	strip.clear()
+	_stamp(&"valhalla")
+	var stamp: StampResult = _desk.commands().pending_stamp()
+	await wait_seconds(strip.hold_seconds + 0.2)
+	assert_eq(strip.shown_text(), stamp.mentor_line, "her comment showed during the hold")
+	_click(_system.stamp_flow.next_soul_button)
+	assert_eq(strip.shown_text(), "", "the next soul starts on a clear strip")
+
+
+func test_a_carried_comment_never_queues_behind_the_horn() -> void:
+	_open(Fixture.commands())
+	_pin("B1", "W2")
+	# The held stamp runs the clock out; the horn waits for Next soul (D36, D48).
+	_desk.commands().set_stamp_seconds(Fixture.CLOCK_SECONDS)
+	_stamp(&"valhalla")
+	assert_true(_desk.commands().awaiting_next())
+	_click(_system.stamp_flow.next_soul_button)
+	var strip: CaptionStrip = _system.caption_strip
+	assert_eq(strip.shown_text(), DeskSystem.HORN_TEXT, "the horn sounds on Next soul")
+	strip._process(strip.hold_seconds + 1.0)
+	strip._process(strip.hold_seconds + 1.0)
+	assert_eq(strip.shown_text(), DeskSystem.HORN_TEXT, "past the hold, the horn still stands")
 
 
 func _open(commands: DeskCommands) -> void:

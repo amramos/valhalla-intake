@@ -114,8 +114,8 @@ func skip(commands: DeskCommands) -> void:
 		_finish(commands)
 
 
-## The ending with one blank line between the sections ScreenText composes (D53): the outcome,
-## the rows, the ledger's line, the last day's feathers, the standing.
+## The ending with one blank line between the sections ScreenText composes: the outcome, the
+## rows, the ledger's line (when Hel made an offer), the standing.
 static func ending_text(report: EndingReport, rules: SliceRules) -> String:
 	return "\n\n".join(ScreenText.ending_sections(report, rules))
 

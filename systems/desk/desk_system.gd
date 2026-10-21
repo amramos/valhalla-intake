@@ -272,7 +272,10 @@ func _show_mentor_step() -> void:
 
 
 func _on_mentor_clicked() -> void:
-	# A deliberate click on her shows her last comment again (D33).
+	# A deliberate click on her shows her last comment again (D33), but only at the desk: never
+	# over the horn's announcement or under a card.
+	if commands.phase() != RunState.DESK:
+		return
 	if stamp_flow.mentor_line() != "":
 		caption_strip.take_over(stamp_flow.mentor_line())
 

@@ -294,6 +294,28 @@ func test_play_again_at_the_ending_needs_no_confirm() -> void:
 	assert_string_contains(harness.describe(), "== Day 1, dawn ==")
 
 
+## The review's case: Esc opens the pause on the desk's ending card, so the harness pauses there
+## too (D13, D31), and Resume returns to the ending.
+func test_pause_opens_at_the_ending_as_on_the_desk() -> void:
+	var harness := Harness.new(Fixture.desk())
+	harness.act("jump 3 4")
+	harness.act("stamp hel")
+	harness.act("skip")
+	var rules: SliceRules = harness.desk.slice_rules()
+	var ending: String = PhaseFlow.ending_text(harness.desk.ending(), rules)
+	assert_eq(harness.describe(), ending, "the ending shows")
+	assert_string_contains(harness.actions(), "pause")
+	assert_eq(harness.act("pause"), rules.text.pause_title)
+	assert_true(harness.last_ok, "the pause opens at the ending")
+	assert_eq(harness.describe(), "== Paused ==\n  Resume\n  Restart the run\n  Quit")
+	harness.act("resume")
+	assert_eq(harness.describe(), ending, "Resume returns to the ending")
+	harness.act("pause")
+	harness.act("restart")
+	harness.act("yes")
+	assert_string_contains(harness.describe(), "== Day 1, dawn ==", "Restart from the pause")
+
+
 ## The review's case: day 3's last stamp shows day 3's dusk, as the desk does (D13), and only
 ## then the ending.
 func test_day_threes_last_stamp_shows_its_dusk_and_then_the_ending() -> void:

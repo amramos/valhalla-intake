@@ -111,19 +111,18 @@ func test_a_returned_soul_is_marked_on_its_ending_entry() -> void:
 	assert_eq(returned, ["Hakon day 3"] as Array[String])
 
 
-func test_the_ending_keeps_day_threes_quota_and_feather_changes() -> void:
-	# The WP6 playtest's case: the ending replaces day 3's dusk, so its feathers went unexplained.
+## Day 3's quota and feathers are told on its own dusk card, which shows before the ending; the
+## ending does not repeat them (D53's ending section, withdrawn once the harness showed that card).
+func test_day_threes_quota_and_feathers_are_on_its_dusk_card_not_the_ending() -> void:
 	var desk: DeskCommands = Fixture.desk()
 	desk.debug_jump(3, 4)
 	desk.stamp(Realm.HEL)
+	var quota: String = "Odin wanted 2. Valhalla took 1. -1 feathers."
+	var dusk: Array[String] = ScreenText.dusk_cards(desk.dusk_report(), _rules)
+	assert_true(dusk[1].begins_with(quota + "\n"), "day 3's dusk card names the quota")
 	var lines: Array[String] = ScreenText.ending_lines(desk.ending(), _rules)
-	var quota: int = lines.find("Odin wanted 2. Valhalla took 1. -1 feathers.")
-	assert_gt(quota, 0, "the quota result is on the ending")
-	assert_eq(
-		lines[quota + 1], "Feathers: %d at dawn, %d now." % [desk.feathers() + 1, desk.feathers()]
-	)
-	assert_eq(lines[quota + 2], "Quota: -1.")
-	assert_eq(quota + 3, lines.size() - 1, "then the standing")
+	assert_false(lines.has(quota), "the ending leaves it to the dusk card")
+	assert_false(lines.has("Quota: -1."), "and the day's feather changes")
 
 
 func test_the_ending_sections_group_its_lines() -> void:
@@ -132,11 +131,11 @@ func test_the_ending_sections_group_its_lines() -> void:
 	desk.stamp(Realm.HEL)
 	var report: EndingReport = desk.ending()
 	var sections: Array[String] = ScreenText.ending_sections(report, _rules)
-	assert_eq(sections.size(), 5, "outcome, rows, ledger, the last day's feathers, standing")
+	assert_eq(sections.size(), 4, "outcome, rows, ledger, standing")
 	assert_true(sections[0].begins_with("Hel's tide\n"))
 	assert_eq(sections[1].split("\n").size(), report.entries.size())
 	assert_eq(sections[2], "Broken. Ragna went to Fólkvangr.")
-	assert_true(sections[3].begins_with("Odin wanted 2. Valhalla took 1. -1 feathers.\n"))
+	assert_eq(sections[3], "Feathers: %d. Rank: %s." % [desk.feathers(), desk.rank_name()])
 	assert_eq(
 		"\n".join(sections).split("\n"), PackedStringArray(ScreenText.ending_lines(report, _rules))
 	)

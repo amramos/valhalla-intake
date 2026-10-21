@@ -34,6 +34,8 @@ var _walk: Tween = null
 ## The mentor's comment on the last stamp: shown over the next soul, and again on a click on her.
 var _mentor_line: String = ""
 var _carry_mentor: bool = false
+## Her comment on a held stamp waits behind the citation's hold; true until the strip shows it.
+var _mentor_unseen: bool = false
 
 
 func bind(p_commands: DeskCommands) -> void:
@@ -46,7 +48,8 @@ func bind(p_commands: DeskCommands) -> void:
 	stamp_prompt.confirmed.connect(_commit)
 	stamp_prompt.cancelled.connect(_clear_door_selection)
 	feather.clicked.connect(_on_feather_clicked)
-	next_soul_button.pressed.connect(func() -> void: commands.next_soul())
+	next_soul_button.pressed.connect(_on_next_soul_pressed)
+	caption_strip.text_shown.connect(_on_caption_shown)
 
 
 ## Asks to stamp the soul at the desk to `realm` (a door click or a drag over the door).
@@ -70,21 +73,24 @@ func refresh() -> void:
 
 
 ## A new soul (or an empty desk): the last soul's citation and prompt are gone; the mentor's
-## comment on the stamp that seated it goes to the (freshly cleared) caption strip.
+## comment on the stamp that seated it goes to the (freshly cleared) caption strip, unless the
+## horn's announcement already holds it: her comment never queues behind the horn.
 func reset() -> void:
 	stamp_prompt.withdraw()
 	_clear_door_selection()
 	_citation = ""
 	_cited_pair.clear()
-	if _carry_mentor:
+	_mentor_unseen = false
+	if _carry_mentor and caption_strip.shown_text() == "":
 		caption_strip.post(_mentor_line, CaptionStrip.Priority.MENTOR)
-		_carry_mentor = false
+	_carry_mentor = false
 
 
 ## A new run ("Play again"): nothing the mentor said in the last run is shown or replayed.
 func forget_run() -> void:
 	_mentor_line = ""
 	_carry_mentor = false
+	_mentor_unseen = false
 
 
 func mentor_line() -> String:
@@ -161,7 +167,21 @@ func _on_stamped(result: StampResult) -> void:
 		# A held soul shows her comment after the citation; otherwise the next soul's arrival does.
 		_carry_mentor = not held
 		if held:
+			_mentor_unseen = true
 			caption_strip.post(_mentor_line, CaptionStrip.Priority.MENTOR)
+
+
+## "Next soul" inside the citation's hold would clear her waiting comment with the strip; it goes
+## to the next soul instead, as an unheld stamp's does.
+func _on_next_soul_pressed() -> void:
+	if _mentor_unseen:
+		_carry_mentor = true
+	commands.next_soul()
+
+
+func _on_caption_shown(text: String) -> void:
+	if text == _mentor_line:
+		_mentor_unseen = false
 
 
 ## A deliberate click on the feather shows its citation again and lights the pair (D33).
