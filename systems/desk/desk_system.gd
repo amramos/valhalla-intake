@@ -70,9 +70,9 @@ func bind(p_commands: DeskCommands) -> void:
 	soul.plate_hover_started.connect(_show_hover)
 	soul.plate_hover_ended.connect(hover_label.hide_label)
 	mentor_portrait.clicked.connect(_on_mentor_clicked)
-	mentor_bubble.acknowledged.connect(func() -> void: commands.mentor_ack())
+	mentor_bubble.acknowledged.connect(_on_mentor_acknowledged)
 	ask_huginn.pressed.connect(_on_ask_huginn)
-	phase_card.advanced.connect(func() -> void: PhaseFlow.advance(commands))
+	phase_card.advanced.connect(_on_phase_advanced)
 	refresh()
 
 
@@ -237,6 +237,20 @@ func _on_mentor_clicked() -> void:
 	# A deliberate click on her shows her last comment again (D33).
 	if stamp_flow.mentor_line() != "":
 		caption_strip.take_over(stamp_flow.mentor_line())
+
+
+## The bubble's "Next" finishes a READ step, but never under a pending stamp (D9, D48).
+func _on_mentor_acknowledged() -> void:
+	if _input_held():
+		return
+	commands.mentor_ack()
+
+
+func _on_phase_advanced() -> void:
+	if commands.phase() == RunState.ENDING:
+		# "Play again" starts a new run: the last run's comments stay with it.
+		stamp_flow.forget_run()
+	PhaseFlow.advance(commands)
 
 
 func _on_horn() -> void:
