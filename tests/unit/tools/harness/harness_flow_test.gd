@@ -52,14 +52,23 @@ func _check(harness: Harness, truths: Dictionary) -> void:
 			_leaks.append("%s: unthreaded caption %s-%s" % [soul.soul_name, seam.a, seam.b])
 
 
-## Plays the run through harness commands. choose(soul) picks the door; with `thread`, every seam
-## is pinned first and a grey one asked of Huginn. Pauses and resumes once a day, to check the menu.
-func _play(harness: Harness, choose: Callable, thread: bool, truths: Dictionary = {}) -> void:
+## Plays the run through harness commands, day 3's dusk included, to the ending. choose(soul)
+## picks the door; with `thread`, every seam is pinned first and a grey one asked of Huginn. Pauses
+## and resumes once a day, to check the menu. Stops early when stop(harness) is true.
+func _play(
+	harness: Harness,
+	choose: Callable,
+	thread: bool,
+	truths: Dictionary = {},
+	stop: Callable = Callable()
+) -> void:
 	var desk: DeskCommands = harness.desk
 	var paused_on: int = 0
 	for _step: int in range(300):
 		if not truths.is_empty():
 			_check(harness, truths)
+		if stop.is_valid() and stop.call(harness):
+			return
 		match desk.phase():
 			&"dawn":
 				harness.act("begin")
@@ -82,8 +91,47 @@ func _play(harness: Harness, choose: Callable, thread: bool, truths: Dictionary 
 						if seam.kind == Seam.Kind.GREY and desk.day_rules().huginn_answers > 0:
 							harness.act("huginn %d" % desk.threads().size())
 				harness.act("stamp %s" % choose.call(soul))
+			&"ending":
+				# Day 3's dusk cards come first; "next" is refused once the ending shows.
+				harness.act("next")
+				if not harness.last_ok:
+					return
 			_:
 				return
+
+
+func _at_day_threes_end(harness: Harness) -> bool:
+	return harness.desk.phase() == &"ending"
+
+
+func _at_day_threes_desk(harness: Harness) -> bool:
+	return harness.desk.phase() == &"desk" and harness.desk.day_number() == 3
+
+
+## Day 3's dusk as the desk shows it (PhaseFlow, ScreenText): each card with Next, Skip all until
+## the last, then the ending with Play again and nothing else.
+func _assert_day_threes_dusk_then_the_ending(harness: Harness) -> void:
+	var rules: SliceRules = harness.desk.slice_rules()
+	var cards: Array[String] = ScreenText.dusk_cards(harness.desk.dusk_report(), rules)
+	assert_gt(cards.size(), 1, "day 3's dusk has several cards")
+	for index: int in cards.size():
+		var shown: String = harness.describe()
+		var title: String = rules.text.dusk_title_format % 3
+		var heading: String = "== %s Card %d of %d ==\n" % [title, index + 1, cards.size()]
+		assert_true(shown.begins_with(heading), shown)
+		assert_string_contains(shown, cards[index])
+		var last: bool = index == cards.size() - 1
+		assert_string_contains(
+			harness.actions(), "next                  %s" % rules.text.next_label
+		)
+		assert_eq(harness.actions().contains(rules.text.skip_all_label), not last, "Skip all")
+		assert_false(harness.actions().contains(rules.text.play_again), "no Play again at dusk")
+		harness.act("next")
+		assert_true(harness.last_ok, "next turns card %d" % (index + 1))
+	assert_eq(harness.describe(), PhaseFlow.ending_text(harness.desk.ending(), rules))
+	assert_string_contains(harness.actions(), rules.text.play_again)
+	harness.act("next")
+	assert_false(harness.last_ok, "the ending has only Play again")
 
 
 func _legal(soul: Encounter) -> StringName:
@@ -237,5 +285,38 @@ func test_play_again_at_the_ending_needs_no_confirm() -> void:
 	harness.act("jump 3 4")
 	harness.act("stamp hel")
 	assert_eq(harness.desk.phase(), &"ending")
+	harness.act("skip")
 	harness.act("restart")
 	assert_string_contains(harness.describe(), "== Day 1, dawn ==")
+
+
+## The review's case: day 3's last stamp shows day 3's dusk, as the desk does (D13), and only
+## then the ending.
+func test_day_threes_last_stamp_shows_its_dusk_and_then_the_ending() -> void:
+	var harness := Harness.new(SliceLoader.load_slice(), true)
+	harness.act("start")
+	_play(harness, _legal, true, {}, _at_day_threes_end)
+	assert_eq(harness.desk.phase(), &"ending")
+	assert_gt(harness.desk.time_left(), 0.0, "the last stamp ended the day, not the horn")
+	_assert_day_threes_dusk_then_the_ending(harness)
+	assert_true(harness.describe().begins_with("Hel's tide\n"), harness.describe())
+
+
+func test_day_threes_horn_shows_its_dusk_and_then_the_ending() -> void:
+	var harness := Harness.new(SliceLoader.load_slice())
+	_play(harness, _worthy, false, {}, _at_day_threes_desk)
+	assert_string_contains(harness.act("wait 400"), "The horn sounds.")
+	assert_eq(harness.desk.phase(), &"ending")
+	_assert_day_threes_dusk_then_the_ending(harness)
+
+
+func test_skip_all_on_day_threes_dusk_shows_the_ending() -> void:
+	var harness := Harness.new(Fixture.desk())
+	harness.act("jump 3 4")
+	harness.act("stamp hel")
+	assert_string_contains(harness.describe(), "Card 1 of")
+	harness.act("skip")
+	assert_true(harness.last_ok)
+	var rules: SliceRules = harness.desk.slice_rules()
+	assert_eq(harness.describe(), PhaseFlow.ending_text(harness.desk.ending(), rules))
+	assert_string_contains(harness.actions(), rules.text.play_again)

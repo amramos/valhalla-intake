@@ -1,7 +1,8 @@
 extends RefCounted
 ## What the desk shows, as text, screen by screen (D13): the title, the dawn card, the desk, the
 ## dusk cards, the ending and the pause menu. Flow text comes from ScreenText and DeskText, the
-## same text the screens draw. It reads only DeskCommands' getters, never a legal or worthy
+## same text the screens draw, and the cards between souls follow the desk's own PhaseFlow: day
+## 3's dusk, then the ending. It reads only DeskCommands' getters, never a legal or worthy
 ## destination, the seam list or the truth, except what the dusk recap and the ending reveal by
 ## design (D15, D23).
 
@@ -19,8 +20,8 @@ var desk: DeskCommands
 var caption: String = ""
 ## A screen over the run: TITLE, PAUSED, a confirm, CLOSED; &"" shows the run itself.
 var screen: StringName = &""
-## The dusk card showing, 0-based.
-var dusk_card: int = 0
+## The place in the dusk cards and the ending, as on the desk.
+var phases := PhaseFlow.new()
 
 
 func _init(p_desk: DeskCommands) -> void:
@@ -39,9 +40,7 @@ func describe() -> String:
 			return _describe_dawn()
 		&"desk":
 			return _describe_desk()
-		&"dusk":
-			return _describe_dusk()
-	return "\n".join(ScreenText.ending_lines(desk.ending(), desk.slice_rules()))
+	return _describe_cards()
 
 
 ## The title, the pause menu and its confirms, with D31's labels.
@@ -81,14 +80,14 @@ func actions() -> String:
 				lines.append("  next                  call the next soul")
 			else:
 				lines.append_array(_desk_actions())
-		&"dusk":
-			var last: bool = dusk_card >= dusk_cards().size() - 1
-			var label: String = text().next_day_label if last else text().next_label
-			lines.append("  next                  %s" % label)
-			lines.append("  skip                  %s" % text().skip_all_label)
-		&"ending":
-			lines.append("  restart               %s" % text().play_again)
-			return "\n".join(lines)
+		&"dusk", &"ending":
+			var card: PhaseFlow.Card = phases.card(desk)
+			if phases.showing_ending():
+				lines.append("  restart               %s" % card.next_label)
+				return "\n".join(lines)
+			lines.append("  next                  %s" % card.next_label)
+			if card.skip_label != "":
+				lines.append("  skip                  %s" % card.skip_label)
 	lines.append("  pause                 %s" % text().pause_title)
 	return "\n".join(lines)
 
@@ -158,16 +157,15 @@ func _describe_desk() -> String:
 	return "\n".join(lines)
 
 
-func _describe_dusk() -> String:
-	var cards: Array[String] = dusk_cards()
-	var shown: int = clampi(dusk_card, 0, cards.size() - 1)
-	var lines: Array[String] = [
-		(
-			"== %s Card %d of %d =="
-			% [text().dusk_title_format % desk.dusk_report().day, shown + 1, cards.size()]
-		)
-	]
-	lines.append(cards[shown])
+## A dusk card (day 3's too, before the ending), or the ending itself, as PhaseFlow shows them.
+func _describe_cards() -> String:
+	var card: PhaseFlow.Card = phases.card(desk)
+	if phases.showing_ending():
+		return card.body
+	var heading: String = (
+		"== %s Card %d of %d ==" % [card.title, phases.card_index() + 1, phases.card_count()]
+	)
+	var lines: Array[String] = [heading, card.body]
 	lines.append(_tide())
 	lines.append(_ledger())
 	return "\n".join(lines)

@@ -72,8 +72,8 @@ func bind(p_commands: DeskCommands) -> void:
 	mentor_bubble.acknowledged.connect(func() -> void: commands.mentor_ack())
 	ask_huginn.pressed.connect(_on_ask_huginn)
 	_phases.on_restart = restart
-	phase_card.advanced.connect(func() -> void: _phases.advance(phase_card, commands))
-	phase_card.skipped.connect(func() -> void: _phases.skip(phase_card, commands))
+	phase_card.advanced.connect(_on_phase_advanced)
+	phase_card.skipped.connect(_on_phase_skipped)
 	ask_huginn.mouse_entered.connect(_on_ask_huginn_hovered)
 	ask_huginn.mouse_exited.connect(hover_label.hide_label)
 	refresh()
@@ -117,8 +117,18 @@ func restart() -> void:
 	_phases.reset()
 	_announcement = ""
 	_warned = false
-	_shown_encounter = null
 	commands.restart_run()
+	_clear_desk()
+
+
+## Empties the desk outright: the soul, its evidence, the caption strip, the stamp preview and door
+## selection, the half-made pin, the lit pair and Huginn's thread. A restart from a soul at the desk
+## needs it because refresh() redraws a soul only when it changes, and none is seated before or
+## after the restart.
+func _clear_desk() -> void:
+	_shown_encounter = commands.current_encounter()
+	_show_encounter(_shown_encounter)
+	refresh()
 
 
 func _show_encounter(encounter: Encounter) -> void:
@@ -142,10 +152,10 @@ func _show_encounter(encounter: Encounter) -> void:
 	var witness_hover: String = ""
 	var note: String = ""
 	if encounter != null:
-		# D52: the heading names the witness; the role (after the comma) is its hover.
+		# D52: the heading names the witness; the full authored description is its hover.
 		var name: String = encounter.witness_heading_name()
 		witness_title = "WITNESS " + name if name != "" else ""
-		witness_hover = encounter.witness_role()
+		witness_hover = encounter.witness_name
 		note = encounter.witness_note
 	witness_panel.show_lines(witness, witness_title, note, witness_hover)
 	witness_panel.visible = not witness.is_empty() or note != ""
@@ -265,6 +275,17 @@ func _on_horn() -> void:
 	# The horn empties the desk; the refresh that follows shows this after clearing the strip.
 	_announcement = HORN_TEXT
 	caption_strip.take_over(HORN_TEXT)
+
+
+## A dusk card turned without a desk change (no refresh follows), so the card is drawn here.
+func _on_phase_advanced() -> void:
+	_phases.advance(commands)
+	_phases.show(phase_card, commands)
+
+
+func _on_phase_skipped() -> void:
+	_phases.skip(commands)
+	_phases.show(phase_card, commands)
 
 
 func _on_clock_warning() -> void:
