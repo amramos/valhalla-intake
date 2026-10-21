@@ -1,6 +1,6 @@
 extends GutTest
 ## D52: the witness panel's heading shows only the witness's name, the part before the first
-## comma; the rest is its hover label.
+## comma; the rest is the role, and the whole description is its hover label.
 
 const Fixture := preload("res://tests/unit/core/slice_fixture.gd")
 

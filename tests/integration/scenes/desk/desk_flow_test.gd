@@ -162,9 +162,7 @@ func test_the_witness_heading_shows_the_name_and_hovers_the_description() -> voi
 	assert_eq(witness, "Bersi, a crewman", "Freydis's witness")
 	assert_eq(_system.witness_panel.heading_text(), "WITNESS Bersi", "D52: the name only")
 	_system.witness_panel.heading_hover_area().mouse_entered.emit()
-	var role: String = _commands().current_encounter().witness_role()
-	assert_eq(role, "a crewman")
-	assert_eq(_system.hover_label.shown_text(), role, "D52: the role on hover")
+	assert_eq(_system.hover_label.shown_text(), witness, "D52: the full description on hover")
 
 
 func test_the_hud_clock_shows_nothing_stale_after_the_day_ends() -> void:

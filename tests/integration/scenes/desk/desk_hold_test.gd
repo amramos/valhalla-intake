@@ -1,6 +1,7 @@
 extends GutTest
 ## A timed day-3 desk (desk_fixture.gd): the held soul after a citation (D48), the horn, grey
-## knots that never cover a hit area, and threads that never cross any panel of text.
+## knots that never cover a hit area, threads that never cross any panel of text, and a restart
+## that clears the desk (D31).
 
 const DESK_SCENE := preload("res://scenes/desk/desk.tscn")
 const Fixture := preload("res://tests/integration/scenes/desk/desk_fixture.gd")
@@ -92,6 +93,51 @@ func test_threads_never_cross_any_panel_of_text() -> void:
 					panel.has_point(Vector2(pixel) + Vector2(0.5, 0.5)),
 					"thread %d pixel %s lies inside a text panel" % [line.thread_index, pixel]
 				)
+
+
+## The review's case: a restart from a soul at the desk (D31) leaves nothing of that soul under
+## the dawn card, although no soul is at the desk before or after the run restarts. A click drops
+## the lit pair, so the half-made pin is checked on a second restart.
+func test_a_restart_from_a_soul_at_the_desk_clears_the_whole_desk() -> void:
+	_pin("C1", "W1")
+	_knot(0).press()
+	_pin("C1", "W1")
+	_door(&"valhalla").press()
+	assert_eq(_system.huginn_thread, 0, "a grey knot is selected for Huginn")
+	assert_eq(_system._lit, ["C1", "W1"] as Array[String], "the threaded pair is lit")
+	assert_ne(_system.caption_strip.shown_text(), "", "a caption shows")
+	assert_true(_system.stamp_flow.stamp_prompt.visible, "a stamp preview is open")
+	_restart()
+	_assert_empty_dawn()
+	assert_eq(_system._lit, [] as Array[String], "nothing lit")
+	assert_eq(_system.huginn_thread, -1, "no thread for Huginn")
+
+	_system.phase_card.next_button().pressed.emit()
+	_area("C3").press()
+	assert_true(_system.claim_panel.area("C3").selected, "a half-made pin")
+	_restart()
+	_assert_empty_dawn()
+	assert_false(_system.selection.has_selection(), "no half-made pin")
+
+
+func _restart() -> void:
+	_desk.toggle_pause()
+	_desk.pause_overlay().restart_button().pressed.emit()
+	_desk.pause_overlay().yes_button().pressed.emit()
+
+
+func _assert_empty_dawn() -> void:
+	assert_eq(_desk.commands().phase(), RunState.DAWN)
+	assert_true(_system.phase_card.visible, "the dawn card shows")
+	assert_eq(_soul(), "", "no soul at the desk")
+	assert_false(_system.body_chart.has_item("B1"), "no body facts")
+	assert_false(_system.claim_panel.has_item("C1"), "no claim")
+	assert_false(_system.witness_panel.visible, "no witness")
+	assert_eq(_system.caption_strip.shown_text(), "", "no caption")
+	assert_false(_system.stamp_flow.stamp_prompt.visible, "no stamp preview")
+	for door: Door in _system.doors:
+		assert_false(door.selected, "the %s door is not selected" % door.realm)
+	assert_eq(_threads().size(), 0, "no threads")
 
 
 func _soul() -> String:

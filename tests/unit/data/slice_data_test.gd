@@ -169,6 +169,24 @@ func test_desk_text_data_carries_every_desk_text_field() -> void:
 	assert_eq(_slice.desk_text.to_core().standing_format, "Feathers: %d. Rank: %s.")
 
 
+## The generator names every subresource, so a rebuild never renames one in the .tres diff (the
+## review's case: the desk text was saved under an engine-generated "Resource_" id).
+func test_every_generated_subresource_has_a_named_id() -> void:
+	var unnamed: Array[String] = []
+	var subresources: Array[Resource] = [_slice.desk_text]
+	for day: DayData in _slice.days:
+		for data: EncounterData in day.encounters:
+			subresources.append_array(data.body)
+			subresources.append_array(data.seams)
+			subresources.append_array(data.mentor_steps)
+	for resource: Resource in subresources:
+		var id: String = resource.resource_scene_unique_id
+		if id == "" or id.begins_with("Resource_"):
+			unnamed.append("%s %s" % [resource.get_class(), id])
+	assert_eq(unnamed, [] as Array[String])
+	assert_eq(_slice.desk_text.resource_scene_unique_id, "desk_text")
+
+
 func test_the_loader_returns_a_desk_at_day_one_dawn() -> void:
 	var desk: DeskCommands = SliceLoader.load_slice()
 	assert_eq([desk.phase(), desk.day_number(), desk.feathers()], [&"dawn", 1, 10])

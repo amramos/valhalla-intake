@@ -35,10 +35,8 @@ func act(command: String) -> String:
 	var words: PackedStringArray = command.strip_edges().split(" ", false)
 	if words.is_empty() or words[0] == "look":
 		return ""
-	var was_dusk: bool = desk.phase() == &"dusk"
 	var text: String = _run(words)
-	if desk.phase() == &"dusk" and not was_dusk:
-		view.dusk_card = 0
+	view.phases.sync(desk)
 	if _warning:
 		text += "\nThirty seconds left."
 	if _horn:
@@ -110,32 +108,47 @@ func _cmd_stamp(words: PackedStringArray) -> String:
 
 
 ## "next" calls the next soul after a citation (D48); at dusk it turns the card, and after the
-## last card it opens the next dawn.
+## last card it opens the next dawn, or after day 3's dusk the ending (PhaseFlow, as on the desk).
 func _cmd_next(_words: PackedStringArray) -> String:
 	if desk.awaiting_next():
 		desk.next_soul()
 		if desk.phase() == &"desk":
 			return "Next at the desk: %s." % _soul_name()
 		return "The last soul is gone; the day is over."
-	if desk.phase() != &"dusk":
+	if not _at_dusk_cards():
 		return ""
-	if view.dusk_card < view.dusk_cards().size() - 1:
-		view.dusk_card += 1
-		return "%s (card %d)" % [_text().next_label, view.dusk_card + 1]
-	return _cmd_skip([])
+	view.phases.advance(desk)
+	return _after_cards()
 
 
-## "skip" is dusk's "Skip all": straight to the next dawn; nothing with consequences is lost (D15).
+## "skip" is dusk's "Skip all": straight to the next dawn, or the ending after day 3; nothing with
+## consequences is lost (D15).
 func _cmd_skip(_words: PackedStringArray) -> String:
-	if desk.phase() != &"dusk":
+	if not _at_dusk_cards():
 		return ""
-	desk.next_day()
-	return "Dawn of day %d." % desk.day_number()
+	view.phases.skip(desk)
+	return _after_cards()
 
 
-## At the ending "restart" is "Play again"; on the desk it opens the pause menu's confirm (D31).
+## A dusk card shows: the dusk, or day 3's dusk before the ending.
+func _at_dusk_cards() -> bool:
+	view.phases.sync(desk)
+	var ending: bool = desk.phase() == &"ending" and not view.phases.showing_ending()
+	return desk.phase() == &"dusk" or ending
+
+
+func _after_cards() -> String:
+	if desk.phase() == &"dawn":
+		return "Dawn of day %d." % desk.day_number()
+	if view.phases.showing_ending():
+		return "The ending: %s." % ScreenText.ending_lines(desk.ending(), desk.slice_rules())[0]
+	return "%s (card %d)" % [_text().next_label, view.phases.card_index() + 1]
+
+
+## At the ending "restart" is "Play again"; on the desk or at dusk it opens the pause menu's
+## confirm (D31).
 func _cmd_restart(_words: PackedStringArray) -> String:
-	if desk.phase() == &"ending":
+	if _at_ending():
 		return _restart()
 	_pause()
 	view.screen = DeskView.CONFIRM_RESTART
@@ -143,7 +156,7 @@ func _cmd_restart(_words: PackedStringArray) -> String:
 
 
 func _cmd_pause(_words: PackedStringArray) -> String:
-	if desk.phase() == &"ending":
+	if _at_ending():
 		return ""
 	_pause()
 	return _text().pause_title
@@ -174,12 +187,18 @@ func _overlay(command: String) -> String:
 	return moves[key][1]
 
 
+func _at_ending() -> bool:
+	view.phases.sync(desk)
+	return desk.phase() == &"ending" and view.phases.showing_ending()
+
+
 func _pause() -> void:
 	desk.set_paused(true)
 	view.screen = DeskView.PAUSED
 
 
 func _restart() -> String:
+	view.phases.reset()
 	desk.restart_run()
 	view.screen = &""
 	view.caption = ""
@@ -190,6 +209,7 @@ func _restart() -> String:
 func _cmd_jump(words: PackedStringArray) -> String:
 	if words.size() < 3 or not words[1].is_valid_int() or not words[2].is_valid_int():
 		return ""
+	view.phases.reset()
 	desk.debug_jump(words[1].to_int(), words[2].to_int(), words.has("mercy"))
 	view.caption = ""
 	return "(debug) Jumped to day %d, soul %s." % [desk.day_number(), _soul_name()]

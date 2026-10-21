@@ -116,6 +116,44 @@ func test_a_law_thread_on_evidence_that_cant_show_its_condition_fails() -> void:
 	assert_string_contains(_problems(ulf, 0), "(R1)")
 
 
+## R1 reads each decree's condition, not just the evidence group: a law thread moved to an
+## unrelated testimony line fails (the review's case: Ulf's L1 thread on "Sif gets the goat.").
+func _moved_law_thread(id: StringName, day_index: int, from: String, to: String) -> String:
+	var soul: Encounter = _broken(id)
+	for seam: Seam in soul.seams:
+		if seam.kind == Seam.Kind.LAW and seam.a == from:
+			seam.a = to
+	return _problems(soul, day_index)
+
+
+func test_an_l1_thread_on_a_line_that_states_no_battle_death_fails() -> void:
+	assert_string_contains(
+		_moved_law_thread(&"ulf", 0, "C1", "C4"), "law C4-L1: the evidence can't show L1's"
+	)
+
+
+func test_an_l4_thread_on_a_line_that_states_no_flight_fails() -> void:
+	assert_string_contains(
+		_moved_law_thread(&"hakon", 1, "C3", "C1"), "law C1-L4: the evidence can't show L4's"
+	)
+
+
+func test_an_l5_thread_on_a_line_that_states_no_defence_of_home_fails() -> void:
+	assert_string_contains(
+		_moved_law_thread(&"ragna", 2, "C2", "C1"), "law C1-L5: the evidence can't show L5's"
+	)
+
+
+func test_a_red_seam_between_two_body_facts_fails() -> void:
+	var asa: Encounter = _broken(&"asa")
+	asa.liar = true
+	asa.seams[0].caption = "L3 sends her to Hel."
+	asa.seams.append(Seam.make("B1", "B2", Seam.Kind.RED, Seam.Liar.CLAIM))
+	var problems: String = _problems(asa, 0)
+	assert_string_contains(problems, "red B1-B2 is not body against testimony")
+	assert_string_contains(problems, "(R7)", "an invalid red seam doesn't count for R7")
+
+
 func test_a_line_over_132_px_fails() -> void:
 	var asa: Encounter = _broken(&"asa")
 	asa.item("C4").text = "My girl has the farm and the goats."

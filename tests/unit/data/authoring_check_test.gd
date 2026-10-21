@@ -46,12 +46,19 @@ func _roster() -> Array[Encounter]:
 	return souls
 
 
+## The expected width comes from m5x7's glyph advances at 16 px, the size where one font pixel is
+## one screen pixel: 6 px for C 1 S p e a d n b, 5 for space, r and t, 3 for "," i l, 2 for ".".
+## The evidence panel drops the last glyph's trailing blank pixel, hence the -1. Another font or
+## size measures differently and fails (at 15 px: 105; the engine's fallback font: 163).
 func test_lines_are_measured_with_the_desk_theme_font() -> void:
 	assert_true(_checker.font_loaded(), "scenes/desk/desk_theme.tres has its font")
-	assert_eq(
-		_checker.width_of("C1 Speared, in battle."), _checker.width_of("C1 Speared, in battle.")
-	)
-	assert_gt(_checker.width_of("C1 Speared, in battle."), 60)
+	# C 1 _ S p e a r e d , _ i n _ b a t t l e .
+	var advances: Array[int] = [6, 6, 5, 6, 6, 6, 6, 5, 6, 6, 3, 5, 3, 6, 5, 6, 6, 5, 5, 3, 6, 2]
+	var expected: int = -1
+	for advance: int in advances:
+		expected += advance
+	assert_eq(expected, 112)
+	assert_eq(_checker.width_of("C1 Speared, in battle."), expected)
 
 
 func test_the_widest_testimony_line_fits_the_cap() -> void:
@@ -66,6 +73,22 @@ func test_the_widest_testimony_line_fits_the_cap() -> void:
 					widest_line = line
 	gut.p("widest testimony line: %d px (%s)" % [widest, widest_line])
 	assert_lte(widest, Checker.LINE_CAP_PX)
+
+
+## R1's reading of each decree's condition names only evidence that is on some desk, so a reworded
+## line can't leave a stale entry that a later thread would pass on.
+func test_every_condition_text_is_on_a_desk() -> void:
+	var stale: Array[String] = []
+	for decree_id: String in Checker.CONDITION_TEXTS:
+		for text: String in Checker.CONDITION_TEXTS[decree_id]:
+			var found: bool = false
+			for pair: Array in _judged():
+				for item: EvidenceItem in (pair[0] as Encounter).items:
+					if item.text == text and item.group in Checker.CONDITION_GROUPS[decree_id]:
+						found = true
+			if not found:
+				stale.append("%s: %s" % [decree_id, text])
+	assert_eq(stale, [] as Array[String])
 
 
 func test_every_encounter_passes_the_authoring_check() -> void:

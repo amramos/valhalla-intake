@@ -15,7 +15,8 @@ func test_the_returned_soul_and_the_empty_witness_panel_show() -> void:
 
 
 func test_the_witness_heading_shows_the_name_and_then_who_they_are() -> void:
-	# D52: the heading is the name; the description is its hover label.
+	# D52: the heading is the name; the harness prints the role after it (the desk hovers the
+	# whole description).
 	var harness := Harness.new(SliceLoader.load_slice())
 	harness.act("jump 2 1")
 	assert_string_contains(harness.describe(), "WITNESS Bjorn (his shield-brother)")
