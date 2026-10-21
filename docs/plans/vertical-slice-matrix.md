@@ -45,8 +45,8 @@ Every pair not listed as a seam in an encounter resolves "no seam" (−10 s from
 What makes a law thread (applied the same way on every soul):
 - **L1** (Valhalla clause): a claim line that states a death in battle. No body fact shows "in
   battle", so a wound or "no wound" against L1 is no seam.
-- **L3:** the body fact "nothing in hand". "sword in hand" against L3 is no seam (its condition is
-  absent).
+- **L3:** the body fact "nothing in hand". "drawn sword in hand" against L3 is no seam (its
+  condition is absent).
 - **L4:** a testimony line that states the soul left the battle. No body fact proves flight, so any
   wound against L4 is no seam (D6: a back wound never proves flight).
 - **L5:** a testimony line that states the soul fell holding its home or shielding its kin.
@@ -78,7 +78,7 @@ whether a soul lies, and answer for Huginn.
   (wet to the knee), shirt hem down to the feet (night-shirt). No soul carries two facts in one
   area. Every hit area is at least 8×8 px, padded beyond the drawn pixels where needed.
 - **Labels** are plain and identical everywhere a state repeats: "spear wound, chest", "spear wound, back",
-  "no wound, chest", "no wound, back", "sword in hand", "nothing in hand", "broken neck",
+  "no wound, chest", "no wound, back", "drawn sword in hand", "nothing in hand", "broken neck",
   "wet to the knee", "soft hands, no calluses", "night-shirt only, bare feet".
 - No bile on any body. A returned soul's change is frost in the identity layer and a frost-burned
   name plate, never a fact.
@@ -110,7 +110,7 @@ ASCII punctuation only: m5x7 has no curly quotes, dashes or ellipsis. Tone: dead
 |---|---|---|---|
 | B1 | spear wound, chest | front · chest | wound front overlay |
 | B2 | no wound, back | back · upper back | none (hit area) |
-| B3 | sword in hand | front · right hand (sword also drawn on the back view) | sword overlay |
+| B3 | drawn sword in hand | front · right hand (sword also drawn on the back view) | sword overlay |
 
 | Line | Text |
 |---|---|
@@ -178,7 +178,7 @@ ASCII punctuation only: m5x7 has no curly quotes, dashes or ellipsis. Tone: dead
 |---|---|---|---|
 | B1 | no wound, chest | front · chest (below the neck area) | none (hit area) |
 | B2 | no wound, back | back · upper back | none (hit area) |
-| B3 | sword in hand | front · right hand | sword overlay |
+| B3 | drawn sword in hand | front · right hand | sword overlay |
 | B4 | broken neck | front · neck | neck kink + tilted head pose |
 
 | Line | Text |
@@ -195,7 +195,7 @@ ASCII punctuation only: m5x7 has no curly quotes, dashes or ellipsis. Tone: dead
 | B3 × C2 | red | liar C2 | "the body gives the lie." |
 
 **Red herrings:** none. (B4 × C3 is no seam: a broken neck and a chest wound could both be true; B2 × C3 is no seam: a blade in the chest needn't come out the back; C4
-is the line the neck breaks.)
+is the line the neck breaks. B3 × C2 is strict because the label names a drawn blade: a sheathed sword could still be in his hand.)
 **Mentor:** her steps and comments for this soul are in the mentor script (§ A2).
 
 ### 4 · Asa (slot 4, unguided)
@@ -258,7 +258,7 @@ admission in his claim, Grim wet legs and an empty hand. The back wound gives tw
 |---|---|---|---|
 | B1 | spear wound, chest | front · chest | wound front overlay (second fact) |
 | B2 | spear wound, back | back · upper back | wound back overlay |
-| B3 | sword in hand | front · right hand | sword overlay |
+| B3 | drawn sword in hand | front · right hand | sword overlay |
 
 | Line | Text |
 |---|---|
@@ -299,7 +299,7 @@ admission in his claim, Grim wet legs and an empty hand. The back wound gives tw
 |---|---|---|---|
 | B1 | no wound, chest | front · chest | none (hit area; second fact: clean front) |
 | B2 | spear wound, back | back · upper back | wound back overlay |
-| B3 | sword in hand | front · right hand | sword overlay |
+| B3 | drawn sword in hand | front · right hand | sword overlay |
 
 | Line | Text |
 |---|---|
@@ -429,7 +429,7 @@ Queue (D22): Freydis, then returned Hakon **or** Egil, then Ragna, then Ketil.
 |---|---|---|---|
 | B1 | no wound, chest | front · chest | none (hit area) |
 | B2 | spear wound, back | back · upper back | wound back overlay |
-| B3 | sword in hand | front · right hand | sword overlay |
+| B3 | drawn sword in hand | front · right hand | sword overlay |
 | B4 | soft hands, no calluses | front · left hand | soft-hand overlay |
 
 | Line | Text |
@@ -471,7 +471,7 @@ Queue (D22): Freydis, then returned Hakon **or** Egil, then Ragna, then Ketil.
 |---|---|---|---|
 | B1 | no wound, chest | front · chest | none (hit area) |
 | B2 | spear wound, back | back · upper back | wound back overlay |
-| B3 | sword in hand | front · right hand | sword overlay |
+| B3 | drawn sword in hand | front · right hand | sword overlay |
 
 | Line | Text |
 |---|---|
@@ -517,7 +517,7 @@ Identical to 10a (body, name plate and its label, destinations, seams, mentor) e
 |---|---|---|---|
 | B1 | spear wound, chest | front · chest (over the night-shirt) | wound front overlay |
 | B2 | no wound, back | back · upper back | none (hit area) |
-| B3 | sword in hand | front · right hand | sword overlay |
+| B3 | drawn sword in hand | front · right hand | sword overlay |
 | B4 | night-shirt only, bare feet | front · shirt hem to feet | night-shirt overlay |
 
 | Line | Text |
@@ -557,7 +557,7 @@ Identical to 10a (body, name plate and its label, destinations, seams, mentor) e
 |---|---|---|---|
 | B1 | no wound, chest | front · chest | none (hit area) |
 | B2 | no wound, back | back · upper back | none (hit area) |
-| B3 | sword in hand | front · right hand | sword overlay |
+| B3 | drawn sword in hand | front · right hand | sword overlay |
 | B4 | broken neck | front · neck | neck kink + tilted head pose |
 | B5 | night-shirt only, bare feet | front · shirt hem to feet | night-shirt overlay |
 
@@ -604,7 +604,7 @@ Identical to 10a (body, name plate and its label, destinations, seams, mentor) e
 |---|---|---|---|
 | B1 | spear wound, chest | front · chest | wound front overlay |
 | B2 | no wound, back | back · upper back | none (hit area) |
-| B3 | sword in hand | front · right hand | sword overlay |
+| B3 | drawn sword in hand | front · right hand | sword overlay |
 | B4 | wet to the knee | front · lower legs (drawn on both views) | wet overlay |
 
 | Line | Text |
@@ -832,7 +832,7 @@ souls.
 | spear wound, back | upper back | Grim B2 × C3 (red); returned Hakon B2 × C3 (red) | Sigvaldi B2 × L4, B2 × C1; Freydis B2 × L4, B2 × C3 | Hakon (day 2: Hel by L4; Sigvaldi: Valhalla — one wound, two verdicts) |
 | no wound, chest | chest | Kolbeinn B1 × C1; Hallr B1 × C3; returned Hakon B1 × C3 (all red) | Ragna B1 × C2 | Grim, Hakon, Freydis |
 | no wound, back | upper back | Brand B2 × C3 (red) | Ragna B2 × C2 | Ulf, Kolbeinn, Hallr, Asa, Egil, Ketil |
-| sword in hand | right hand | Hallr B3 × C2 (red) | Sigvaldi B3 × C2 | Ulf, Hakon, Freydis, returned Hakon, Egil, Ragna, Ketil |
+| drawn sword in hand | right hand | Hallr B3 × C2 (red) | Sigvaldi B3 × C2 | Ulf, Hakon, Freydis, returned Hakon, Egil, Ragna, Ketil |
 | nothing in hand | right hand | Kolbeinn B3 × C3 (red); Kolbeinn, Asa, Grim, Brand B3 × L3 (law) | Asa B3 × C2 | — |
 | broken neck | neck | Hallr B4 × C4 (red) | Ragna B4 × C2 | — |
 | wet to the knee | lower legs | Grim B4 × C2 (red) | Ketil B4 × C2, B4 × W1 | — |
@@ -900,7 +900,7 @@ layers, so it can show nothing the chart doesn't (D5).
 | 1 | **Body base** (tunic, belt, trousers, boots; blocky hands; right hand empty) | front, back | all | The only build. Ashen skin |
 | 2 | spear wound, chest | front (chest) | Ulf, Asa, Sigvaldi, Brand, Egil, Ketil | Blood pixels where it enters; must read over the tunic and the night-shirt |
 | 3 | spear wound, back | back (upper back) | Sigvaldi, Hakon ×3, Grim, Freydis | One overlay for every back wound (D6) |
-| 4 | sword in hand | front (hand and blade), back (blade at the side) | 9 encounters | Pale blade against the dark tunic |
+| 4 | drawn sword in hand | front (hand and blade), back (blade at the side) | 9 encounters | Pale blade against the dark tunic |
 | 5 | broken neck | front, back | Hallr, Ragna | A visible kink; needs a tilted pose of those two heads |
 | 6 | wet to the knee | front, back | Grim, Ketil | Shape, not tint alone: a hard tide line at the knee and drip pixels |
 | 7 | soft hands | front (left hand) | Brand, Freydis | Shape: slender, smooth fingers against the base's blocky hand |
@@ -973,6 +973,11 @@ The lead's rulings on the issues this matrix raised (2026-10-21).
    ending have no built panels yet. The caption-strip texts fit two strip lines (the longest
    citation is 470 px of 688).
 5. **Grim's human detail lives in his witness's line** (W3 "The dog stayed."), as ruled in WP0.
+6. **"sword in hand" is now "drawn sword in hand" on every soul** (the PR #15 review). Hallr's
+   "Sword still sheathed." could be true beside a sword held in its sheath, so B3 × C2 failed the
+   strictness test. One label per state (D6) means every sword fact changes, which matches the art
+   (a pale bare blade). Its hover label is 109 px (126 px with a "B3 " prefix, under D50's 132).
+   The ledger walkthrough still quotes "sword in hand" (see 1).
 
 ## Measurements (D12)
 

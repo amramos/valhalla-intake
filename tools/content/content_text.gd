@@ -139,6 +139,8 @@ static func slice() -> SliceData:
 
 static func desk_text() -> DeskTextData:
 	var text := DeskTextData.new()
+	# A named id, like the generator's facts and seams, so a rebuild never renames it.
+	text.resource_scene_unique_id = "desk_text"
 	text.thread_format = "%s against %s: %s"
 	text.no_seam_line = "No seam: those two agree."
 	text.no_seam_timed_format = "No seam: those two agree. -%d s"

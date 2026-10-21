@@ -57,9 +57,10 @@ the data pass, setup included (15 of them setup). Per encounter, data plus verif
 **Unused branches:** returned Hakon (both variants) and Egil are authored in full, though one run
 sees only one of the three; their minutes are included above.
 
+**Reworked after the first check:** Ulf's first mentor bubble, "Read the body first. Hover each
+mark.", wrapped to 6 lines where the bubble holds 4; it now reads "Hover each mark." (matrix A2,
+then a rebuild), and the authoring check passes on it.
+
 ## Open
 
-- **Ulf's first mentor bubble doesn't fit** (the authoring check fails on it): "Read the body
-  first. Hover each mark." wraps to 6 lines in the 52 px bubble label, which holds 4 above the
-  "Next" button. It needs shortening in the matrix (A2), then a rebuild; its rework time goes here.
 - WP6 adds the playtester time per soul and the range by case complexity.

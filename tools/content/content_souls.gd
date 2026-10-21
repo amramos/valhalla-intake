@@ -36,7 +36,7 @@ static func _day_one() -> Array[Dictionary]:
 			[
 				["B1", "spear wound, chest", "chest"],
 				["B2", "no wound, back", "back"],
-				["B3", "sword in hand", "right hand"],
+				["B3", "drawn sword in hand", "right hand"],
 			],
 			"claim":
 			[
@@ -107,7 +107,7 @@ static func _day_one() -> Array[Dictionary]:
 			[
 				["B1", "no wound, chest", "chest"],
 				["B2", "no wound, back", "back"],
-				["B3", "sword in hand", "right hand"],
+				["B3", "drawn sword in hand", "right hand"],
 				["B4", "broken neck", "neck"],
 			],
 			"claim":
@@ -170,7 +170,7 @@ static func _day_two() -> Array[Dictionary]:
 			[
 				["B1", "spear wound, chest", "chest"],
 				["B2", "spear wound, back", "back"],
-				["B3", "sword in hand", "right hand"],
+				["B3", "drawn sword in hand", "right hand"],
 			],
 			"claim":
 			[
@@ -200,7 +200,7 @@ static func _day_two() -> Array[Dictionary]:
 			[
 				["B1", "no wound, chest", "chest"],
 				["B2", "spear wound, back", "back"],
-				["B3", "sword in hand", "right hand"],
+				["B3", "drawn sword in hand", "right hand"],
 			],
 			"claim":
 			[
@@ -306,7 +306,7 @@ static func _day_three() -> Array[Dictionary]:
 			[
 				["B1", "no wound, chest", "chest"],
 				["B2", "spear wound, back", "back"],
-				["B3", "sword in hand", "right hand"],
+				["B3", "drawn sword in hand", "right hand"],
 				["B4", "soft hands, no calluses", "left hand"],
 			],
 			"claim":
@@ -337,7 +337,7 @@ static func _day_three() -> Array[Dictionary]:
 			[
 				["B1", "no wound, chest", "chest"],
 				["B2", "no wound, back", "back"],
-				["B3", "sword in hand", "right hand"],
+				["B3", "drawn sword in hand", "right hand"],
 				["B4", "broken neck", "neck"],
 				["B5", "night-shirt only, bare feet", "hem"],
 			],
@@ -372,7 +372,7 @@ static func _day_three() -> Array[Dictionary]:
 			[
 				["B1", "spear wound, chest", "chest"],
 				["B2", "no wound, back", "back"],
-				["B3", "sword in hand", "right hand"],
+				["B3", "drawn sword in hand", "right hand"],
 				["B4", "wet to the knee", "legs"],
 			],
 			"claim":
@@ -415,7 +415,7 @@ static func _returned() -> Array[Dictionary]:
 					[
 						["B1", "no wound, chest", "chest"],
 						["B2", "spear wound, back", "back"],
-						["B3", "sword in hand", "right hand"],
+						["B3", "drawn sword in hand", "right hand"],
 					],
 					"claim":
 					[variant[1], variant[2], "One wound: the chest.", "Ivar owed me a knife."],
@@ -443,7 +443,7 @@ static func _returned() -> Array[Dictionary]:
 				[
 					["B1", "spear wound, chest", "chest"],
 					["B2", "no wound, back", "back"],
-					["B3", "sword in hand", "right hand"],
+					["B3", "drawn sword in hand", "right hand"],
 					["B4", "night-shirt only, bare feet", "hem"],
 				],
 				"claim":
