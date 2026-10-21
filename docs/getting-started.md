@@ -12,6 +12,7 @@ page is for the next one.
 | **Git** and **GitHub CLI** (`gh`, signed in) | Version control, pull requests | [git-scm.com](https://git-scm.com/), [cli.github.com](https://cli.github.com/) |
 | **Python 3.9+** | The agent hooks, skill mirroring, gdtoolkit | [python.org](https://python.org/) |
 | **gdtoolkit** | Lint and format | `pip install "gdtoolkit==4.*"` |
+| **pixelforge** | Art lint and palette clean-up (ADR-0006) | `pip install git+https://github.com/amramos/pixelforge` |
 | **Node.js** | `npx`, which runs the Godot MCP | [nodejs.org](https://nodejs.org/) |
 | **Claude Code** and/or **Codex** | The agents | [claude.com/claude-code](https://claude.com/claude-code) |
 

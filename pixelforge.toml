@@ -1,0 +1,63 @@
+# pixelforge — palette, canvas and reserved-colour rules for every asset (docs/art/art-direction.md).
+# Run from the repository root: python -m pixelforge lint   (CI runs it on every pull request).
+# The style frames under docs/art/ are references, not assets; they aren't linted.
+
+[palette]
+source = "docs/art/palette.gpl"
+metric = "redmean"
+
+# Ember belongs to Valhalla's door, its light and UI accents; Bile to Hel's door and its light;
+# Blood to wounds. Snapping won't reach them outside these paths, and lint fails if they appear.
+[[palette.reserved]]
+name = "ember"
+colors = ["#6b2f1e", "#a6623b", "#e08a4a"]
+allow_in = ["assets/art/scenes/**", "assets/art/doors/**", "assets/art/ui/**"]
+
+[[palette.reserved]]
+name = "bile"
+colors = ["#4f5a2c", "#8b9361", "#bbc983"]
+allow_in = ["assets/art/scenes/**", "assets/art/doors/**"]
+
+[[palette.reserved]]
+name = "blood"
+colors = ["#4a1418", "#8e2a2a"]
+allow_in = ["assets/art/scenes/**", "assets/art/souls/**", "assets/art/body-charts/**"]
+
+[[canvas]]
+name = "scene"
+size = [480, 270]
+paths = ["assets/art/scenes/*.png", "assets/art/scenes/**/*.png"]
+max_colors = 30
+hard_alpha = true
+
+[[canvas]]
+name = "soul"
+size = [48, 96]
+paths = ["assets/art/souls/*.png", "assets/art/souls/**/*.png"]
+max_colors = 16
+hard_alpha = true
+anchor = "bottom"
+
+[[canvas]]
+name = "body-chart"
+size = [128, 100]
+paths = ["assets/art/body-charts/*.png", "assets/art/body-charts/**/*.png"]
+max_colors = 20
+hard_alpha = true
+anchor = "bottom"
+
+[[canvas]]
+name = "prop"
+size = [32, 32]
+paths = ["assets/art/props/*.png", "assets/art/props/**/*.png"]
+max_colors = 12
+hard_alpha = true
+anchor = "bottom"
+
+[[canvas]]
+name = "law-scroll"
+size = [80, 150]
+paths = ["assets/art/ui/law-scroll*.png"]
+max_colors = 12
+hard_alpha = true
+anchor = "center"

@@ -14,6 +14,9 @@ track Godot. Read this before proposing one.
 - **Godot MCP** (`@coding-solo/godot-mcp`, through `npx`) — lets agents run the game and read its
   output (ADR-0002).
 - **butler** — itch.io uploads, used only in CI.
+- **pixelforge** — palette, canvas and reserved-colour lint for every asset under `assets/art/`,
+  configured by `pixelforge.toml` and run in CI (ADR-0006). Pinned to a commit of
+  `github.com/amramos/pixelforge`.
 
 ## Proposing a new one
 
