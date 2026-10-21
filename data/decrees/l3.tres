@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="DecreeData" format=3]
+
+[ext_resource type="Script" path="res://data/decree_data.gd" id="1_2cpao"]
+
+[resource]
+script = ExtResource("1_2cpao")
+id = "L3"
+text = "Even so, a warrior without a weapon in hand goes to Hel."

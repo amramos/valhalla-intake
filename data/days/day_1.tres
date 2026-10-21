@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="DayData" format=3]
+
+[ext_resource type="Script" path="res://data/decree_data.gd" id="1_p4oql"]
+[ext_resource type="Resource" path="res://data/decrees/l1.tres" id="2_tafq0"]
+[ext_resource type="Resource" path="res://data/decrees/l2.tres" id="3_5u7sl"]
+[ext_resource type="Resource" path="res://data/decrees/l3.tres" id="4_l4lrq"]
+[ext_resource type="Script" path="res://data/encounter_data.gd" id="5_q24my"]
+[ext_resource type="Resource" path="res://data/encounters/ulf.tres" id="6_o05bc"]
+[ext_resource type="Resource" path="res://data/encounters/kolbeinn.tres" id="7_f0opt"]
+[ext_resource type="Script" path="res://data/day_data.gd" id="8_x7h46"]
+
+[resource]
+script = ExtResource("8_x7h46")
+day = 1
+quota = 1
+doors_open = Array[StringName]([&"valhalla", &"hel"])
+decrees = Array[ExtResource("1_p4oql")]([ExtResource("2_tafq0"), ExtResource("3_5u7sl"), ExtResource("4_l4lrq")])
+encounters = Array[ExtResource("5_q24my")]([ExtResource("6_o05bc"), ExtResource("7_f0opt")])

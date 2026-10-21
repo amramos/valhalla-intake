@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="DecreeData" format=3]
+
+[ext_resource type="Script" path="res://data/decree_data.gd" id="1_krkmc"]
+
+[resource]
+script = ExtResource("1_krkmc")
+id = "L1"
+text = "Valhalla takes only those slain by a weapon in battle. Death by sickness, age or accident goes to Hel."
