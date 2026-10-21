@@ -16,7 +16,7 @@ second narrative beside an old one. Detail lives where it can be found on purpos
 
 ## Phase
 
-Set up on 2026-10-21. No game code yet. Next: `art-direction` (set the style before any art), then `feature-planning` for the first feature: the 12-encounter vertical slice of the inspection desk (GDD §11, open question 1).
+Set up on 2026-10-21. No game code yet. Next: `art-direction` (set the style before any art), then `feature-planning-handsoff` for the first feature: the 12-encounter vertical slice of the inspection desk (GDD §11, open question 1).
 
 ## Epics
 

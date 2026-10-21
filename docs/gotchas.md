@@ -35,6 +35,15 @@ scripts fail with `Nonexistent function 'new' in base 'GDScript'`.
 a fresh import may draw a different one than a tracked resource names. Copy the `uid=` from a working
 checkout's `.import` into the local one and import again; never edit the tracked resource's `uid=`.
 
+**GUT's `.import` files are tracked here on purpose.** GUT 9.7.1 ships them with uids that match its
+own scenes; `.gitignore` excludes every other `.import` but keeps `addons/gut/**/*.import`. A GUT
+copied from a project that ignored them logs "invalid UID" on every import until the official ones
+are restored.
+
+**Exports exclude `addons/gut/*`.** Packing GUT into a build logs `Cannot set object script` on the
+first export from a fresh cache (CI's case), and ships the test framework to players. Keep the
+exclusion in both presets.
+
 **`-gselect` is a substring match and takes one pattern.** `-gselect=a_test.gd` can run several
 files; a comma list selects nothing useful. Run one file per invocation and read the counts.
 
