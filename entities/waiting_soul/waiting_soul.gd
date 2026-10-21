@@ -1,36 +1,39 @@
 class_name WaitingSoul
 extends Control
-## The soul waiting at the gate, with its name plate (D4, D21). The figure is identity only: it
-## shows nothing the body chart doesn't, and it is never clickable. The plate carries Hel's mark
-## (the serpent) with a hover label when Hel has named this soul. The figure is a texture slot;
-## until the WP2 souls land, the style frame is loaded from disk as a placeholder.
+## The soul waiting at the gate, with its name plate (D4, D21). The figure is identity only: its
+## layers are the chart's front view cropped (BodyStacks), so it shows nothing the chart doesn't.
+## It can be dragged onto a door (D9). The plate is plain, frost-burned for a returned soul, or
+## carries Hel's mark; it hovers the encounter's plate label.
 
 signal plate_hover_started(text: String, area: Rect2)
 signal plate_hover_ended
 
 const PLATE_HEIGHT := 10
+## The figure's top-left inside this node; the node sits at (2, 0), so the figure is at (6, -2).
+const FIGURE_AT := Vector2(4, -2)
+const FIGURE_SIZE := Vector2(48, 96)
 
-## The art slot.
-@export var soul_texture: Texture2D = null
+@export var stacks: BodyStacks = null
+@export var plate_plain: Texture2D = null
+@export var plate_frost: Texture2D = null
+@export var plate_hel: Texture2D = null
+## Shown when an encounter has no stack (a development stand-in).
 @export var placeholder_path: String = "res://docs/art/frames/soul.png"
 
-var _figure: TextureRect = null
+var _figure: DragSource = null
 var _plate: Control = null
 var _name: Label = null
 var _plate_label: String = ""
-var _marked: bool = false
-var _returned: bool = false
+var _plate_texture: Texture2D = null
 
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_figure = TextureRect.new()
+	_figure = DragSource.new()
 	_figure.name = "Figure"
-	_figure.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_figure.texture = soul_texture
-	if _figure.texture == null:
-		_figure.texture = PlaceholderArt.load_texture(placeholder_path)
-	_figure.position = Vector2(4, -8)
+	_figure.kind = &"soul"
+	_figure.position = FIGURE_AT
+	_figure.size = FIGURE_SIZE
 	add_child(_figure)
 	_plate = Control.new()
 	_plate.name = "Plate"
@@ -43,7 +46,7 @@ func _ready() -> void:
 	add_child(_plate)
 	_name = Label.new()
 	_name.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_name.position = Vector2(2, -3)
+	_name.position = Vector2(3, -3)
 	_name.add_theme_color_override(&"font_color", get_theme_color(&"text_light", &"DeskPalette"))
 	_plate.add_child(_name)
 	show_soul(null)
@@ -53,11 +56,23 @@ func _ready() -> void:
 func show_soul(encounter: Encounter) -> void:
 	visible = encounter != null
 	if encounter == null:
+		_figure.layers = []
 		return
 	_name.text = encounter.soul_name
 	_plate_label = encounter.plate_label
-	_marked = encounter.hel_marked
-	_returned = encounter.returned
+	var layers: Array[Texture2D] = []
+	if stacks != null:
+		layers = stacks.soul_layers(encounter.id)
+	if layers.is_empty():
+		var stand_in: Texture2D = PlaceholderArt.load_texture(placeholder_path)
+		if stand_in != null:
+			layers = [stand_in]
+	_figure.layers = layers
+	_plate_texture = plate_plain
+	if encounter.hel_marked:
+		_plate_texture = plate_hel
+	elif encounter.returned:
+		_plate_texture = plate_frost
 	_plate.queue_redraw()
 
 
@@ -65,14 +80,27 @@ func soul_name() -> String:
 	return _name.text if visible else ""
 
 
+func figure() -> DragSource:
+	return _figure
+
+
+## The plate drawn now (tests).
+func plate_texture() -> Texture2D:
+	return _plate_texture
+
+
+## Whether the figure can be picked up (not while a stamped soul waits, D48).
+func set_draggable(on: bool) -> void:
+	_figure.enabled = on
+
+
 func _draw_plate() -> void:
-	var area := Rect2(Vector2.ZERO, _plate.size)
-	var border: StringName = &"text_muted" if _returned else &"frame"
-	_plate.draw_rect(area, get_theme_color(&"plate", &"DeskPalette"))
-	_plate.draw_rect(area.grow(-0.5), get_theme_color(border, &"DeskPalette"), false, 1.0)
-	if _marked:
-		var at := Vector2(_plate.size.x - PixelGlyph.SIZE - 2, 2)
-		PixelGlyph.draw(_plate, &"serpent", at, get_theme_color(&"glyph", &"DeskPalette"))
+	if _plate_texture != null:
+		_plate.draw_texture(_plate_texture, Vector2.ZERO)
+	else:
+		_plate.draw_rect(
+			Rect2(Vector2.ZERO, _plate.size), get_theme_color(&"plate", &"DeskPalette")
+		)
 
 
 func _on_plate_entered() -> void:

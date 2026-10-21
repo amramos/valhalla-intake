@@ -18,6 +18,8 @@ var threads: Array[Seam] = []
 ## Huginn's answer per thread (same index as threads); "" until asked.
 var answers: Array[String] = []
 var result: StampResult = null
+## How many of the encounter's mentor steps are done.
+var mentor_index: int = 0
 ## Against the worthy destination: &"" (right), IGNORED, MISSED, UNCERTAIN or NEVER.
 var mark: StringName = &""
 

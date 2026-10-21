@@ -56,26 +56,26 @@ func test_a_no_seam_pin_says_so_and_draws_nothing() -> void:
 	_system.claim_panel.area("C4").press()
 	_system.law_panel.area("L3").press()
 	assert_eq(_threads().size(), 0)
-	assert_eq(_system.caption_strip.shown_text(), "No seam.")
+	assert_eq(_system.caption_strip.shown_text(), "No seam: those two agree.")
 
 
 func test_one_stamp_goes_through_the_door_and_the_separate_confirm() -> void:
 	_begin()
 	_door(&"valhalla").press()
-	assert_eq(_system.stamp_prompt.question(), "Stamp Ulf to Valhalla?")
+	assert_eq(_system.stamp_flow.stamp_prompt.question(), "Stamp Ulf to Valhalla?")
 	assert_eq(_system.soul.soul_name(), "Ulf", "a door click alone never stamps (D9)")
-	var confirm: GuardedButton = _system.stamp_prompt.confirm_button()
+	var confirm: GuardedButton = _system.stamp_flow.stamp_prompt.confirm_button()
 	confirm.arm_now()
 	confirm.pressed.emit()
 	assert_eq(_system.soul.soul_name(), "Kolbeinn", "the confirm stamped Ulf; the next soul sits")
 	assert_eq(_desk.commands().quota_progress(), Vector2i(1, 1))
-	assert_false(_system.stamp_prompt.visible)
+	assert_false(_system.stamp_flow.stamp_prompt.visible)
 
 
 func test_the_confirm_ignores_presses_before_it_is_armed() -> void:
 	_begin()
 	_door(&"valhalla").press()
-	var confirm: GuardedButton = _system.stamp_prompt.confirm_button()
+	var confirm: GuardedButton = _system.stamp_flow.stamp_prompt.confirm_button()
 	assert_false(confirm.is_armed(), "a press right after the prompt appears does not count")
 	assert_true(confirm.blocks(_mouse(MOUSE_BUTTON_LEFT, false)))
 
@@ -86,16 +86,16 @@ func test_a_cited_soul_stays_with_its_pair_lit_until_next_soul() -> void:
 	assert_true(_desk.commands().awaiting_next(), "the day-1 warning holds the soul (D48)")
 	assert_eq(_system.soul.soul_name(), "Ulf", "the stamped soul stays on the desk")
 	assert_true(_system.feather.visible, "the black feather is on the desk")
-	assert_true(_system.next_soul_button.visible)
+	assert_true(_system.stamp_flow.next_soul_button.visible)
 	assert_true(_system.claim_panel.area("C1").lit, "the cited pair is lit")
 	assert_true(_system.law_panel.area("L1").lit)
 	assert_ne(_system.caption_strip.shown_text(), "", "the warning is in the strip")
 	_system.claim_panel.area("C2").press()
 	assert_false(_system.claim_panel.area("C2").selected, "no new pins while the soul waits")
-	_system.next_soul_button.pressed.emit()
+	_system.stamp_flow.next_soul_button.pressed.emit()
 	assert_eq(_system.soul.soul_name(), "Kolbeinn")
 	assert_false(_system.feather.visible, "the feather leaves with the soul")
-	assert_false(_system.next_soul_button.visible)
+	assert_false(_system.stamp_flow.next_soul_button.visible)
 
 
 func test_a_closed_door_offers_no_stamp() -> void:
@@ -103,15 +103,15 @@ func test_a_closed_door_offers_no_stamp() -> void:
 	var folkvangr: Door = _door(&"folkvangr")
 	assert_false(folkvangr.is_open, "Fólkvangr is barred on day 1")
 	folkvangr.press()
-	assert_false(_system.stamp_prompt.visible)
-	assert_string_contains(folkvangr.hover_text(), "closed")
+	assert_false(_system.stamp_flow.stamp_prompt.visible)
+	assert_string_contains(folkvangr.hover_text(), "Closed")
 
 
 func test_cancelling_the_prompt_stamps_nothing() -> void:
 	_begin()
 	_door(&"hel").press()
-	_system.stamp_prompt.withdraw()
-	assert_false(_system.stamp_prompt.visible)
+	_system.stamp_flow.stamp_prompt.withdraw()
+	assert_false(_system.stamp_flow.stamp_prompt.visible)
 	assert_eq(_system.soul.soul_name(), "Ulf")
 
 
@@ -185,8 +185,8 @@ func _area(item_id: String) -> PinSelectable:
 
 func _stamp(realm: StringName) -> void:
 	_door(realm).press()
-	_system.stamp_prompt.confirm_button().arm_now()
-	_system.stamp_prompt.confirm_button().pressed.emit()
+	_system.stamp_flow.stamp_prompt.confirm_button().arm_now()
+	_system.stamp_flow.stamp_prompt.confirm_button().pressed.emit()
 
 
 func _door(realm: StringName) -> Door:

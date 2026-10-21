@@ -142,6 +142,14 @@ func end_day() -> void:
 	phase = DUSK if has_next_day() else ENDING
 
 
+func hel_tide() -> int:
+	var count: int = 0
+	for record: VerdictRecord in records:
+		if record.verdict == Realm.HEL and record.encounter.worthy_realm != Realm.HEL:
+			count += 1
+	return count
+
+
 func admitted_today() -> int:
 	var count: int = 0
 	for record: VerdictRecord in records:

@@ -155,7 +155,7 @@ func _fit_check_commands() -> DeskCommands:
 			EvidenceItem.make("L%d" % (index + 1), EvidenceItem.Group.LAW, DECREES[index])
 		)
 	var ragna := Encounter.new()
-	ragna.id = &"fit_check"
+	ragna.id = &"ragna"
 	ragna.soul_name = "Ragna"
 	ragna.hel_marked = true
 	ragna.plate_label = "Hel asked for her"

@@ -22,6 +22,8 @@ var plate_label: String = ""
 var returned: bool = false
 ## The soul whose stamp to Hel brings it back in a later encounter (D2).
 var return_eligible: bool = false
+## The guided steps on a tutorial soul (D16), in order; empty on unguided souls.
+var mentor_steps: Array[MentorStep] = []
 ## What really happened; shown only in the dusk recap and on the ending screen.
 var truth: String = ""
 

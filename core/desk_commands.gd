@@ -57,6 +57,11 @@ func day_rules() -> DayRules:
 	return _state.day_rules()
 
 
+## The slice's tunables and desk text; read-only by convention.
+func slice_rules() -> SliceRules:
+	return _state.rules
+
+
 func day_number() -> int:
 	return _state.day_rules().day
 
@@ -132,6 +137,8 @@ func pin(a: String, b: String) -> PinResult:
 	if result.kind == PinResult.Kind.THREAD:
 		record.threads.append(result.seam)
 		record.answers.append("")
+	if result.seam != null:
+		MentorGuide.finish(record, MentorStep.Until.PIN, result.seam)
 	elif result.kind == PinResult.Kind.NO_SEAM and _state.clock.is_timed():
 		result.seconds_lost = _state.rules.no_seam_seconds
 		_state.clock.charge(result.seconds_lost)
@@ -184,7 +191,9 @@ func stamp(realm: StringName) -> StampResult:
 		return refused
 	var record: VerdictRecord = _state.current
 	var result: StampResult = VerdictRules.judge(record, realm, day, _state.rules)
+	MentorGuide.finish(record, MentorStep.Until.STAMP)
 	_state.settle_stamp(record, result)
+	result.mentor_line = VerdictRules.mentor_line(record, result, day, _state.rules)
 	# The stamp has completed (D36); its time applies on every slot alike.
 	_state.clock.charge(_stamp_seconds)
 	# A citation holds the desk even when the stamp ran the clock out: the horn waits for
@@ -247,6 +256,22 @@ func quota_progress() -> Vector2i:
 
 func huginn_left() -> int:
 	return _state.huginn_left
+
+
+## The figures at Hel's door: souls stamped to Hel this run that were not worthy of Hel (D21, D23).
+func hel_tide() -> int:
+	return _state.hel_tide()
+
+
+## The mentor's current guided step on the soul being judged; null when there is none (D16).
+func mentor_step() -> MentorStep:
+	return MentorGuide.current(_state.current)
+
+
+## Finishes a READ step (the bubble's "Next"); PIN and STAMP steps finish by the player's action.
+func mentor_ack() -> void:
+	if MentorGuide.finish(_state.current, MentorStep.Until.READ):
+		desk_changed.emit()
 
 
 ## &"none", &"open", &"kept", &"broken" or &"lapsed" (RunState); the ledger badge shows "open".

@@ -49,7 +49,7 @@ func test_an_answer_that_ends_the_day_never_replaces_the_horn() -> void:
 
 func test_an_open_stamp_prompt_lets_no_pin_through() -> void:
 	_click(_door(&"hel"))
-	assert_true(_system.stamp_prompt.visible)
+	assert_true(_system.stamp_flow.stamp_prompt.visible)
 	var before: float = _desk.commands().time_left()
 	_click(_system.claim_panel.area("C3"))
 	_click(_system.law_panel.area("L1"))
@@ -65,7 +65,7 @@ func test_an_open_stamp_prompt_lets_no_huginn_answer_through() -> void:
 	_click(_knot(0))
 	assert_eq(_system.huginn_thread, 0, "the grey knot is selected")
 	_click(_door(&"hel"))
-	assert_true(_system.stamp_prompt.visible)
+	assert_true(_system.stamp_flow.stamp_prompt.visible)
 	var before: float = _desk.commands().time_left()
 	_click(_system.ask_huginn)
 	assert_eq(_desk.commands().huginn_left(), 2, "no answer spent under the prompt")

@@ -2,8 +2,8 @@ class_name BodyChart
 extends Control
 ## The body chart (D5): front and back views side by side, with every fact, absences included,
 ## as a hit area of at least 8×8 keyed by its place. The head and hair are never clickable.
-## The art is a slot: set `chart_texture` to the final asset; until then the style frame is
-## loaded from disk as a placeholder.
+## The art is the soul's layer stack (BodyStacks: base, left hand, fact overlays, head), drawn on
+## the chart's Night 3 panel (D51).
 
 signal item_clicked(item_id: String)
 signal cancel_requested
@@ -12,37 +12,47 @@ signal item_hover_ended(item_id: String)
 
 const CHART_SIZE := Vector2(128, 100)
 
-## The art slot. Empty until the WP2 body bases land.
-@export var chart_texture: Texture2D = null
-## Development placeholder, read from disk only while `chart_texture` is empty.
+## Which layers make each soul's body.
+@export var stacks: BodyStacks = null
+## Shown when an encounter has no stack (a development stand-in).
 @export var placeholder_path: String = "res://docs/art/frames/body-chart.png"
-## Hit areas in chart pixels, by place (EvidenceItem.place). Front view on the left half, back
-## view on the right; no two facts of one soul share a place.
+## Hit areas in chart pixels, by place (EvidenceItem.place), fitted to the WP2 body base (front
+## view centred on x 31.5, back on x 95.5). No two facts of one soul share a place.
 @export var place_rects: Dictionary[StringName, Rect2] = {
-	&"neck": Rect2(27, 22, 10, 8),
-	&"torso_front": Rect2(21, 31, 22, 15),
-	&"hand_right": Rect2(11, 51, 11, 11),
-	&"hand_left": Rect2(42, 51, 11, 11),
-	&"hem": Rect2(22, 60, 20, 33),
-	&"legs": Rect2(21, 70, 22, 22),
-	&"torso_back": Rect2(86, 30, 22, 16),
+	&"neck": Rect2(27, 24, 10, 8),
+	&"torso_front": Rect2(20, 33, 24, 14),
+	&"hand_right": Rect2(13, 56, 10, 10),
+	&"hand_left": Rect2(41, 56, 10, 10),
+	&"hem": Rect2(22, 68, 20, 28),
+	&"legs": Rect2(21, 74, 22, 20),
+	&"torso_back": Rect2(84, 30, 24, 18),
 }
 ## Outlines every hit area (the fit check).
 @export var outline_all: bool = false
 
 var _areas: Dictionary[String, PinSelectable] = {}
-var _art: TextureRect = null
+var _layers: Array[Texture2D] = []
+var _placeholder: Texture2D = null
 
 
 func _ready() -> void:
 	custom_minimum_size = CHART_SIZE
-	_art = TextureRect.new()
-	_art.name = "Art"
-	_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_art.texture = chart_texture
-	if _art.texture == null:
-		_art.texture = PlaceholderArt.load_texture(placeholder_path)
-	add_child(_art)
+
+
+## Draws one soul's body from its layer stack; an unknown id shows the placeholder frame.
+func show_body(encounter_id: StringName) -> void:
+	_layers = stacks.chart_layers(encounter_id) if stacks != null else ([] as Array[Texture2D])
+	if _layers.is_empty() and encounter_id != &"":
+		if _placeholder == null:
+			_placeholder = PlaceholderArt.load_texture(placeholder_path)
+		if _placeholder != null:
+			_layers = [_placeholder]
+	queue_redraw()
+
+
+## The layers drawn now, bottom to top (tests).
+func layers() -> Array[Texture2D]:
+	return _layers
 
 
 ## Rebuilds the hit areas for one soul's body facts; other items are ignored.
@@ -116,5 +126,7 @@ func _add_area(item: EvidenceItem, rect: Rect2) -> void:
 
 
 func _draw() -> void:
-	# The chart's panel (D51: Night 3); the art sits on it.
+	# The chart's panel (D51: Night 3); the art sits on it, under the hit areas.
 	draw_rect(Rect2(Vector2.ZERO, size), get_theme_color(&"chart", &"DeskPalette"))
+	for layer: Texture2D in _layers:
+		draw_texture(layer, Vector2.ZERO)
