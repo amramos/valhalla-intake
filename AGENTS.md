@@ -175,7 +175,8 @@ The current baseline (test count, known failures) is in `docs/current-status.md`
 - Never edit third-party code under `addons/`.
 - Never leave GDScript untyped.
 - Never commit, push, rebase or rewrite history unless asked; force-push and hard reset always need
-  specific approval. **Never commit to `main`**; branch, then open a pull request.
+  specific approval. **Never commit to `main`**; branch, then open a pull request. The only path
+  to `main` without the owner is a merge by the `team-lead-handsoff` lead under ADR-0007's checklist.
 - Never install a dependency without reading `docs/plugins.md` and recording a new choice in an ADR.
 - Never create a global EventBus or a convenience autoload.
 
