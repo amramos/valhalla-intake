@@ -1,9 +1,11 @@
 extends GutTest
 ## The ending card's worst case, measured the way PhaseCard lays it out: its own Label, the desk
-## theme's m5x7 font, ENDING_WIDTH, wrapping included. Every piece is the widest the slice's data
-## can make, composed by ScreenText: the outcome naming the widest name for every encounter, every
-## row as wide as any row can be, the widest ledger line and the widest standing. The card must fit
-## PhaseCard's height clamp with its button row.
+## theme's m5x7 font, ENDING_WIDTH, wrapping included. The report is the real one, from
+## DeskCommands.ending() after a full run, so any section the ending really carries is measured
+## (the review's case: a hand-built report missed one). Then every piece is widened to the widest
+## the slice's data can make, composed by ScreenText: the outcome naming the widest name for every
+## encounter, every row as wide as any row can be, the widest ledger line and the widest standing.
+## The card must fit PhaseCard's height clamp with its button row.
 
 const DESK_SCENE := preload("res://scenes/desk/desk.tscn")
 const SLICE_PATH := "res://data/slice.tres"
@@ -32,17 +34,21 @@ func before_each() -> void:
 
 
 func test_the_longest_possible_ending_fits_the_card_with_its_button_row() -> void:
-	var slots: int = _slot_count()
+	var played: DeskCommands = _played_run()
+	assert_eq(played.phase(), RunState.ENDING, "the debug jump played the run to its ending")
+	var slots: int = played.ending().entries.size()
 	assert_eq(slots, 12, "the slice judges twelve encounters")
+	var limit: float = PhaseCard.SCREEN.y - 4.0
+	var as_played: float = _card_height(PhaseFlow.ending_text(played.ending(), _rules))
+	assert_lte(as_played, limit, "the ending as played fits the card's height clamp")
 	var worst: String = ""
 	var worst_height: float = 0.0
 	for outcome: StringName in [EndingReport.TIDE, EndingReport.HOLLOW, EndingReport.HALL_HOLDS]:
-		var text: String = _worst_ending(outcome, slots)
+		var text: String = _worst_ending(played, outcome)
 		var height: float = _card_height(text)
 		if height > worst_height:
 			worst = text
 			worst_height = height
-	var limit: float = PhaseCard.SCREEN.y - 4.0
 	gut.p("worst-case ending: %d lines, %.0f px of %.0f" % [_lines(worst), worst_height, limit])
 	_card.show_card(worst, _rules.text.play_again, "", PhaseFlow.ENDING_WIDTH)
 	assert_eq(_card.size.y, worst_height, "measured as PhaseCard sizes itself")
@@ -55,20 +61,28 @@ func test_the_longest_possible_ending_fits_the_card_with_its_button_row() -> voi
 	assert_lte(text_bottom, button_top, "the text ends above the button row")
 
 
-## The full card text for `outcome`, every section at its widest, composed by ScreenText.
-func _worst_ending(outcome: StringName, slots: int) -> String:
+## A full run played to its ending: every soul stamped to its legal realm.
+func _played_run() -> DeskCommands:
+	var desk: DeskCommands = SliceLoader.load_slice()
+	desk.debug_jump(3, 99)
+	return desk
+
+
+## The full card text for `outcome`, composed by ScreenText from the played run's own ending reports
+## (so every section the real ending carries is measured), each widened to its worst case.
+func _worst_ending(played: DeskCommands, outcome: StringName) -> String:
 	var name_owner: Encounter = _widest_name_owner()
-	var named := EndingReport.new()
+	var named: EndingReport = played.ending()
 	named.outcome = outcome
-	for _slot: int in slots:
-		var entry: EndingEntry = _entry(name_owner, Realm.HEL, Realm.VALHALLA, &"")
+	for entry: EndingEntry in named.entries:
 		if outcome == EndingReport.HOLLOW:
-			entry = _entry(name_owner, Realm.VALHALLA, Realm.HEL, &"")
-		named.entries.append(entry)
-	var rows := EndingReport.new()
+			_widen(entry, _entry(name_owner, Realm.VALHALLA, Realm.HEL, &""))
+		else:
+			_widen(entry, _entry(name_owner, Realm.HEL, Realm.VALHALLA, &""))
+	var rows: EndingReport = played.ending()
 	var widest_row: EndingEntry = _widest_row()
-	for _slot: int in slots:
-		rows.entries.append(widest_row)
+	for entry: EndingEntry in rows.entries:
+		_widen(entry, widest_row)
 	rows.promise_line = _widest_promise()
 	rows.feathers = MOST_FEATHERS
 	rows.rank_name = _widest(_rules.rank_names)
@@ -77,6 +91,15 @@ func _worst_ending(outcome: StringName, slots: int) -> String:
 	assert_eq(PhaseFlow.ending_text(rows, _rules), SECTION_GAP.join(sections), "PhaseFlow's join")
 	sections[0] = ScreenText.ending_sections(named, _rules)[0]
 	return SECTION_GAP.join(sections)
+
+
+## Gives a real report's `entry` the name, verdict, truth and mark of `widest`; the rest stays.
+func _widen(entry: EndingEntry, widest: EndingEntry) -> void:
+	entry.soul_name = widest.soul_name
+	entry.returned = widest.returned
+	entry.verdict = widest.verdict
+	entry.worthy = widest.worthy
+	entry.mark = widest.mark
 
 
 ## The card's height as PhaseCard computes it, before its clamp.
@@ -93,13 +116,6 @@ func _card_height(text: String) -> float:
 func _lines(text: String) -> int:
 	_card.show_card(text, _rules.text.play_again, "", PhaseFlow.ENDING_WIDTH)
 	return maxi(1, _label.get_line_count())
-
-
-## Encounters in a run: every soul of a full run, stamped to its legal realm.
-func _slot_count() -> int:
-	var desk: DeskCommands = SliceLoader.load_slice()
-	desk.debug_jump(3, 99)
-	return desk.ending().entries.size()
 
 
 func _encounters() -> Array[Encounter]:

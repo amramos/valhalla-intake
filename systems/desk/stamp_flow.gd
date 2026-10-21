@@ -86,8 +86,10 @@ func reset() -> void:
 	_carry_mentor = false
 
 
-## A new run ("Play again"): nothing the mentor said in the last run is shown or replayed.
+## A new run (Pause's Restart or "Play again"): nothing the mentor said in the last run is shown or
+## replayed, and a soul still walking to its door leaves with the old run.
 func forget_run() -> void:
+	_end_walk()
 	_mentor_line = ""
 	_carry_mentor = false
 	_mentor_unseen = false

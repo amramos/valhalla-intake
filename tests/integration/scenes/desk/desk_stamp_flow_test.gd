@@ -3,7 +3,8 @@ extends GutTest
 ## for the walk: a second walk after the first has ended, the citation before the mentor's comment
 ## (D33), a new run that forgets the last one's comment, the mentor's Next held under a pending
 ## stamp (D9), the walking soul letting clicks through to the doors, her portrait never replaying
-## over the horn, and her comment on a held stamp carried to the next soul, never behind the horn.
+## over the horn, her comment on a held stamp carried to the next soul, never behind the horn, and
+## a restart during the walk ending the walk.
 
 const DESK_SCENE := preload("res://scenes/desk/desk.tscn")
 const Fixture := preload("res://tests/integration/scenes/desk/desk_fixture.gd")
@@ -27,6 +28,24 @@ func test_a_stamp_after_the_last_walk_ended_walks_its_soul_too() -> void:
 	assert_eq(_walkers().size(), 0, "the first walk ended and its figure is gone")
 	_stamp(&"valhalla")
 	assert_eq(_walkers().size(), 1, "the second soul walks through its door")
+
+
+## The review's case: a restart while a stamped soul is still walking to its door must take the
+## walking figure with the old run, and its walk must not run on into the new one.
+func test_a_restart_during_the_walk_ends_the_walk_and_its_figure() -> void:
+	_open(Fixture.commands())
+	_stamp(&"hel")
+	assert_eq(_walkers().size(), 1, "the stamped soul walks to its door")
+	_escape()
+	var pause: PauseOverlay = _desk.pause_overlay()
+	assert_true(pause.is_open(), "Esc opens the pause")
+	_press_guarded(pause.restart_button())
+	_press_guarded(pause.yes_button())
+	assert_eq(_desk.commands().phase(), RunState.DAWN, "the restart reached the new run's dawn")
+	assert_eq(_walkers().size(), 0, "the old run's walking figure left with it")
+	await wait_seconds(StampFlow.HOLD_SECONDS + StampFlow.WALK_SECONDS + 0.2)
+	assert_eq(_walkers().size(), 0, "past the old walk's time, nothing walks or reappears")
+	assert_eq(_system.stamp_flow.walk_layer.get_child_count(), 0, "the walk layer is empty")
 
 
 func test_a_held_stamp_shows_its_citation_before_the_mentors_comment() -> void:
@@ -189,6 +208,19 @@ func _advance_card() -> void:
 	var next: GuardedButton = _system.phase_card.next_button()
 	next.arm_now()
 	_click(next)
+
+
+func _press_guarded(button: GuardedButton) -> void:
+	button.arm_now()
+	_click(button)
+
+
+func _escape() -> void:
+	var key := InputEventKey.new()
+	key.keycode = KEY_ESCAPE
+	key.physical_keycode = KEY_ESCAPE
+	key.pressed = true
+	_viewport.push_input(key)
 
 
 func _soul() -> String:
