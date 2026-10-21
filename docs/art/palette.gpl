@@ -1,0 +1,37 @@
+GIMP Palette
+Name: Valhalla Intake — Fog & Bile
+Columns: 8
+#
+# Curated from the chosen frames (direction B), grouped by meaning. Reserved ramps:
+# Ember only on Valhalla's door, its light and the UI's accent; Bile only on Hel's door and its
+# light; Blood only on wounds. Ashen is the skin of the dead; living skin never appears.
+ 11  23  34	Night 0
+ 15  37  48	Night 1
+ 22  48  59	Night 2
+ 29  60  67	Night 3
+ 39  69  80	Night 4
+ 63  89  87	Night 5
+ 29  90 109	Tide
+ 47  49  53	Fog 0
+122 126 123	Fog 1
+163 174 176	Fog 2
+ 39  30  33	Wood 0
+ 48  42  44	Wood 1
+ 65  49  45	Wood 2
+ 93  71  63	Wood 3
+125 100  80	Wood 4
+107  47  30	Ember 0
+166  98  59	Ember 1
+224 138  74	Ember 2
+ 79  90  44	Bile 0
+139 147  97	Bile 1
+187 201 131	Bile 2
+211 201 171	Parchment 0
+246 224 183	Parchment 1
+246 238 210	Parchment 2
+ 95 115 120	Ashen 0
+147 165 166	Ashen 1
+194 205 201	Ashen 2
+ 74  20  24	Blood 0
+142  42  42	Blood 1
+110  58  36	Hair

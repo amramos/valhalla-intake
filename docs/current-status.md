@@ -8,6 +8,7 @@ second narrative beside an old one. Detail lives where it can be found on purpos
 | Looking for | Read |
 |---|---|
 | Design and scope | `docs/GDD.md` |
+| How the game looks, and how to make art for it | `docs/art/art-direction.md` |
 | Why a decision was made | `docs/adr/README.md` |
 | Approved plans and their decisions | `docs/plans/` |
 | Where code lives | `docs/architecture.md` |
@@ -16,7 +17,9 @@ second narrative beside an old one. Detail lives where it can be found on purpos
 
 ## Phase
 
-Set up on 2026-10-21. No game code yet. Next: `art-direction` (set the style before any art), then `feature-planning-handsoff` for the first feature: the 12-encounter vertical slice of the inspection desk (GDD §11, open question 1).
+Set up on 2026-10-21; style guide chosen the same day ("Fog & Bile", `docs/art/`). No game code
+yet. Next: `feature-planning-handsoff` for the first feature, the 12-encounter vertical slice of the
+inspection desk (GDD §11, open question 1).
 
 ## Epics
 

@@ -100,7 +100,7 @@ Use these words exactly, in code, docs and conversation. One meaning each.
 .github/    CI, release and (optionally) bug-intake workflows
 addons/     third-party Godot plugins, vendored and never edited
 core/       pure logic independent of the scene tree
-docs/       GDD, architecture, ADRs, plans, status, history
+docs/       GDD, architecture, ADRs, plans, status, history; docs/art/ is the style guide
 tests/      unit and integration tests mirroring source
 tools/      development-only harnesses, never shipped
 ```

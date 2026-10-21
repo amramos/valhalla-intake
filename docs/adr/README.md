@@ -39,3 +39,4 @@ Copy `0000-template.md`, give it the next number and a short slug, fill it in, a
 | [0003](0003-testing-framework-gut.md) | Testing framework: GUT | Accepted |
 | [0004](0004-text-format-for-scenes-and-resources.md) | Scenes and resources always in text format | Accepted |
 | [0005](0005-avoid-global-event-bus-and-autoloads.md) | No global EventBus; autoloads minimized | Accepted |
+| [0006](0006-pixelforge-art-lint.md) | pixelforge lints every asset against the style guide | Accepted |
