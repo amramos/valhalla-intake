@@ -79,7 +79,7 @@ whether a soul lies, and answer for Huginn.
   area. Every hit area is at least 8×8 px, padded beyond the drawn pixels where needed.
 - **Labels** are plain and identical everywhere a state repeats: "wound, front", "wound, back",
   "no wound, front", "no wound, back", "sword, gripped", "nothing in hand", "neck, broken",
-  "wet to the knee", "soft hands, no calluses", "night-shirt, bare feet".
+  "wet to the knee", "soft hands, no calluses", "night-shirt only, bare feet".
 - No bile on any body. A returned soul's change is frost in the identity layer and a frost-burned
   name plate, never a fact.
 
@@ -142,25 +142,24 @@ door: "The Law agrees with him. Stamp him."
 | B1 | no wound, front | front · chest | none (hit area) |
 | B2 | no wound, back | back · upper back | none (hit area) |
 | B3 | nothing in hand | front · right hand | none (hit area) |
-| B4 | night-shirt, bare feet | front · shirt hem to feet | night-shirt overlay |
+| B4 | night-shirt only, bare feet | front · shirt hem to feet | night-shirt overlay |
 
 | Line | Text |
 |---|---|
-| C1 | "Three Danes hacked me." |
+| C1 | "Danes axed my chest." |
 | C2 | "Mail on. Shield up." |
-| C3 | "Sword in hand, always." |
+| C3 | "Died sword in hand." |
 | C4 | ♥ "My wife will tell you." |
 
 | Seam | Type | Decree · liar side | Caption |
 |---|---|---|---|
 | B1 × C1 | red | liar C1 | "the body gives the lie." |
-| B2 × C1 | red | liar C1 | "the body gives the lie." |
 | B4 × C2 | red | liar C2 | "the body gives the lie." |
 | B3 × C3 | red | liar C3 | "the body gives the lie." |
 | B3 × L3 | law | L3 → Hel | "L3 sends him to Hel." |
 
 **Red herrings:** none.
-**Mentor (guided):** "Read him." → highlights **B1** and **C1**: "No wound. Three Danes. Pin them."
+**Mentor (guided):** "Read him." → highlights **B1** and **C1**: "No wound. 'Axed my chest.' Pin them."
 → red thread → "The body never lies. L2 takes liars." with the serpent door lit.
 
 ### 3 · Hallr (slot 3, guided 3/3)
@@ -184,8 +183,8 @@ door: "The Law agrees with him. Stamp him."
 | Line | Text |
 |---|---|
 | C1 | ♥ "Gorm called me out." |
-| C2 | "Never got to draw." |
-| C3 | "Ran me through." |
+| C2 | "Sword stayed sheathed." |
+| C3 | "Blade in my chest." |
 | C4 | "Not a bone broken." |
 
 | Seam | Type | Decree · liar side | Caption |
@@ -193,9 +192,8 @@ door: "The Law agrees with him. Stamp him."
 | B1 × C3 | red | liar C3 | "the body gives the lie." |
 | B4 × C4 | red | liar C4 | "the body gives the lie." |
 | B3 × C2 | red | liar C2 | "the body gives the lie." |
-| B2 × C3 | red | liar C3 | "the body gives the lie." |
 
-**Red herrings:** none. (B4 × C3 is no seam: a broken neck and a sword wound could both be true; C4
+**Red herrings:** none. (B4 × C3 is no seam: a broken neck and a chest wound could both be true; B2 × C3 is no seam: a blade in the chest needn't come out the back; C4
 is the line the neck breaks.)
 **Mentor (guided):** "Your turn to read." → highlights **B1** and **C3**: "His chest. His third
 line." → red thread → "Where does a liar go?" (no door lit: the player chooses).
@@ -333,7 +331,7 @@ to Hel; *missed* otherwise. Stamped to Hel → slot 10 is returned Hakon; dusk l
 | Legal | **Hel** — L2 (also L3) |
 | Worthy | **Hel** (open) |
 | Liar · permitted uncertainty | yes · none (his grey seam is settled by the body, D30) |
-| Purpose | Wet to the knee against "I never left the hill"; the same back wound as Sigvaldi with the opposite verdict; the first grey thread (D25) |
+| Purpose | Wet to the knee against an explicit dryness claim, "Dry when I fell" (D25's hill line stays as context); the same back wound as Sigvaldi with the opposite verdict; the first grey thread (D25) |
 | Truth (recap) | Ran for the ford when the Danes came. Cut down from behind, halfway across. His dog stayed on the hill |
 
 | Fact | Label | View · place | Visual state |
@@ -346,29 +344,26 @@ to Hel; *missed* otherwise. Stamped to Hel → slot 10 is returned Hakon; dusk l
 | Line | Text |
 |---|---|
 | C1 | "Never left the hill." |
-| C2 | "High and dry, all day." |
+| C2 | "Dry when I fell." |
 | C3 | "Not one wound behind." |
-| C4 | ♥ "Dog's still up there." |
+| C4 | "Never in the water." |
 | **Witness** | **Orm, who stayed** |
-| W1 | "Grim ran for the ford." |
-| W2 | "Got halfway across." |
-| W3 | "The dog stayed." |
+| W1 | "He ran off the hill." |
+| W2 | "Waded into the ford." |
+| W3 | ♥ "The dog stayed." |
 
 | Seam | Type | Decree · liar side | Caption |
 |---|---|---|---|
-| B4 × C1 | red | liar C1 | "the body gives the lie." |
 | B4 × C2 | red | liar C2 | "the body gives the lie." |
 | B2 × C3 | red | liar C3 | "the body gives the lie." |
 | C1 × W1 | grey | liar C1 | "one of them lies." |
-| C1 × W2 | grey | liar C1 | "one of them lies." |
-| C2 × W1 | grey | liar C2 | "one of them lies." |
-| C2 × W2 | grey | liar C2 | "one of them lies." |
+| C4 × W2 | grey | liar C4 | "one of them lies." |
 | B3 × L3 | law | L3 → Hel | "L3 sends him to Hel." |
 
 **Red herrings:** none. No seam by rule: B2 × L4 and B4 × L4 (the body shows no motive); W1 × L4
 and W2 × L4 (disputed lines make no law thread).
 **Mentor (comments):** first grey thread of the day → "One of them lies. The body may say which."
-Stamp to Valhalla → citation "L2. His boots, wet to the knee, against 'Never left the hill'."
+Stamp to Valhalla → citation "L2. His back wound, against 'Not one wound behind'."
 
 ### 8 · Brand (slot 8)
 
@@ -378,7 +373,7 @@ Stamp to Valhalla → citation "L2. His boots, wet to the knee, against 'Never l
 | Legal | **Hel** — L2 (also L3) |
 | Worthy | **Hel** (open) |
 | Liar · permitted uncertainty | yes · none |
-| Purpose | Soft hands against "thirty winters at the oar" (D25). The day's last soul, a quota temptation if Sigvaldi was refused; then dusk: Eyvind's prayer and Hel's offer naming Ragna |
+| Purpose | Soft hands against "thirty winters at the oar" (D25), made strict by his own explicit hands claim, "Hands hard as oak."; the rowing boast stays as context. The day's last soul, a quota temptation if Sigvaldi was refused; then dusk: Eyvind's prayer and Hel's offer naming Ragna |
 | Truth (recap) | A rich man's son with a bought seat on the ship. Hid under a bench at the boarding and was speared there |
 
 | Fact | Label | View · place | Visual state |
@@ -391,25 +386,24 @@ Stamp to Valhalla → citation "L2. His boots, wet to the knee, against 'Never l
 | Line | Text |
 |---|---|
 | C1 | "Thirty winters rowing." |
-| C2 | "First over their rail." |
-| C3 | "Speared once, behind." |
+| C2 | "Hands hard as oak." |
+| C3 | "One wound, in my back." |
 | C4 | ♥ "Mother packed cheese." |
 | **Witness** | **Toki, a rower** |
-| W1 | "Never saw him row." |
+| W1 | "He never rowed a day." |
 | W2 | "Hid under a bench." |
 | W3 | "Smelled of cheese." |
 
 | Seam | Type | Decree · liar side | Caption |
 |---|---|---|---|
-| B4 × C1 | red | liar C1 | "the body gives the lie." |
+| B4 × C2 | red | liar C2 | "the body gives the lie." |
 | B1 × C3 | red | liar C3 | "the body gives the lie." |
 | B2 × C3 | red | liar C3 | "the body gives the lie." |
 | C1 × W1 | grey | liar C1 | "one of them lies." |
-| C2 × W2 | grey | liar C2 | "one of them lies." |
 | B3 × L3 | law | L3 → Hel | "L3 sends him to Hel." |
 
-**Red herrings:** none. (C2 is word for word Freydis's C3 on day 3: here a lie, there the truth.)
-**Mentor (comments):** stamp to Valhalla → citation "L2. Soft hands against 'Thirty winters rowing'."
+**Red herrings:** none. W2 × L4 is no seam: hiding under a bench doesn't say he left the battle.
+**Mentor (comments):** stamp to Valhalla → citation "L2. Soft hands against 'Hands hard as oak'."
 
 ---
 
@@ -454,7 +448,7 @@ Queue (D22): Freydis, then returned Hakon **or** Egil, then Ragna, then Ketil.
 |---|---|---|
 | B2 × L4 | A back wound reads as flight | W2–W3: a Dane hid by the mast and got her from behind |
 | B2 × C3 | "First over" with a wound behind | W2–W3, as above |
-| B4 × C3 | Soft hands against a boarding, the shape of Brand's lie (same words) | Her own C2: "Skald, not a rower." |
+| B4 × C3 | Soft hands on a fighter, after Brand's soft hands gave the lie | Her own C2: "Skald, not a rower." |
 
 **Mentor (comments):** stamp to Hel → "Her back, and L4? Read her witness."
 
@@ -520,7 +514,7 @@ Identical to 10a (body, name plate and its label, destinations, seams, mentor) e
 | B1 | wound, front | front · chest (over the night-shirt) | wound front overlay |
 | B2 | no wound, back | back · upper back | none (hit area) |
 | B3 | sword, gripped | front · right hand | sword overlay |
-| B4 | night-shirt, bare feet | front · shirt hem to feet | night-shirt overlay |
+| B4 | night-shirt only, bare feet | front · shirt hem to feet | night-shirt overlay |
 
 | Line | Text |
 |---|---|
@@ -531,7 +525,7 @@ Identical to 10a (body, name plate and its label, destinations, seams, mentor) e
 | **Witness** | **Kalf, one of the raiders** |
 | W1 | "Held his door. Long." |
 | W2 | "Swore the whole time." |
-| W3 | "Nice shirt, though." |
+| W3 | "No mail. Just a shirt." |
 
 | Seam | Type | Decree · liar side | Caption |
 |---|---|---|---|
@@ -561,7 +555,7 @@ citation." Stamp to Valhalla → citation, plus "Not even L5 sends him there."
 | B2 | no wound, back | back · upper back | none (hit area) |
 | B3 | sword, gripped | front · right hand | sword overlay |
 | B4 | neck, broken | front · neck | neck kink + tilted head pose |
-| B5 | night-shirt, bare feet | front · shirt hem to feet | night-shirt overlay |
+| B5 | night-shirt only, bare feet | front · shirt hem to feet | night-shirt overlay |
 
 | Line | Text |
 |---|---|
@@ -612,7 +606,7 @@ Valhalla → citation "L5. Fólkvangr was open."
 | Line | Text |
 |---|---|
 | C1 | "Raiders at the ford." |
-| C2 | "I held it. Alone." |
+| C2 | "Held it. Never ran." |
 | C3 | "Speared in the chest." |
 | C4 | ♥ "Sigrid will sing it." |
 | **Witness** | **Hauk, his neighbour** |
@@ -630,7 +624,7 @@ flight, is disputed.
 | Red herring | Why it looks like a seam | Innocent explanation |
 |---|---|---|
 | B1 × W1 | A front wound on a man who "ran" | W3: "He turned. Too late." |
-| B4 × C2 | Wet to the knee, like Grim's lie | C1 and W2: both accounts put him in the ford |
+| B4 × C2 | Wet to the knee on a man who "held it", like Grim's lie | C1 and W2: both accounts put him in the ford |
 | B4 × W1 | As above | C1 and W2 |
 
 Neither red herring settles the grey seam: the body fits both accounts.
@@ -650,13 +644,13 @@ souls.
 | wound, front | chest | Brand B1 × C3 (red) | Ketil B1 × W1 | Ulf, Asa, Sigvaldi, Egil |
 | wound, back | upper back | Grim B2 × C3 (red); returned Hakon B2 × C3 (red) | Sigvaldi B2 × L4, B2 × C1; Freydis B2 × L4, B2 × C3 | Hakon (day 2: Hel by L4; Sigvaldi: Valhalla — one wound, two verdicts) |
 | no wound, front | chest | Kolbeinn B1 × C1; Hallr B1 × C3; returned Hakon B1 × C3 (all red) | Ragna B1 × C2 | Grim, Hakon, Freydis |
-| no wound, back | upper back | Kolbeinn B2 × C1; Hallr B2 × C3; Brand B2 × C3 (red) | Ragna B2 × C2 | Ulf, Asa, Egil, Ketil |
+| no wound, back | upper back | Brand B2 × C3 (red) | Ragna B2 × C2 | Ulf, Kolbeinn, Hallr, Asa, Egil, Ketil |
 | sword, gripped | right hand | Hallr B3 × C2 (red) | Sigvaldi B3 × C2 | Ulf, Hakon, Freydis, returned Hakon, Egil, Ragna, Ketil |
 | nothing in hand | right hand | Kolbeinn B3 × C3 (red); Kolbeinn, Asa, Grim, Brand B3 × L3 (law) | Asa B3 × C2 | — |
 | neck, broken | neck | Hallr B4 × C4 (red) | Ragna B4 × C2 | — |
-| wet to the knee | lower legs | Grim B4 × C1, B4 × C2 (red) | Ketil B4 × C2, B4 × W1 | — |
-| soft hands, no calluses | left hand | Brand B4 × C1 (red) | Freydis B4 × C3 | — |
-| night-shirt, bare feet | shirt hem to feet | Kolbeinn B4 × C2 (red); Egil B4 × C4 (red) | Ragna B5 × C2 | — |
+| wet to the knee | lower legs | Grim B4 × C2 (red) | Ketil B4 × C2, B4 × W1 | — |
+| soft hands, no calluses | left hand | Brand B4 × C2 (red) | Freydis B4 × C3 | — |
+| night-shirt only, bare feet | shirt hem to feet | Kolbeinn B4 × C2 (red); Egil B4 × C4 (red) | Ragna B5 × C2 | — |
 
 **Cut or folded in** (no seam and red-herring pair in the roster): arrow; calloused hands (the
 base's blocky hand is the unlabelled norm); bare feet as its own fact (folded into the night-shirt,
@@ -670,8 +664,8 @@ the clean blade (D25: it can't be seen).
 | Encounters | 14 authored: slots 1–9, 11, 12, plus slot 10 as returned Hakon (ignored), returned Hakon (missed) or Egil — the 15 that D39 names, with slot 10 counted once per branch (Resolved 5) |
 | Fact instances | 51 |
 | Fact states (labels) | 10, on 7 hit areas; 7 drawn overlays, 3 absences |
-| Lie seams, red | 19 pairs |
-| Lie seams, grey | 8 pairs |
+| Lie seams, red | 16 pairs |
+| Lie seams, grey | 5 pairs |
 | Law threads | 14 pairs |
 | Red herrings | 15 pairs, on 5 souls (Asa, Sigvaldi, Freydis, Ragna, Ketil) |
 | Permitted uncertainty | 1 (Ketil, C2 × W1) |
@@ -723,7 +717,7 @@ layers, so it can show nothing the chart doesn't (D5).
 | 5 | neck, broken | front, back | Hallr, Ragna | A visible kink; needs a tilted pose of those two heads |
 | 6 | wet to the knee | front, back | Grim, Ketil | Shape, not tint alone: a hard tide line at the knee and drip pixels |
 | 7 | soft hands | front (left hand) | Brand, Freydis | Shape: slender, smooth fingers against the base's blocky hand |
-| 8 | night-shirt, bare feet | front, back | Kolbeinn, Egil, Ragna | Replaces tunic, belt, trousers and boots: a loose knee-length shirt, bare shins and feet |
+| 8 | night-shirt only, bare feet | front, back | Kolbeinn, Egil, Ragna | Replaces tunic, belt, trousers and boots: a loose knee-length shirt, bare shins and feet |
 | 9 | Identity heads (front and back) | both | 12 souls | Ulf, Kolbeinn, Hallr (tilted), Asa, Sigvaldi, Hakon, Grim, Brand, Freydis, Egil, Ragna (tilted), Ketil |
 | 10 | Hakon's frost head | both | returned Hakon | Frost rime in hair and beard; cold greys, never bile (D5) |
 | 11 | Name plate states | — | — | Plain; frost-burned (returned Hakon; hover "Back from Hel. His saga was true."); Hel's serpent mark (Ragna; hover "Hel asked for her") |
@@ -770,6 +764,5 @@ The lead's rulings on the issues this matrix raised (2026-10-21).
 **Judgement calls left as they are** (not blocking):
 - Hakon's "clearly different second fact" is an absence, a clean front, set against Sigvaldi's
   second wound and Grim's wet legs (D25).
-- Brand's C2 repeats Freydis's C3 word for word (a lie on day 2, the truth on day 3).
 - L1 names no realm for a weapon death outside battle that isn't sickness, age or accident
   (Ragna's fired roof). L5 covers Ragna; future rosters should avoid the gap or close it in the Law.
