@@ -25,7 +25,8 @@ Adopt **pixelforge** as the art linter. `pixelforge.toml` at the repository root
 - three reserved ramps: Ember only in scenes, doors and UI; Bile only in scenes and doors; Blood
   only in scenes, souls and body charts.
 
-CI runs `python -m pixelforge lint` on every pull request, pinned to a commit of
+CI runs `python -m pixelforge lint` and `tools/ci/check_art_coverage.py` (every image under
+`assets/art/` must match a canvas) on every pull request, pinned to a commit of
 `github.com/amramos/pixelforge`. pixelforge's `clean` command snaps generated art onto the palette
 and canvas (`docs/art/art-direction.md`, "Prompt core").
 
@@ -43,7 +44,9 @@ Each canvas therefore lists `dir/*.png` and `dir/**/*.png`.
 
 ## Consequences
 
-- A wrong colour, size or budget fails CI instead of reaching review.
+- A wrong colour, size or budget fails CI instead of reaching review. Reserved colours are enforced
+  per asset path, not per region inside an image: a soul may carry Blood anywhere in its file, so
+  where it sits inside the image is still a review and auditor check.
 - Adding an asset kind means adding a canvas to `pixelforge.toml` first.
 - CI depends on a public GitHub repository at a pinned commit. Moving the pin is a deliberate edit.
 

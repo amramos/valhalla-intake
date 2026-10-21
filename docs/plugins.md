@@ -15,7 +15,8 @@ track Godot. Read this before proposing one.
   output (ADR-0002).
 - **butler** — itch.io uploads, used only in CI.
 - **pixelforge** — palette, canvas and reserved-colour lint for every asset under `assets/art/`,
-  configured by `pixelforge.toml` and run in CI (ADR-0006). Pinned to a commit of
+  configured by `pixelforge.toml` and run in CI (ADR-0006); `tools/ci/check_art_coverage.py` fails
+  CI on any image no canvas covers. Pinned to a commit of
   `github.com/amramos/pixelforge`.
 
 ## Proposing a new one

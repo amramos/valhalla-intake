@@ -4,3 +4,4 @@ Development-only scripts and harnesses, **never shipped** and never referenced b
 
 - `ci/export_all.py` — exports every preset into `build/<channel>/` (used by the release workflow).
 - `ci/export_smoke_test.sh` — boots the exported Linux build headless and fails on errors.
+- `ci/check_art_coverage.py` — fails when an image under `assets/art/` matches no pixelforge canvas.

@@ -39,6 +39,7 @@ jobs:
         run: |
           pip install "pixelforge @ git+https://github.com/amramos/pixelforge@4ad321442e9979d6873a93988ae502607827bac3"
           python -m pixelforge lint
+          python tools/ci/check_art_coverage.py
 
       - uses: ./.github/actions/setup-engine
 

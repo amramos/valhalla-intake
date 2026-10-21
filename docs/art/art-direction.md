@@ -36,7 +36,9 @@ reads.
 
 - No ember outside Valhalla's door, its light and UI accents (the wax seal, the selected thread).
   No bile outside Hel's door and its light. No blood outside wounds. `pixelforge.toml` reserves all
-  three, so lint fails if they leak.
+  three **by asset path**: lint fails when one appears in a file whose folder may not use it. Inside
+  an allowed file (a soul may carry blood, a scene both doors) the placement is checked by review
+  and the evidence auditor, not by lint.
 - No fog, glow or vignette crossing the slab, the body chart or the papers.
 - No pure black: the darkest colour is Night 0.
 - No dithering on characters or evidence. Banded shading only.
