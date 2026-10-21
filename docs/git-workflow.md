@@ -4,8 +4,10 @@ Solo or small-team, AI-assisted development. No Git Flow, no long-lived branches
 
 ## Branches
 
-- `main` is the only long-lived branch and always opens in Godot without a parse error. It is
-  protected: pull requests only, CI required.
+- `main` is the only long-lived branch and always opens in Godot without a parse error. It takes
+  pull requests only, with CI green. GitHub doesn't enforce this here (branch protection isn't
+  available on this private repository's plan), so the hands-off lead enforces it with ADR-0007's
+  checklist until protection can be turned on.
 - **Agents never commit to `main`.** Every agent change goes on a branch and lands through a pull
   request — including one-line doc fixes. `.agents/hooks/guard_bash.py` refuses commits while `main`
   is checked out and any push to `main`, for both Claude and Codex. Under `team-lead-handsoff` the

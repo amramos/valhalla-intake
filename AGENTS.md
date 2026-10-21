@@ -115,7 +115,8 @@ with their first real file, never empty in advance (ADR-0001).
 1. Read `AGENTS.md`, `docs/current-status.md`, `docs/architecture.md`, the relevant ADRs and GDD section.
 2. If the task names an epic or feature, find its issue **before reading code** and read its
    comments — they carry owner rulings (`issue-tracking` skill). Finished work goes to `In Review`,
-   never `Done`.
+   never `Done`. The one exception: under ADR-0007, a feature PR merged by the hands-off lead
+   closes its issue; epics stay `In Review`.
 3. Inspect real code and scenes. Never edit a `.tscn` from memory.
 4. Plan the smallest coherent diff. A feature with player-visible decisions goes through
    `feature-planning` first.
