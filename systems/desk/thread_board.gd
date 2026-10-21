@@ -28,10 +28,11 @@ func _init(
 	_layer = layer
 
 
-## Replaces the drawn threads. `answered[i]` marks thread i's knot as answered by Huginn;
-## `selected` is the thread whose knot is selected (-1 for none). Returns the new lines.
+## Replaces the drawn threads. `answers[i]` is Huginn's answer on thread i ("" until asked); it
+## fills the knot and becomes its hover text. `selected` is the thread whose knot is selected
+## (-1 for none). Returns the new lines.
 func rebuild(
-	threads: Array[Seam], items: Array[EvidenceItem], answered: Array[bool], selected: int
+	threads: Array[Seam], items: Array[EvidenceItem], answers: Array[String], selected: int
 ) -> Array[ThreadLine]:
 	for child: Node in _layer.get_children():
 		child.queue_free()
@@ -44,6 +45,7 @@ func rebuild(
 		var b: EvidenceItem = _find(items, threads[index].b)
 		if a == null or b == null:
 			continue
+		var answer: String = answers[index] if index < answers.size() else ""
 		var line := ThreadLine.new()
 		line.name = "Thread%d" % index
 		_layer.add_child(line)
@@ -54,13 +56,20 @@ func rebuild(
 			index,
 			router.route(ends[0], ends[1], ends[2], ends[3], ends[4], ends[5], index % 2),
 			router.caps(ends[0], ends[1], ends[2], ends[3], ends[4], ends[5]),
-			GREY_KNOT_HOVER,
+			_hover_for(threads[index], answer),
 			avoid
 		)
-		line.answered = index < answered.size() and answered[index]
+		line.answered = answer != ""
 		line.selected = index == selected
 		lines.append(line)
 	return lines
+
+
+## A grey knot hovers Huginn's answer once given; every other bead hovers its caption.
+func _hover_for(seam: Seam, answer: String) -> String:
+	if seam.kind != Seam.Kind.GREY:
+		return seam.caption
+	return "Huginn: " + answer if answer != "" else GREY_KNOT_HOVER
 
 
 ## [column_a, item_a, panel_a, column_b, item_b, panel_b] for the router.

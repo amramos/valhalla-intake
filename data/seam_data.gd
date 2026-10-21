@@ -10,7 +10,11 @@ extends Resource
 ## LAW only: where the pinned decree sends the soul (D44).
 @export var destination: StringName = &""
 @export var caption: String = ""
+## How a citation names this pair (matrix A3); "" builds it from the two items.
+@export var pair_text: String = ""
 
 
 func to_core() -> Seam:
-	return Seam.make(a, b, kind, liar, destination, caption)
+	var seam: Seam = Seam.make(a, b, kind, liar, destination, caption)
+	seam.pair_text = pair_text
+	return seam

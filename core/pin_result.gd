@@ -9,3 +9,5 @@ var kind: Kind = Kind.INVALID
 var seam: Seam = null
 ## Clock time the pin cost (D24); 0 when untimed or not a no-seam pin.
 var seconds_lost: float = 0.0
+## The mentor's comment on the day's first grey thread (matrix A2); "" otherwise.
+var mentor_line: String = ""

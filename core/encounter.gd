@@ -4,6 +4,8 @@ extends RefCounted
 
 var id: StringName = &""
 var soul_name: String = ""
+## "him" or "her", for the recap and the mentor's lines.
+var pronoun: String = "him"
 ## Body facts, claim lines and witness lines.
 var items: Array[EvidenceItem] = []
 ## "" when there is no witness (day 1, or returned Hakon).
@@ -22,6 +24,8 @@ var plate_label: String = ""
 var returned: bool = false
 ## The soul whose stamp to Hel brings it back in a later encounter (D2).
 var return_eligible: bool = false
+## The guided steps on a tutorial soul (D16), in order; empty on unguided souls.
+var mentor_steps: Array[MentorStep] = []
 ## What really happened; shown only in the dusk recap and on the ending screen.
 var truth: String = ""
 

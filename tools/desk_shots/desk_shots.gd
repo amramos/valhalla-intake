@@ -32,7 +32,14 @@ func _run() -> void:
 	await _wait(0.4)
 	await _click_control(system.phase_card.next_button())
 	_expect(_soul() == "Ulf", "Begin seats Ulf")
+	_expect(system.body_chart.layers().size() == 5, "Ulf's chart is his own art stack")
 	await _shot("02_ulf")
+	var first_step: String = system.mentor_bubble.shown_text()
+	_expect(first_step != "", "the mentor's bubble opens Ulf's guided steps")
+	await _wait(0.4)
+	await _click_control(system.mentor_bubble.next_button())
+	_expect(system.mentor_bubble.shown_text() != first_step, "Next moves her script on")
+	await _shot("02b_mentor_next")
 	await _hover(system.body_chart.area("B2"))
 	_expect(system.hover_label.shown_text() == "no wound, back", "an absence hovers its label")
 	await _shot("03_hover_absence")
@@ -43,13 +50,15 @@ func _run() -> void:
 	_expect(_desk.commands().threads().size() == 1, "the second click pins a thread")
 	await _shot("05_law_thread")
 	await _double_click_control(_door(&"valhalla"))
-	_expect(system.stamp_prompt.question() == "Stamp Ulf to Valhalla?", "a door click asks")
+	_expect(
+		system.stamp_flow.stamp_prompt.question() == "Stamp Ulf to Valhalla?", "a door click asks"
+	)
 	await _shot("06_stamp_prompt")
-	await _double_click_control(system.stamp_prompt.confirm_button())
+	await _double_click_control(system.stamp_flow.stamp_prompt.confirm_button())
 	_expect(_soul() == "Ulf", "a double-click on the confirm stamps nothing")
 	await _shot("07_double_click_ignored")
 	await _wait(0.4)
-	await _click_control(system.stamp_prompt.confirm_button())
+	await _click_control(system.stamp_flow.stamp_prompt.confirm_button())
 	_expect(_soul() == "Kolbeinn", "one deliberate click on the confirm stamps")
 	await _shot("08_kolbeinn")
 	await _click_control(system.body_chart.area("B1"))
@@ -62,23 +71,62 @@ func _run() -> void:
 	await _click_control(system.claim_panel.area("C4"))
 	await _click_control(system.law_panel.area("L1"))
 	await _wait(3.1)
-	_expect(system.caption_strip.shown_text() == "No seam.", "a no-seam pin says so")
+	_expect(
+		system.caption_strip.shown_text() == "No seam: those two agree.", "a no-seam pin says so"
+	)
 	await _shot("11_no_seam")
 	await _hover(_door(&"folkvangr"))
+	_expect(system.hover_label.shown_glyph() == &"boar", "the barred door hovers its glyph")
 	await _shot("12_locked_door")
-	await _click_control(_door(&"valhalla"))
-	await _wait(0.4)
-	await _click_control(system.stamp_prompt.confirm_button())
-	_expect(_desk.commands().awaiting_next(), "the warning holds Kolbeinn (D48)")
-	_expect(system.feather.visible and system.next_soul_button.visible, "feather and Next soul")
+	await _drag(system.soul.figure(), _door(&"valhalla"), "12b_drag_preview")
+	_expect(
+		_desk.commands().awaiting_next(), "the soul dropped on the door is stamped and held (D48)"
+	)
+	_expect(
+		system.feather.visible and system.stamp_flow.next_soul_button.visible,
+		"feather and Next soul"
+	)
 	await _shot("13_warning_holds_soul")
 	await _click_control(system.feather)
 	await _shot("14_feather_clicked")
-	await _click_control(system.next_soul_button)
+	await _click_control(system.stamp_flow.next_soul_button)
 	_expect(_desk.commands().phase() == RunState.ENDING, "Next soul ends the one-day slice")
 	await _shot("15_dusk")
 	print("DESK SHOTS: %s" % ("PASS" if _failures == 0 else "%d FAILED" % _failures))
 	quit(0 if _failures == 0 else 1)
+
+
+## A real drag: press on `from`, move past the drag threshold and over `to`, release there.
+func _drag(from: Control, to: Control, shot_name: String) -> void:
+	var start: Vector2 = from.get_global_rect().get_center()
+	var end: Vector2 = to.get_global_rect().get_center()
+	await _hover(from)
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.position = start
+	press.global_position = start
+	root.push_input(press)
+	await _frames(1)
+	for step: int in range(1, 9):
+		var motion := InputEventMouseMotion.new()
+		motion.button_mask = MOUSE_BUTTON_MASK_LEFT
+		motion.position = start.lerp(end, step / 8.0)
+		motion.global_position = motion.position
+		motion.relative = (end - start) / 8.0
+		root.push_input(motion)
+		await _frames(1)
+	await _frames(2)
+	var question: String = _desk.system().stamp_flow.stamp_prompt.question()
+	_expect(question.begins_with("Stamp "), "dragging over an open door previews the stamp")
+	await _shot(shot_name)
+	var release := InputEventMouseButton.new()
+	release.button_index = MOUSE_BUTTON_LEFT
+	release.pressed = false
+	release.position = end
+	release.global_position = end
+	root.push_input(release)
+	await _frames(3)
 
 
 func _expect(condition: bool, what: String) -> void:

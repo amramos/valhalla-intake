@@ -1,14 +1,17 @@
 class_name ThreadLine
 extends Control
-## One thread on the desk (D8): an axis-aligned route drawn pixel by pixel in its kind's colour
-## and line pattern, so kinds differ by shape as well as colour. A grey thread carries an 8 px knot
-## that selects it (for Huginn); an answered knot is filled.
+## One thread on the desk (D8): an axis-aligned route drawn pixel by pixel on a dark halo, in its
+## kind's colour and line pattern, so kinds differ by shape as well as colour (red bold and
+## unbroken, grey dotted, law dashed; no reserved colour). A grey thread carries an 8 px knot
+## that selects it for Huginn (filled once answered); every other thread carries a 6 px bead. A
+## click on either shows the thread's caption again (D33).
 
 signal knot_clicked(thread_index: int)
 signal knot_hover_started(text: String, area: Rect2)
 signal knot_hover_ended
 
 const KNOT_SIZE := 8
+const BEAD_SIZE := 6
 
 ## Seam.Kind: RED, GREY or LAW.
 var kind: int = Seam.Kind.RED
@@ -49,9 +52,14 @@ func setup(
 	thread_index = p_index
 	points = p_points
 	caps = p_caps
-	if kind == Seam.Kind.GREY:
-		_add_knot(KnotPlacer.place(pixels(), avoid, KNOT_SIZE), knot_hover)
+	var knot_size: int = knot_size_for(kind)
+	_add_knot(KnotPlacer.place(pixels(), avoid, knot_size), knot_size, knot_hover)
 	queue_redraw()
+
+
+## The knot of a grey thread is 8 px (D8); other threads carry a 6 px bead.
+static func knot_size_for(p_kind: int) -> int:
+	return KNOT_SIZE if p_kind == Seam.Kind.GREY else BEAD_SIZE
 
 
 func has_knot() -> bool:
@@ -70,7 +78,7 @@ func covers(at: Vector2i) -> bool:
 	return false
 
 
-func _add_knot(corner: Vector2, hover: String) -> void:
+func _add_knot(corner: Vector2, knot_size: int, hover: String) -> void:
 	_knot = PinSelectable.new()
 	_knot.name = "Knot"
 	_knot.item_id = "knot:%d" % thread_index
@@ -78,7 +86,7 @@ func _add_knot(corner: Vector2, hover: String) -> void:
 	_knot.select_color = get_theme_color(&"select_dark", &"DeskPalette")
 	_knot.outline_color = get_theme_color(&"mark", &"DeskPalette")
 	add_child(_knot)
-	_knot.size = Vector2(KNOT_SIZE, KNOT_SIZE)
+	_knot.size = Vector2(knot_size, knot_size)
 	_knot.global_position = corner
 	_knot.clicked.connect(func(_id: String) -> void: knot_clicked.emit(thread_index))
 	_knot.hover_started.connect(
@@ -90,11 +98,24 @@ func _add_knot(corner: Vector2, hover: String) -> void:
 func _draw() -> void:
 	var color: Color = _color()
 	var origin: Vector2 = global_position
+	var halo: Color = get_theme_color(&"ink", &"DeskPalette")
+	var route: Array[Vector2i] = pixels()
+	for pixel: Vector2i in route:
+		draw_rect(Rect2(Vector2(pixel) - origin - Vector2.ONE, Vector2(3, 3)), halo)
 	var step: int = 0
-	for pixel: Vector2i in pixels():
+	for pixel: Vector2i in route:
 		if _pattern_on(step):
 			draw_rect(Rect2(Vector2(pixel) - origin, Vector2.ONE), color)
 		step += 1
+	if kind == Seam.Kind.RED:
+		# The red thread is bold: a rust core with a lighter edge beside it, unbroken.
+		var edge: Color = get_theme_color(&"thread_red_light", &"DeskPalette")
+		for index: int in range(route.size()):
+			var along: Vector2i = (
+				route[mini(index + 1, route.size() - 1)] - route[maxi(index - 1, 0)]
+			)
+			var side := Vector2i(1, 0) if absi(along.y) >= absi(along.x) else Vector2i(0, 1)
+			draw_rect(Rect2(Vector2(route[index] + side) - origin, Vector2.ONE), edge)
 	for cap: Rect2 in caps:
 		var local := Rect2(cap.position - origin, cap.size)
 		if cap.size.x <= 1.0:
@@ -106,10 +127,10 @@ func _draw() -> void:
 
 
 func _draw_knot(area: Rect2, color: Color) -> void:
+	draw_rect(area, get_theme_color(&"ink", &"DeskPalette"))
 	var inner: Rect2 = area.grow(-1)
-	draw_rect(inner, get_theme_color(&"desk", &"DeskPalette"))
 	draw_rect(inner.grow(-0.5), color, false, 1.0)
-	if answered:
+	if kind != Seam.Kind.GREY or answered:
 		draw_rect(inner.grow(-2), color)
 	else:
 		draw_rect(Rect2(inner.get_center() - Vector2.ONE, Vector2(2, 2)), color)

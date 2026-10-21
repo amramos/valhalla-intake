@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="DecreeData" format=3]
+
+[ext_resource type="Script" path="res://data/decree_data.gd" id="1_ci1ws"]
+
+[resource]
+script = ExtResource("1_ci1ws")
+id = "L4"
+text = "Even so, those who fled the battle go to Hel."

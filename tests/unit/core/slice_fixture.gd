@@ -112,7 +112,7 @@ static func kolbeinn() -> Encounter:
 
 
 static func asa() -> Encounter:
-	return encounter(
+	var result: Encounter = encounter(
 		&"asa",
 		"Asa",
 		Realm.HEL,
@@ -122,6 +122,8 @@ static func asa() -> Encounter:
 		[],
 		[Seam.make("B3", "L3", LAW, NONE, Realm.HEL, "the saga is true. L3: Hel.")]
 	)
+	result.pronoun = "her"
+	return result
 
 
 static func sigvaldi() -> Encounter:
@@ -172,7 +174,7 @@ static func grim() -> Encounter:
 
 
 static func freydis() -> Encounter:
-	return encounter(
+	var result: Encounter = encounter(
 		&"freydis",
 		"Freydis",
 		Realm.VALHALLA,
@@ -182,6 +184,8 @@ static func freydis() -> Encounter:
 		["She went over first."],
 		[Seam.make("C1", "L1", LAW, NONE, Realm.VALHALLA, "the saga is true. L1: Valhalla.")]
 	)
+	result.pronoun = "her"
+	return result
 
 
 static func returned_hakon(variant: String) -> Encounter:
@@ -230,6 +234,7 @@ static func ragna() -> Encounter:
 	)
 	result.hel_marked = true
 	result.plate_label = "Hel asked for her"
+	result.pronoun = "her"
 	return result
 
 

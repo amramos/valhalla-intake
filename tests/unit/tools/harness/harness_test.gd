@@ -4,8 +4,9 @@ extends GutTest
 
 const Fixture := preload("res://tests/unit/core/slice_fixture.gd")
 const Harness := preload("res://tools/harness/harness.gd")
-## Words that would name hidden fields; none may appear at dawn or at the desk.
-const HIDDEN_WORDS: Array[String] = ["legal", "worthy", "deserved", "truth", "liar", "seams"]
+## Words that would name hidden fields; none may appear at dawn or at the desk as a whole word
+## ("liar" is not among them: the mentor asks "Where does a liar go?" on the desk).
+const HIDDEN_WORDS: Array[String] = ["legal", "worthy", "deserved", "truth", "seams"]
 
 var _checked: int = 0
 var _leaks: Array[String] = []
@@ -16,7 +17,8 @@ func _check(harness: Harness) -> void:
 	var phase: StringName = harness.desk.phase()
 	_checked += 1
 	for word: String in HIDDEN_WORDS:
-		if phase in [&"dawn", &"desk"] and text.to_lower().contains(word):
+		var whole_word: RegEx = RegEx.create_from_string("\\b%s\\b" % word)
+		if phase in [&"dawn", &"desk"] and whole_word.search(text.to_lower()) != null:
 			_leaks.append("%s: '%s'" % [phase, word])
 	if phase != &"desk":
 		return
@@ -101,7 +103,7 @@ func test_a_stamp_costs_simulated_reading_time_and_the_horn_is_reported() -> voi
 	assert_eq(harness.desk.time_left(), 300.0 - Harness.STAMP_SECONDS)
 	harness.act("wait 275")
 	var result: String = harness.act("pin B1 C2")
-	assert_string_contains(result, "No seam. The clock loses 10 s.")
+	assert_string_contains(result, "No seam: those two agree. -10 s")
 	assert_string_contains(result, "The horn sounds.")
 	assert_string_contains(harness.describe(), "== Day 2, dusk ==")
 
@@ -160,3 +162,39 @@ func test_the_black_feather_shows_the_capped_citation_loss_not_the_net_change() 
 	harness.act("jump 3 3")
 	var result: String = harness.act("stamp hel")
 	assert_string_contains(result, "A black feather drops (-2): Citation: L5.")
+
+
+func test_an_untimed_no_seam_pin_reads_as_on_the_desk() -> void:
+	var harness := Harness.new(Fixture.desk())
+	harness.act("begin")
+	assert_eq(harness.act("pin B1 C2"), "No seam: those two agree.")
+
+
+func test_hels_tide_shows_at_her_door() -> void:
+	var harness := Harness.new(Fixture.desk())
+	harness.act("jump 1 3")
+	assert_string_contains(harness.describe(), "Hel's tide: 0 of 3")
+	harness.act("stamp hel")
+	assert_string_contains(harness.describe(), "Hel's tide: 1 of 3")
+
+
+func test_the_mentor_guides_ulf_and_ack_finishes_her_read_steps() -> void:
+	var harness := Harness.new(SliceLoader.load_slice())
+	harness.act("begin")
+	assert_string_contains(
+		harness.describe(), "The mentor: Hover each mark. [lit: B1, B2, B3] (ack to go on)"
+	)
+	assert_string_contains(harness.actions(), "ack")
+	assert_eq(harness.act("ack"), "You nod to the mentor.")
+	assert_string_contains(harness.describe(), "decree one. [lit: C1, L1] (ack to go on)")
+	harness.act("ack")
+	assert_string_contains(
+		harness.describe(), "Click one, then the other. [lit: C1, L1] (pin the lit pair)"
+	)
+	harness.act("ack")
+	assert_false(harness.last_ok, "a pin step isn't acknowledged away")
+	harness.act("pin C1 L1")
+	assert_string_contains(
+		harness.describe(),
+		"The mentor: The Law agrees. Stamp him. [points at the Valhalla door] (stamp)"
+	)

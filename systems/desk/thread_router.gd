@@ -5,7 +5,7 @@ extends RefCounted
 ##
 ## The desk's columns, left to right: the body chart, the claim and witness column, the Law. Each
 ## gap between them is a gutter two lanes wide; a third gutter runs along the top of the desk band.
-## A thread from a fact leaves upward to the top gutter, so it never crosses the other view.
+## A thread from a fact leaves sideways to the chart's margin (see _from_fact).
 
 ## Where an endpoint sits.
 enum Column { BODY, TESTIMONY, LAW }
@@ -44,9 +44,7 @@ func route(
 	var gutter: float = g2 if column_b == Column.LAW else g1
 	var points: Array[Vector2] = []
 	if column_a == Column.BODY:
-		# Up from the fact to the top gutter, so the thread never crosses the other view.
-		var x: float = floorf(item_a.get_center().x)
-		points = [Vector2(x, item_a.position.y - 1), Vector2(x, top), Vector2(gutter, top)]
+		points = _from_fact(item_a, panel_a, ya, g1, gutter, top)
 	else:
 		var exits_right: bool = column_a == Column.TESTIMONY and column_b == Column.LAW
 		var exit_x: float = panel_a.end.x if exits_right else panel_a.position.x - 1
@@ -54,6 +52,25 @@ func route(
 	points.append(Vector2(gutter, yb))
 	points.append(Vector2(panel_b.position.x - 1, yb))
 	return PackedVector2Array(points)
+
+
+## A thread leaves a fact sideways, never across the other view or a head: a front-view fact
+## (left half of the chart) runs out to the chart's left margin and up to the top gutter; a
+## back-view fact runs right into the body gutter. Both then reach `gutter` along the top.
+func _from_fact(
+	item: Rect2, chart: Rect2, y: float, g1: float, gutter: float, top: float
+) -> Array[Vector2]:
+	var points: Array[Vector2] = []
+	if item.get_center().x < chart.get_center().x:
+		var margin: float = chart.position.x + 1 + (top - top_gutter_y)
+		points = [Vector2(item.position.x - 1, y), Vector2(margin, y), Vector2(margin, top)]
+	else:
+		points = [Vector2(item.end.x, y), Vector2(g1, y)]
+		if gutter == g1:
+			return points
+		points.append(Vector2(g1, top))
+	points.append(Vector2(gutter, top))
+	return points
 
 
 ## Where the thread meets each item, marked in the thread's colour: a fact's whole hit area, or a

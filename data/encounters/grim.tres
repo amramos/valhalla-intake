@@ -1,0 +1,87 @@
+[gd_resource type="Resource" script_class="EncounterData" format=3]
+
+[ext_resource type="Script" path="res://data/fact_data.gd" id="1_5behd"]
+[ext_resource type="Script" path="res://data/mentor_step_data.gd" id="2_015a2"]
+[ext_resource type="Script" path="res://data/encounter_data.gd" id="3_wix1t"]
+[ext_resource type="Script" path="res://data/seam_data.gd" id="4_0hh6w"]
+
+[sub_resource type="Resource" id="fact_B1"]
+script = ExtResource("1_5behd")
+id = "B1"
+label = "no wound, chest"
+view = &"front"
+place = &"torso_front"
+
+[sub_resource type="Resource" id="fact_B2"]
+script = ExtResource("1_5behd")
+id = "B2"
+label = "spear wound, back"
+view = &"back"
+place = &"torso_back"
+
+[sub_resource type="Resource" id="fact_B3"]
+script = ExtResource("1_5behd")
+id = "B3"
+label = "nothing in hand"
+view = &"front"
+place = &"hand_right"
+
+[sub_resource type="Resource" id="fact_B4"]
+script = ExtResource("1_5behd")
+id = "B4"
+label = "wet to the knee"
+view = &"front"
+place = &"legs"
+
+[sub_resource type="Resource" id="seam_B2_C3"]
+script = ExtResource("4_0hh6w")
+a = "B2"
+b = "C3"
+liar = 1
+caption = "the body gives the lie."
+pair_text = "His back wound, and 'No wound on my back'"
+
+[sub_resource type="Resource" id="seam_B4_C2"]
+script = ExtResource("4_0hh6w")
+a = "B4"
+b = "C2"
+liar = 1
+caption = "the body gives the lie."
+
+[sub_resource type="Resource" id="seam_C1_W1"]
+script = ExtResource("4_0hh6w")
+a = "C1"
+b = "W1"
+kind = 1
+liar = 1
+caption = "one of them lies."
+
+[sub_resource type="Resource" id="seam_C4_W2"]
+script = ExtResource("4_0hh6w")
+a = "C4"
+b = "W2"
+kind = 1
+liar = 1
+caption = "one of them lies."
+
+[sub_resource type="Resource" id="seam_B3_L3"]
+script = ExtResource("4_0hh6w")
+a = "B3"
+b = "L3"
+kind = 2
+destination = &"hel"
+caption = "L3 sends him to Hel."
+
+[resource]
+script = ExtResource("3_wix1t")
+id = &"grim"
+soul_name = "Grim"
+body = Array[ExtResource("1_5behd")]([SubResource("fact_B1"), SubResource("fact_B2"), SubResource("fact_B3"), SubResource("fact_B4")])
+claim = Array[String](["Never left the hill.", "Dry when I fell.", "No wound on my back.", "Never in the water."])
+witness_name = "Orm, who stayed"
+witness = Array[String](["He ran off the hill.", "Waded into the ford.", "The dog stayed."])
+seams = Array[ExtResource("4_0hh6w")]([SubResource("seam_B2_C3"), SubResource("seam_B4_C2"), SubResource("seam_C1_W1"), SubResource("seam_C4_W2"), SubResource("seam_B3_L3")])
+legal_realm = &"hel"
+worthy_realm = &"hel"
+liar = true
+truth = "Grim ran off the hill for the ford. They speared him from behind in the water. His dog stayed."

@@ -1,12 +1,47 @@
 [gd_resource type="Resource" script_class="SliceData" format=3]
 
-[ext_resource type="Script" path="res://data/day_data.gd" id="1_j3ajh"]
-[ext_resource type="Resource" path="res://data/days/day_1.tres" id="2_nx84g"]
-[ext_resource type="Script" path="res://data/slice_data.gd" id="3_ofkn3"]
+[ext_resource type="Script" path="res://data/day_data.gd" id="1_vm6jf"]
+[ext_resource type="Resource" path="res://data/days/day_1.tres" id="2_47l6l"]
+[ext_resource type="Resource" path="res://data/days/day_2.tres" id="3_jhfel"]
+[ext_resource type="Resource" path="res://data/days/day_3.tres" id="4_tclrx"]
+[ext_resource type="Script" path="res://data/desk_text_data.gd" id="5_s6ag8"]
+[ext_resource type="Resource" path="res://data/encounters/egil.tres" id="6_qm7rf"]
+[ext_resource type="Resource" path="res://data/encounters/hakon_ignored.tres" id="7_krj76"]
+[ext_resource type="Resource" path="res://data/encounters/hakon_missed.tres" id="8_vr30s"]
+[ext_resource type="Script" path="res://data/slice_data.gd" id="9_sndyr"]
+
+[sub_resource type="Resource" id="Resource_0aw3e"]
+script = ExtResource("5_s6ag8")
+thread_format = "%s against %s: %s"
+no_seam_line = "No seam: those two agree."
+no_seam_timed_format = "No seam: those two agree. -%d s"
+huginn_select_hover = "Select a grey thread first."
+huginn_extra_hover = "Extra answer: 2 feathers."
+huginn_bought_format = "Huginn takes 2 feathers. %s"
+dusk_citations_format = "Citations today: %d."
+dusk_no_citations = "No citations today."
+quota_met_format = "Odin wanted %d. Valhalla took %d. +%d feathers."
+quota_short_format = "Odin wanted %d. Valhalla took %d. -%d feathers."
+tide_title = "Hel's tide"
+tide_format = "The worthy you damned march with Hel. At the first horn they break the line: %s."
+hollow_title = "The hollow hall"
+hollow_format = "The liars you let in fled at the first horn. Their benches stand empty: %s."
+hall_title = "The Hall holds"
+hall_text = "Odin counts his einherjar and finds them true. The gate holds, for now."
+ending_row_format = "%s: %s. Truth: %s."
+ending_ignored = " Ignored."
+ending_missed = " Missed."
+ending_never_format = "%s: never judged."
+returned_name_format = "%s (returned)"
+standing_format = "Feathers: %d. Rank: %s."
+play_again = "Play again"
 
 [resource]
-script = ExtResource("3_ofkn3")
-days = Array[ExtResource("1_j3ajh")]([ExtResource("2_nx84g")])
+script = ExtResource("9_sndyr")
+days = Array[ExtResource("1_vm6jf")]([ExtResource("2_47l6l"), ExtResource("3_jhfel"), ExtResource("4_tclrx")])
+returned_ignored = ExtResource("7_krj76")
+returned_missed = ExtResource("8_vr30s")
+fallback = ExtResource("6_qm7rf")
 start_feathers = 10
 quota_met_reward = 2
 quota_short_cost = 1
@@ -21,13 +56,30 @@ huginn_seconds = 5.0
 clock_warning_seconds = 30.0
 tide_threshold = 3
 hollow_threshold = 2
+desk_text = SubResource("Resource_0aw3e")
+recap_agree_format = "%s, as the Law and the truth agree."
+recap_legal_format = "The Law sent %s to %s. The truth was %s."
+recap_mercy_format = "You sent %s to %s against %s. The truth agrees."
+recap_neither_format = "You sent %s to %s. The Law said %s. The truth was %s."
+recap_uncertain_format = "%s. Which side lied couldn't be proven at the desk."
+recap_never_line = "Never judged."
+ledger_open_format = "Hel: send %s to Hel. %d feathers."
+ledger_kept_format = "Kept. %s went to Hel. Hel paid %d feathers."
+ledger_broken_format = "Broken. %s went to %s."
+ledger_lapsed_format = "Lapsed. %s was never judged."
+mentor_mercy_warning_format = "Kind. %s. From tomorrow, that costs feathers."
+mentor_illegal_warning_format = "%s. Wrong door. From tomorrow, that costs feathers."
+mentor_mercy_format = "Kind. %s. That cost you two."
+mentor_liar_format = "%s. You let a liar through."
+mentor_honest_format = "%s. Nothing in that saga was a lie."
+mentor_promise_format = "%s. Hel pays well."
+mentor_grey_line = "One of them lies. The body may say which."
+mentor_grey_huginn_line = "Huginn answers that. Two a day."
 liar_decree_id = "L2"
 liar_realm = &"hel"
-huginn_claim_answer = "The claim lies."
-huginn_witness_answer = "The witness lies."
-citation_format = "Citation: %s. %s against %s."
+huginn_claim_answer = "Huginn: the claim lies."
+huginn_witness_answer = "Huginn: the witness lies."
+citation_format = "Citation: %s. %s."
 threaded_line = "You threaded it yourself."
-uncertain_line = "Couldn't be proven at the desk."
-returned_format = "%s is back."
-hel_offer_format = "Hel's offer: send %s to her tomorrow, and she pays %d feathers."
-promise_format = "Hel's promise, %s: %s."
+returned_format = "%s is back. Hel sent him up the road. He will be at your desk tomorrow."
+hel_offer_format = "Hel, at the serpent door: 'Tomorrow %s comes to your desk. Send her to me, and I pay four feathers at the stamp.'"

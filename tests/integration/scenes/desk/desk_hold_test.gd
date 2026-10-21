@@ -25,7 +25,7 @@ func test_while_a_cited_soul_waits_only_next_soul_acts() -> void:
 	assert_eq(_soul(), "Asgaut")
 
 	_door(&"hel").press()
-	assert_false(_system.stamp_prompt.visible, "a door press is refused")
+	assert_false(_system.stamp_flow.stamp_prompt.visible, "a door press is refused")
 
 	var before: float = _desk.commands().time_left()
 	_system._process(5.0)
@@ -41,7 +41,7 @@ func test_while_a_cited_soul_waits_only_next_soul_acts() -> void:
 	_system.claim_panel.area("C3").press()
 	assert_false(_system.claim_panel.area("C3").selected, "no new pin starts")
 
-	_system.next_soul_button.pressed.emit()
+	_system.stamp_flow.next_soul_button.pressed.emit()
 	assert_eq(_soul(), "Second", "Next soul seats the next one")
 	_system._process(5.0)
 	assert_lt(_desk.commands().time_left(), before, "and the clock runs again")
@@ -114,8 +114,8 @@ func _area(item_id: String) -> PinSelectable:
 
 func _stamp(realm: StringName) -> void:
 	_door(realm).press()
-	_system.stamp_prompt.confirm_button().arm_now()
-	_system.stamp_prompt.confirm_button().pressed.emit()
+	_system.stamp_flow.stamp_prompt.confirm_button().arm_now()
+	_system.stamp_flow.stamp_prompt.confirm_button().pressed.emit()
 
 
 func _door(realm: StringName) -> Door:

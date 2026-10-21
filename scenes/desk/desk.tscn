@@ -12,7 +12,25 @@
 [ext_resource type="Script" path="res://components/hover_label/hover_label.gd" id="10_hover"]
 [ext_resource type="PackedScene" path="res://entities/phase_card/phase_card.tscn" id="11_card"]
 [ext_resource type="Script" path="res://systems/desk/desk_system.gd" id="12_system"]
-[ext_resource type="Script" path="res://entities/black_feather/black_feather.gd" id="13_feather"]
+[ext_resource type="Script" path="res://components/clickable_sprite/clickable_sprite.gd" id="13_sprite"]
+[ext_resource type="Script" path="res://entities/mentor/mentor_bubble.gd" id="14_bubble"]
+[ext_resource type="Script" path="res://systems/desk/stamp_flow.gd" id="15_stamp"]
+[ext_resource type="Resource" path="res://entities/body_chart/body_stacks.tres" id="16_stacks"]
+[ext_resource type="Texture2D" path="res://assets/art/scenes/gate-desk.png" id="17_backdrop"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/valhalla-lit.png" id="18_vlit"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/valhalla-locked.png" id="19_vlock"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/hel-lit.png" id="20_hlit"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/hel-locked.png" id="21_hlock"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/folkvangr-lit.png" id="22_flit"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/folkvangr-locked.png" id="23_flock"]
+[ext_resource type="Texture2D" path="res://assets/art/portraits/huginn.png" id="24_huginn"]
+[ext_resource type="Texture2D" path="res://assets/art/portraits/mentor.png" id="25_mentor"]
+[ext_resource type="Texture2D" path="res://assets/art/props/feather-black.png" id="26_feather"]
+[ext_resource type="Texture2D" path="res://assets/art/ui/nameplate-plain.png" id="27_plain"]
+[ext_resource type="Texture2D" path="res://assets/art/ui/nameplate-frost.png" id="28_frost"]
+[ext_resource type="Texture2D" path="res://assets/art/ui/nameplate-hel.png" id="29_hel"]
+[ext_resource type="AudioStream" path="res://assets/audio/stamp_thud.ogg" id="30_thud"]
+[ext_resource type="AudioStream" path="res://assets/audio/seam_found.ogg" id="31_seam"]
 
 [node name="Desk" type="Control"]
 layout_mode = 3
@@ -22,26 +40,12 @@ offset_bottom = 270.0
 theme = ExtResource("2_theme")
 script = ExtResource("1_desk")
 
-[node name="GateBand" type="TextureRect" parent="."]
+[node name="Backdrop" type="TextureRect" parent="."]
 layout_mode = 0
-offset_right = 480.0
-offset_bottom = 96.0
-mouse_filter = 2
-
-[node name="DeskBand" type="ColorRect" parent="."]
-layout_mode = 0
-offset_top = 96.0
 offset_right = 480.0
 offset_bottom = 270.0
 mouse_filter = 2
-color = Color(0.1882, 0.1647, 0.1725, 1)
-
-[node name="Soul" type="Control" parent="."]
-layout_mode = 0
-offset_left = 2.0
-offset_right = 62.0
-offset_bottom = 96.0
-script = ExtResource("3_soul")
+texture = ExtResource("17_backdrop")
 
 [node name="DoorValhalla" type="Control" parent="."]
 layout_mode = 0
@@ -52,16 +56,20 @@ offset_bottom = 77.0
 script = ExtResource("4_door")
 realm = &"valhalla"
 glyph = &"spear"
+lit_texture = ExtResource("18_vlit")
+locked_texture = ExtResource("19_vlock")
 
 [node name="DoorHel" type="Control" parent="."]
 layout_mode = 0
 offset_left = 196.0
 offset_top = 9.0
-offset_right = 254.0
+offset_right = 256.0
 offset_bottom = 77.0
 script = ExtResource("4_door")
 realm = &"hel"
 glyph = &"serpent"
+lit_texture = ExtResource("20_hlit")
+locked_texture = ExtResource("21_hlock")
 
 [node name="DoorFolkvangr" type="Control" parent="."]
 layout_mode = 0
@@ -72,6 +80,35 @@ offset_bottom = 77.0
 script = ExtResource("4_door")
 realm = &"folkvangr"
 glyph = &"boar"
+lit_texture = ExtResource("22_flit")
+locked_texture = ExtResource("23_flock")
+
+[node name="Huginn" type="TextureRect" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 268.0
+offset_top = 34.0
+offset_right = 316.0
+offset_bottom = 74.0
+mouse_filter = 2
+texture = ExtResource("24_huginn")
+
+[node name="WalkLayer" type="Control" parent="."]
+layout_mode = 0
+offset_right = 480.0
+offset_bottom = 96.0
+mouse_filter = 2
+
+[node name="Soul" type="Control" parent="."]
+layout_mode = 0
+offset_left = 2.0
+offset_right = 62.0
+offset_bottom = 96.0
+script = ExtResource("3_soul")
+stacks = ExtResource("16_stacks")
+plate_plain = ExtResource("27_plain")
+plate_frost = ExtResource("28_frost")
+plate_hel = ExtResource("29_hel")
 
 [node name="Hud" type="Control" parent="."]
 layout_mode = 0
@@ -114,33 +151,36 @@ offset_top = 100.0
 offset_right = 130.0
 offset_bottom = 200.0
 script = ExtResource("7_chart")
+stacks = ExtResource("16_stacks")
 
-[node name="MentorPortrait" type="ColorRect" parent="."]
+[node name="MentorPortrait" type="Control" parent="."]
 layout_mode = 0
 offset_left = 2.0
 offset_top = 204.0
 offset_right = 34.0
 offset_bottom = 236.0
-mouse_filter = 2
-color = Color(0.0588, 0.1451, 0.1882, 1)
-
-[node name="Placeholder" type="Label" parent="MentorPortrait"]
-layout_mode = 0
-offset_left = 2.0
-offset_top = 8.0
-offset_right = 32.0
-offset_bottom = 21.0
-theme_override_colors/font_color = Color(0.4784, 0.4941, 0.4824, 1)
-text = "mntr"
+script = ExtResource("13_sprite")
+texture = ExtResource("25_mentor")
+hover_text = "the mentor"
 
 [node name="Feather" type="Control" parent="."]
 visible = false
 layout_mode = 0
-offset_left = 38.0
+offset_left = 36.0
 offset_top = 204.0
-offset_right = 50.0
-offset_bottom = 216.0
-script = ExtResource("13_feather")
+offset_right = 68.0
+offset_bottom = 236.0
+script = ExtResource("13_sprite")
+texture = ExtResource("26_feather")
+hover_text = "black feather: a citation"
+
+[node name="MentorBubble" type="Control" parent="."]
+layout_mode = 0
+offset_left = 70.0
+offset_top = 204.0
+offset_right = 130.0
+offset_bottom = 268.0
+script = ExtResource("14_bubble")
 
 [node name="ClaimPanel" type="Control" parent="."]
 layout_mode = 0
@@ -196,7 +236,24 @@ layout_mode = 0
 mouse_filter = 2
 script = ExtResource("10_hover")
 
-[node name="DeskSystem" type="Node" parent="." node_paths=PackedStringArray("body_chart", "claim_panel", "witness_panel", "law_panel", "doors", "thread_layer", "caption_strip", "hover_label", "soul", "hud", "stamp_prompt", "ask_huginn", "phase_card", "feather", "next_soul_button")]
+[node name="ThudPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("30_thud")
+
+[node name="SeamPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("31_seam")
+
+[node name="StampFlow" type="Node" parent="." node_paths=PackedStringArray("doors", "stamp_prompt", "soul", "feather", "next_soul_button", "caption_strip", "thud_player", "walk_layer")]
+script = ExtResource("15_stamp")
+doors = [NodePath("../DoorValhalla"), NodePath("../DoorHel"), NodePath("../DoorFolkvangr")]
+stamp_prompt = NodePath("../StampPrompt")
+soul = NodePath("../Soul")
+feather = NodePath("../Feather")
+next_soul_button = NodePath("../NextSoul")
+caption_strip = NodePath("../CaptionStrip")
+thud_player = NodePath("../ThudPlayer")
+walk_layer = NodePath("../WalkLayer")
+
+[node name="DeskSystem" type="Node" parent="." node_paths=PackedStringArray("body_chart", "claim_panel", "witness_panel", "law_panel", "doors", "thread_layer", "caption_strip", "hover_label", "soul", "hud", "ask_huginn", "huginn", "phase_card", "feather", "mentor_portrait", "mentor_bubble", "stamp_flow", "seam_player")]
 script = ExtResource("12_system")
 body_chart = NodePath("../BodyChart")
 claim_panel = NodePath("../ClaimPanel")
@@ -208,8 +265,11 @@ caption_strip = NodePath("../CaptionStrip")
 hover_label = NodePath("../HoverLabel")
 soul = NodePath("../Soul")
 hud = NodePath("../Hud")
-stamp_prompt = NodePath("../StampPrompt")
 ask_huginn = NodePath("../AskHuginn")
+huginn = NodePath("../Huginn")
 phase_card = NodePath("../PhaseCard")
 feather = NodePath("../Feather")
-next_soul_button = NodePath("../NextSoul")
+mentor_portrait = NodePath("../MentorPortrait")
+mentor_bubble = NodePath("../MentorBubble")
+stamp_flow = NodePath("../StampFlow")
+seam_player = NodePath("../SeamPlayer")

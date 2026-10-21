@@ -23,7 +23,7 @@ func before_each() -> void:
 func test_the_confirm_swallows_a_double_click_and_takes_one_click() -> void:
 	_begin()
 	_door(&"valhalla").press()
-	var confirm: GuardedButton = _system.stamp_prompt.confirm_button()
+	var confirm: GuardedButton = _system.stamp_flow.stamp_prompt.confirm_button()
 	confirm.arm_now()
 	var at: Vector2 = confirm.get_global_rect().get_center()
 	_click(at, true)
@@ -35,7 +35,7 @@ func test_the_confirm_swallows_a_double_click_and_takes_one_click() -> void:
 func test_the_confirm_ignores_a_click_before_it_is_armed() -> void:
 	_begin()
 	_door(&"valhalla").press()
-	_click(_system.stamp_prompt.confirm_button().get_global_rect().get_center(), false)
+	_click(_system.stamp_flow.stamp_prompt.confirm_button().get_global_rect().get_center(), false)
 	assert_eq(_soul(), "Ulf")
 
 
@@ -48,7 +48,7 @@ func test_a_door_ignores_the_second_press_of_a_double_click() -> void:
 	assert_signal_not_emitted(door, "door_clicked")
 	_click(at, false)
 	assert_signal_emitted(door, "door_clicked")
-	assert_true(_system.stamp_prompt.visible)
+	assert_true(_system.stamp_flow.stamp_prompt.visible)
 
 
 func test_the_phase_card_button_swallows_a_double_click() -> void:
@@ -67,10 +67,11 @@ func test_the_prompt_and_next_soul_sit_clear_of_every_door() -> void:
 	for door: Door in _system.doors:
 		var area: Rect2 = door.get_global_rect()
 		assert_false(
-			area.intersects(_system.stamp_prompt.get_global_rect()), "prompt over %s" % door.realm
+			area.intersects(_system.stamp_flow.stamp_prompt.get_global_rect()),
+			"prompt over %s" % door.realm
 		)
 		assert_false(
-			area.intersects(_system.next_soul_button.get_global_rect()),
+			area.intersects(_system.stamp_flow.next_soul_button.get_global_rect()),
 			"Next soul over %s" % door.realm
 		)
 
@@ -78,7 +79,7 @@ func test_the_prompt_and_next_soul_sit_clear_of_every_door() -> void:
 func test_asking_again_rearms_the_confirm() -> void:
 	_begin()
 	_door(&"valhalla").press()
-	var confirm: GuardedButton = _system.stamp_prompt.confirm_button()
+	var confirm: GuardedButton = _system.stamp_flow.stamp_prompt.confirm_button()
 	confirm.arm_now()
 	assert_true(confirm.is_armed())
 	_door(&"hel").press()

@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="EncounterData" format=3]
+
+[ext_resource type="Script" path="res://data/fact_data.gd" id="1_vl4rc"]
+[ext_resource type="Script" path="res://data/mentor_step_data.gd" id="2_ojf61"]
+[ext_resource type="Script" path="res://data/encounter_data.gd" id="3_0h37m"]
+[ext_resource type="Script" path="res://data/seam_data.gd" id="4_53gtb"]
+
+[sub_resource type="Resource" id="fact_B1"]
+script = ExtResource("1_vl4rc")
+id = "B1"
+label = "spear wound, chest"
+view = &"front"
+place = &"torso_front"
+
+[sub_resource type="Resource" id="fact_B2"]
+script = ExtResource("1_vl4rc")
+id = "B2"
+label = "spear wound, back"
+view = &"back"
+place = &"torso_back"
+
+[sub_resource type="Resource" id="fact_B3"]
+script = ExtResource("1_vl4rc")
+id = "B3"
+label = "sword in hand"
+view = &"front"
+place = &"hand_right"
+
+[sub_resource type="Resource" id="seam_C1_L1"]
+script = ExtResource("4_53gtb")
+a = "C1"
+b = "L1"
+kind = 2
+destination = &"valhalla"
+caption = "the saga is true. L1 sends him to Valhalla."
+pair_text = "'Fell in battle. Ness' and L1"
+
+[resource]
+script = ExtResource("3_0h37m")
+id = &"sigvaldi"
+soul_name = "Sigvaldi"
+body = Array[ExtResource("1_vl4rc")]([SubResource("fact_B1"), SubResource("fact_B2"), SubResource("fact_B3")])
+claim = Array[String](["Fell in battle. Ness.", "My sword broke early.", "Took a Dane's instead.", "Mother kept my bed."])
+witness_name = "Bjorn, his shield-brother"
+witness = Array[String](["Our wall broke.", "A Dane got in behind.", "Speared his back."])
+seams = Array[ExtResource("4_53gtb")]([SubResource("seam_C1_L1")])
+red_herrings = Array[String](["B2|L4", "B2|C1", "B3|C2"])
+legal_realm = &"valhalla"
+worthy_realm = &"valhalla"
+truth = "Sigvaldi held the wall at Ness until it broke. A Dane got in behind him."

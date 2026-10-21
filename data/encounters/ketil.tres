@@ -1,0 +1,58 @@
+[gd_resource type="Resource" script_class="EncounterData" format=3]
+
+[ext_resource type="Script" path="res://data/fact_data.gd" id="1_kujg2"]
+[ext_resource type="Script" path="res://data/mentor_step_data.gd" id="2_wemdh"]
+[ext_resource type="Script" path="res://data/encounter_data.gd" id="3_4x5e8"]
+[ext_resource type="Script" path="res://data/seam_data.gd" id="4_l1xpm"]
+
+[sub_resource type="Resource" id="fact_B1"]
+script = ExtResource("1_kujg2")
+id = "B1"
+label = "spear wound, chest"
+view = &"front"
+place = &"torso_front"
+
+[sub_resource type="Resource" id="fact_B2"]
+script = ExtResource("1_kujg2")
+id = "B2"
+label = "no wound, back"
+view = &"back"
+place = &"torso_back"
+
+[sub_resource type="Resource" id="fact_B3"]
+script = ExtResource("1_kujg2")
+id = "B3"
+label = "sword in hand"
+view = &"front"
+place = &"hand_right"
+
+[sub_resource type="Resource" id="fact_B4"]
+script = ExtResource("1_kujg2")
+id = "B4"
+label = "wet to the knee"
+view = &"front"
+place = &"legs"
+
+[sub_resource type="Resource" id="seam_C2_W1"]
+script = ExtResource("4_l1xpm")
+a = "C2"
+b = "W1"
+kind = 1
+liar = 1
+caption = "one of them lies."
+pair_text = "Huginn's answer, and 'Held it. Never ran'"
+
+[resource]
+script = ExtResource("3_4x5e8")
+id = &"ketil"
+soul_name = "Ketil"
+body = Array[ExtResource("1_kujg2")]([SubResource("fact_B1"), SubResource("fact_B2"), SubResource("fact_B3"), SubResource("fact_B4")])
+claim = Array[String](["Raiders at the ford.", "Held it. Never ran.", "Speared in the chest.", "Sigrid will sing it."])
+witness_name = "Hauk, his neighbour"
+witness = Array[String](["Ketil ran first.", "Caught in the ford.", "He turned. Too late."])
+seams = Array[ExtResource("4_l1xpm")]([SubResource("seam_C2_W1")])
+red_herrings = Array[String](["B1|W1", "B4|C2", "B4|W1"])
+legal_realm = &"hel"
+worthy_realm = &"hel"
+liar = true
+truth = "Ketil ran at the first spear. They caught him in the ford; he turned too late."

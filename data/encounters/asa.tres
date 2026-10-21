@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="EncounterData" format=3]
+
+[ext_resource type="Script" path="res://data/fact_data.gd" id="1_n7epl"]
+[ext_resource type="Script" path="res://data/mentor_step_data.gd" id="2_wrlik"]
+[ext_resource type="Script" path="res://data/encounter_data.gd" id="3_ddwa7"]
+[ext_resource type="Script" path="res://data/seam_data.gd" id="4_alkvu"]
+
+[sub_resource type="Resource" id="fact_B1"]
+script = ExtResource("1_n7epl")
+id = "B1"
+label = "spear wound, chest"
+view = &"front"
+place = &"torso_front"
+
+[sub_resource type="Resource" id="fact_B2"]
+script = ExtResource("1_n7epl")
+id = "B2"
+label = "no wound, back"
+view = &"back"
+place = &"torso_back"
+
+[sub_resource type="Resource" id="fact_B3"]
+script = ExtResource("1_n7epl")
+id = "B3"
+label = "nothing in hand"
+view = &"front"
+place = &"hand_right"
+
+[sub_resource type="Resource" id="seam_B3_L3"]
+script = ExtResource("4_alkvu")
+a = "B3"
+b = "L3"
+kind = 2
+destination = &"hel"
+caption = "the saga is true. L3 sends her to Hel."
+pair_text = "Her empty hand, and L3"
+
+[resource]
+script = ExtResource("3_ddwa7")
+id = &"asa"
+soul_name = "Asa"
+pronoun = "her"
+body = Array[ExtResource("1_n7epl")]([SubResource("fact_B1"), SubResource("fact_B2"), SubResource("fact_B3")])
+claim = Array[String](["Danes on the beach.", "Spear in both hands.", "It broke. I kept on.", "My girl has the farm."])
+seams = Array[ExtResource("4_alkvu")]([SubResource("seam_B3_L3")])
+red_herrings = Array[String](["B3|C2"])
+legal_realm = &"hel"
+worthy_realm = &"valhalla"
+truth = "Asa fell in battle on the beach. Her spear broke in a Dane and she fought on bare-handed."
