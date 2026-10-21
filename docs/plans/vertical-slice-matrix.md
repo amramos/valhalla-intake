@@ -184,7 +184,7 @@ door: "The Law agrees with him. Stamp him."
 |---|---|
 | C1 | ♥ "Gorm called me out." |
 | C2 | "Sword stayed sheathed." |
-| C3 | "Ran me through." |
+| C3 | "Blade in my chest." |
 | C4 | "Not a bone broken." |
 
 | Seam | Type | Decree · liar side | Caption |
@@ -192,9 +192,8 @@ door: "The Law agrees with him. Stamp him."
 | B1 × C3 | red | liar C3 | "the body gives the lie." |
 | B4 × C4 | red | liar C4 | "the body gives the lie." |
 | B3 × C2 | red | liar C2 | "the body gives the lie." |
-| B2 × C3 | red | liar C3 | "the body gives the lie." |
 
-**Red herrings:** none. (B4 × C3 is no seam: a broken neck and a sword wound could both be true; C4
+**Red herrings:** none. (B4 × C3 is no seam: a broken neck and a chest wound could both be true; B2 × C3 is no seam: a blade in the chest needn't come out the back; C4
 is the line the neck breaks.)
 **Mentor (guided):** "Your turn to read." → highlights **B1** and **C3**: "His chest. His third
 line." → red thread → "Where does a liar go?" (no door lit: the player chooses).
@@ -332,7 +331,7 @@ to Hel; *missed* otherwise. Stamped to Hel → slot 10 is returned Hakon; dusk l
 | Legal | **Hel** — L2 (also L3) |
 | Worthy | **Hel** (open) |
 | Liar · permitted uncertainty | yes · none (his grey seam is settled by the body, D30) |
-| Purpose | Wet to the knee against an explicit dryness claim, "Never got my feet wet" (D25's hill line stays as context); the same back wound as Sigvaldi with the opposite verdict; the first grey thread (D25) |
+| Purpose | Wet to the knee against an explicit dryness claim, "Never in the water" (D25's hill line stays as context); the same back wound as Sigvaldi with the opposite verdict; the first grey thread (D25) |
 | Truth (recap) | Ran for the ford when the Danes came. Cut down from behind, halfway across. His dog stayed on the hill |
 
 | Fact | Label | View · place | Visual state |
@@ -345,7 +344,7 @@ to Hel; *missed* otherwise. Stamped to Hel → slot 10 is returned Hakon; dusk l
 | Line | Text |
 |---|---|
 | C1 | "Never left the hill." |
-| C2 | "Never got my feet wet." |
+| C2 | "Never in the water." |
 | C3 | "Not one wound behind." |
 | C4 | ♥ "Dog's still up there." |
 | **Witness** | **Orm, who stayed** |
@@ -645,7 +644,7 @@ souls.
 | wound, front | chest | Brand B1 × C3 (red) | Ketil B1 × W1 | Ulf, Asa, Sigvaldi, Egil |
 | wound, back | upper back | Grim B2 × C3 (red); returned Hakon B2 × C3 (red) | Sigvaldi B2 × L4, B2 × C1; Freydis B2 × L4, B2 × C3 | Hakon (day 2: Hel by L4; Sigvaldi: Valhalla — one wound, two verdicts) |
 | no wound, front | chest | Kolbeinn B1 × C1; Hallr B1 × C3; returned Hakon B1 × C3 (all red) | Ragna B1 × C2 | Grim, Hakon, Freydis |
-| no wound, back | upper back | Hallr B2 × C3; Brand B2 × C3 (red) | Ragna B2 × C2 | Ulf, Kolbeinn, Asa, Egil, Ketil |
+| no wound, back | upper back | Brand B2 × C3 (red) | Ragna B2 × C2 | Ulf, Kolbeinn, Hallr, Asa, Egil, Ketil |
 | sword, gripped | right hand | Hallr B3 × C2 (red) | Sigvaldi B3 × C2 | Ulf, Hakon, Freydis, returned Hakon, Egil, Ragna, Ketil |
 | nothing in hand | right hand | Kolbeinn B3 × C3 (red); Kolbeinn, Asa, Grim, Brand B3 × L3 (law) | Asa B3 × C2 | — |
 | neck, broken | neck | Hallr B4 × C4 (red) | Ragna B4 × C2 | — |
@@ -665,7 +664,7 @@ the clean blade (D25: it can't be seen).
 | Encounters | 14 authored: slots 1–9, 11, 12, plus slot 10 as returned Hakon (ignored), returned Hakon (missed) or Egil — the 15 that D39 names, with slot 10 counted once per branch (Resolved 5) |
 | Fact instances | 51 |
 | Fact states (labels) | 10, on 7 hit areas; 7 drawn overlays, 3 absences |
-| Lie seams, red | 17 pairs |
+| Lie seams, red | 16 pairs |
 | Lie seams, grey | 5 pairs |
 | Law threads | 14 pairs |
 | Red herrings | 15 pairs, on 5 souls (Asa, Sigvaldi, Freydis, Ragna, Ketil) |

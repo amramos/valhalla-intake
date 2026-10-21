@@ -182,7 +182,7 @@ that isn't in the ledger doesn't belong here.
       - **Sigvaldi:** a back-wound red herring, explained by his witness;
       - **Hakon:** admits leaving the line carrying Ivar, who is not his kin and is never carried
         in defence; L4 sends him to Hel (he grips a sword, so L3 doesn't apply); worthy of Valhalla on both days;
-      - **Grim:** wet to the knee against "Never got my feet wet.", and his back wound against "Not
+      - **Grim:** wet to the knee against "Never in the water.", and his back wound against "Not
         one wound behind." (D47);
       - **Brand:** soft hands against "Hands hard as oak." (D47);
       - **Freydis:** a back-wound red herring;
