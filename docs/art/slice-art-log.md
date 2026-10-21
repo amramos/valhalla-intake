@@ -201,3 +201,16 @@ The built desk (`scenes/desk/desk.tscn`), not the A3 sketch, is now the layout r
 - Lint: `58 file(s) checked, 0 error(s), 0 warning(s)`. The art coverage check passes.
 
 Total time with the rework: about 44 minutes.
+
+## Spear wounds (content follow-up), 15:08 to 15:12, 4 minutes
+
+The final content labels every wound as a spear wound ("spear wound, chest", "spear wound, back").
+The diagonal tears read as gashes, which would contradict those labels.
+
+- `body/wound-front.png`, `body/wound-back.png` and `souls/wound-front.png` were redrawn as a small
+  round puncture: a 4x4 ring in Blood 1 with a Blood 0 centre, and a 2-pixel blood run below it.
+  Blood ramp only.
+- The front wound is at (37,34) on the chest; the back wound is at (98,33) on the upper back. Both
+  sit inside the body chart's torso hit areas.
+- The composites and review sheets were redone. Lint against the repository's config, which now
+  carries the WP2 canvases: 58 files, 0 errors.
