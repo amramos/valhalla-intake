@@ -331,7 +331,7 @@ to Hel; *missed* otherwise. Stamped to Hel → slot 10 is returned Hakon; dusk l
 | Legal | **Hel** — L2 (also L3) |
 | Worthy | **Hel** (open) |
 | Liar · permitted uncertainty | yes · none (his grey seam is settled by the body, D30) |
-| Purpose | Wet to the knee against an explicit dryness claim, "Never in the water" (D25's hill line stays as context); the same back wound as Sigvaldi with the opposite verdict; the first grey thread (D25) |
+| Purpose | Wet to the knee against an explicit dryness claim, "Dry when I fell" (D25's hill line stays as context); the same back wound as Sigvaldi with the opposite verdict; the first grey thread (D25) |
 | Truth (recap) | Ran for the ford when the Danes came. Cut down from behind, halfway across. His dog stayed on the hill |
 
 | Fact | Label | View · place | Visual state |
@@ -344,20 +344,20 @@ to Hel; *missed* otherwise. Stamped to Hel → slot 10 is returned Hakon; dusk l
 | Line | Text |
 |---|---|
 | C1 | "Never left the hill." |
-| C2 | "Never in the water." |
+| C2 | "Dry when I fell." |
 | C3 | "Not one wound behind." |
-| C4 | ♥ "Dog's still up there." |
+| C4 | "Never in the water." |
 | **Witness** | **Orm, who stayed** |
 | W1 | "He ran off the hill." |
 | W2 | "Waded into the ford." |
-| W3 | "The dog stayed." |
+| W3 | ♥ "The dog stayed." |
 
 | Seam | Type | Decree · liar side | Caption |
 |---|---|---|---|
 | B4 × C2 | red | liar C2 | "the body gives the lie." |
 | B2 × C3 | red | liar C3 | "the body gives the lie." |
 | C1 × W1 | grey | liar C1 | "one of them lies." |
-| C2 × W2 | grey | liar C2 | "one of them lies." |
+| C4 × W2 | grey | liar C4 | "one of them lies." |
 | B3 × L3 | law | L3 → Hel | "L3 sends him to Hel." |
 
 **Red herrings:** none. No seam by rule: B2 × L4 and B4 × L4 (the body shows no motive); W1 × L4

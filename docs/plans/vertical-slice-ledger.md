@@ -76,7 +76,7 @@ below; the plan cites these ids, and a reviewer checks that it holds every decis
 | D44 | What a law thread's caption names (from the evidence matrix, WP0) | A law thread links evidence to a decree whose condition that evidence shows, and its caption names where **that** decree sends the soul. Precedence between decrees is read from their text ("Even so", "whatever else the Law says"), never stated by a caption. So Egil can show an L5 thread to Fólkvangr while L2 still sends him to Hel. Asa's matrix drops her L1 thread, so the first unguided soul shows one clear thread (L3) | lead (build) | 2026-10-21 |
 | D45 | Law threads must not leak who lies | There is no law thread from a line the body shows false, from either line of a grey seam, or on a soul decided by a grey seam alone (Ketil). Otherwise "the saga is true" would answer the question the player must work out. The authoring check (WP4) asserts this | lead (build) | 2026-10-21 |
 | D46 | Returned Hakon's witness | None. His witness panel reads "No witness came back." Any witness would add a seam that breaks D25's "his only seam is the lie Hel taught him". The desk and the harness must handle an empty witness panel on day 3 | lead (build) | 2026-10-21 |
-| D47 | Grim's and Brand's seams (from the review of the evidence matrix) | Supersedes those two slots of D25. Grim's wet legs don't strictly disprove "I never left the hill", so his seams are now wet to the knee against "Never in the water." and his back wound against "Not one wound behind." (the hill line stays as context). Soft hands today don't strictly disprove "thirty winters at the oar", so Brand's seam is soft hands against "Hands hard as oak." (the rowing boast stays as context). Every red and grey pair was re-tested with "could both be true at once?" | lead (build, from review) | 2026-10-21 |
+| D47 | Grim's and Brand's seams (from the review of the evidence matrix) | Supersedes those two slots of D25. Grim's wet legs don't strictly disprove "I never left the hill", so his seams are now wet to the knee against "Dry when I fell." and his back wound against "Not one wound behind." (the hill line stays as context). Soft hands today don't strictly disprove "thirty winters at the oar", so Brand's seam is soft hands against "Hands hard as oak." (the rowing boast stays as context). Every red and grey pair was re-tested with "could both be true at once?" | lead (build, from review) | 2026-10-21 |
 
 **Assumed by the panel** (the owner skims these first):
 - **D3:** Hel's offer moves to day-2 dusk in the slice, so it can resolve. The demo's last scene in
@@ -113,7 +113,7 @@ below; the plan cites these ids, and a reviewer checks that it holds every decis
    - Hakon admits he left the shield-wall carrying Ivar. His law thread reads "the saga is true. L4
      sends him to Hel." The quota is 1, already filled by Sigvaldi, so mercy costs −2 feathers
      outright.
-   - Grim: wet to the knee against "Never in the water.", and a back wound against "Not one wound
+   - Grim: wet to the knee against "Dry when I fell.", and a back wound against "Not one wound
      behind." (red threads).
    - Brand: soft hands against "Hands hard as oak.".
 
