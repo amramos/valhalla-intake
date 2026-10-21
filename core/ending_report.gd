@@ -19,6 +19,8 @@ var outcome: StringName = HALL_HOLDS
 ## Hel's promise as the ledger ends it: the named soul ("" if none was offered) and its state.
 var promise_soul: String = ""
 var promise_state: StringName = &"none"
+## The ledger's line for that promise (A6); "" when none was offered.
+var promise_line: String = ""
 var feathers: int = 0
 var rank: int = 0
 var rank_name: String = ""

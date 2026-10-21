@@ -36,7 +36,10 @@ func test_one_pin_through_the_desk_draws_a_thread_and_its_caption() -> void:
 	assert_false(_system.claim_panel.area("C1").selected, "the pin clears the selection")
 	assert_eq(_threads().size(), 1, "one thread line is drawn")
 	assert_eq(_threads()[0].kind, Seam.Kind.LAW)
-	assert_eq(_system.caption_strip.shown_text(), "the saga is true. L1 sends him to Valhalla.")
+	assert_eq(
+		_system.caption_strip.shown_text(),
+		"C1 against L1: the saga is true. L1 sends him to Valhalla."
+	)
 
 
 func test_clicking_the_selected_item_again_or_right_clicking_cancels() -> void:

@@ -1,68 +1,126 @@
 class_name PhaseFlow
 extends RefCounted
-## WP1's minimal dawn, dusk and ending cards: what they say, built from what DeskCommands shows,
-## and what their button does. The full cards (D15, D34) replace this in WP5.
+## The cards between souls (D15, D23, D34): the dawn card, the dusk sequence with "Next" and
+## "Skip all", and the slice's ending after day 3's dusk. ScreenText composes every word; this
+## keeps the place in the sequence and turns a button into the next command. Skipping hides
+## nothing with consequences: the ledger is written in core before the first card shows.
+
+const CARD_WIDTH := 320.0
+const ENDING_WIDTH := 470.0
+
+## What "Play again" does (the desk system's full restart).
+var on_restart: Callable = Callable()
+
+## The dusk being shown (its day), its cards, and the card on screen.
+var _dusk_day: int = -1
+var _cards: Array[String] = []
+var _index: int = 0
+var _ending: bool = false
+
+
+## Forgets the sequence (a restart).
+func reset() -> void:
+	_dusk_day = -1
+	_cards.clear()
+	_index = 0
+	_ending = false
 
 
 ## Shows the card for the commands' phase, or hides it while a soul is at the desk.
-static func show_card(card: PhaseCard, commands: DeskCommands) -> void:
+func show(card: PhaseCard, commands: DeskCommands) -> void:
+	var rules: SliceRules = commands.slice_rules()
+	var text: DeskText = rules.text
 	match commands.phase():
 		RunState.DAWN:
-			card.show_card(dawn(commands), "Begin")
-		RunState.DUSK:
-			card.show_card(dusk(commands.dusk_report()), "Next day")
-		RunState.ENDING:
-			card.show_card(ending(commands.ending()), "Play again")
+			reset()
+			var dawn: String = "\n".join(ScreenText.dawn_lines(commands.day_rules()))
+			card.show_card(dawn, text.begin_label)
+		RunState.DUSK, RunState.ENDING:
+			_start_dusk(commands)
+			if _ending:
+				var lines: String = ending_text(commands.ending(), rules)
+				card.show_card(lines, text.play_again, "", ENDING_WIDTH)
+			else:
+				var last: bool = _index >= _cards.size() - 1
+				var next: String = _finish_label(commands) if last else text.next_label
+				var title: String = text.dusk_title_format % commands.dusk_report().day
+				var body: String = title + "\n" + _cards[_index]
+				card.show_card(body, next, "" if last else text.skip_all_label)
 		_:
 			card.visible = false
 
 
-## The card's button: begin the day, go on to the next, or play again.
-static func advance(commands: DeskCommands) -> void:
+## The card's main button: begin the day, the next dusk card, the next day, or play again.
+func advance(card: PhaseCard, commands: DeskCommands) -> void:
 	match commands.phase():
 		RunState.DAWN:
 			commands.begin_day()
-		RunState.DUSK:
-			commands.next_day()
-		RunState.ENDING:
-			commands.restart_run()
+			return
+		RunState.DUSK, RunState.ENDING:
+			if _ending:
+				reset()
+				if on_restart.is_valid():
+					on_restart.call()
+				else:
+					commands.restart_run()
+				return
+			if _index < _cards.size() - 1:
+				_index += 1
+				show(card, commands)
+				return
+			_finish(card, commands)
 
 
-static func dawn(commands: DeskCommands) -> String:
-	var rules: DayRules = commands.day_rules()
-	var lines: Array[String] = ["Day %d." % rules.day]
-	lines.append("Quota: %d to Valhalla." % rules.quota)
-	if rules.is_timed():
-		lines.append("Clock: %s." % Hud.format_time(rules.clock_seconds))
+## "Skip all": straight to the end of the dusk (the ledger is already written).
+func skip(card: PhaseCard, commands: DeskCommands) -> void:
+	if commands.phase() == RunState.DUSK or (commands.phase() == RunState.ENDING and not _ending):
+		_finish(card, commands)
+
+
+## The ending's lines with one blank line between its sections: the outcome (title and text), the
+## rows, the ledger's line (when Hel made an offer), the standing.
+static func ending_text(report: EndingReport, rules: SliceRules) -> String:
+	var lines: Array[String] = ScreenText.ending_lines(report, rules)
+	var rows_end: int = mini(2 + report.entries.size(), lines.size())
+	var sections: Array[String] = [
+		"\n".join(lines.slice(0, 2)), "\n".join(lines.slice(2, rows_end))
+	]
+	for line: String in lines.slice(rows_end):
+		sections.append(line)
+	return "\n\n".join(sections)
+
+
+## Which card shows: its index within the dusk, or -1 on the ending (tests).
+func card_index() -> int:
+	return -1 if _ending else _index
+
+
+func card_count() -> int:
+	return _cards.size()
+
+
+func _start_dusk(commands: DeskCommands) -> void:
+	var report: DuskReport = commands.dusk_report()
+	if report.day == _dusk_day:
+		return
+	_dusk_day = report.day
+	_cards = ScreenText.dusk_cards(report, commands.slice_rules())
+	_index = 0
+	_ending = false
+	if _cards.is_empty():
+		_ending = commands.phase() == RunState.ENDING
+		if not _ending:
+			_cards = [""]
+
+
+func _finish(card: PhaseCard, commands: DeskCommands) -> void:
+	if commands.phase() == RunState.ENDING:
+		_ending = true
+		show(card, commands)
 	else:
-		lines.append("Untimed.")
-	if commands.shows_new_marks():
-		for decree_id: String in rules.new_decree_ids:
-			lines.append("NEW: %s." % decree_id)
-		for realm: StringName in rules.new_doors:
-			lines.append("NEW door: %s." % Realm.display_name(realm))
-	return "\n".join(lines)
+		commands.next_day()
 
 
-static func dusk(report: DuskReport) -> String:
-	var lines: Array[String] = ["Dusk, day %d." % report.day]
-	lines.append("Valhalla: %d of %d." % [report.admitted, report.quota])
-	lines.append_array(report.citations)
-	lines.append_array(report.requests)
-	if report.returned_line != "":
-		lines.append(report.returned_line)
-	lines.append("Feathers: %d. %s." % [report.feathers, report.rank_name])
-	return "\n".join(lines)
-
-
-static func ending(report: EndingReport) -> String:
-	var lines: Array[String] = ["The slice ends."]
-	match report.outcome:
-		EndingReport.TIDE:
-			lines.append("Hel's tide: " + ", ".join(report.tide_names))
-		EndingReport.HOLLOW:
-			lines.append("The hollow hall: " + ", ".join(report.hollow_names))
-		_:
-			lines.append("The Hall holds.")
-	lines.append("Feathers: %d. %s." % [report.feathers, report.rank_name])
-	return "\n".join(lines)
+func _finish_label(commands: DeskCommands) -> String:
+	var text: DeskText = commands.slice_rules().text
+	return text.next_label if commands.phase() == RunState.ENDING else text.next_day_label

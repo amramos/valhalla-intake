@@ -22,6 +22,9 @@ var story: String = ""
 ## "<name> is back." when a returned soul waits tomorrow (D2); "" otherwise.
 var returned_line: String = ""
 var never_judged: Array[String] = []
+## Feathers when the day began, and every change since, in order, with its cause (D36).
+var feathers_at_dawn: int = 0
+var feather_lines: Array[String] = []
 var feathers: int = 0
 var rank: int = 0
 var rank_name: String = ""

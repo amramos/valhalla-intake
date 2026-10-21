@@ -26,7 +26,7 @@ func _ready() -> void:
 
 func refresh(readout: HudReadout) -> void:
 	_shown = readout
-	_time_text = format_time(readout.time_left)
+	_time_text = format_time(readout.time_left) if readout.clock_shown else ""
 	queue_redraw()
 
 

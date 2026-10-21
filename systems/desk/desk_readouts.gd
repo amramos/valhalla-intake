@@ -26,6 +26,7 @@ static func new_decrees(commands: DeskCommands) -> Array[String]:
 static func hud(commands: DeskCommands) -> HudReadout:
 	var readout := HudReadout.new()
 	readout.time_left = commands.time_left()
+	readout.clock_shown = commands.phase() == RunState.DAWN or commands.phase() == RunState.DESK
 	readout.feathers = commands.feathers()
 	readout.quota = commands.quota_progress()
 	readout.huginn_on = commands.day_rules().huginn_answers > 0

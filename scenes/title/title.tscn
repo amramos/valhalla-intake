@@ -1,0 +1,59 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/title/title.gd" id="1_title"]
+[ext_resource type="Theme" path="res://scenes/desk/desk_theme.tres" id="2_theme"]
+[ext_resource type="Texture2D" path="res://assets/art/scenes/gate-desk.png" id="3_backdrop"]
+[ext_resource type="Script" path="res://components/guarded_button/guarded_button.gd" id="4_guard"]
+
+[node name="Title" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 480.0
+offset_bottom = 270.0
+theme = ExtResource("2_theme")
+script = ExtResource("1_title")
+
+[node name="Backdrop" type="TextureRect" parent="."]
+layout_mode = 0
+offset_right = 480.0
+offset_bottom = 270.0
+mouse_filter = 2
+texture = ExtResource("3_backdrop")
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 0
+offset_top = 96.0
+offset_right = 480.0
+offset_bottom = 270.0
+mouse_filter = 2
+color = Color(0.0431, 0.0902, 0.1333, 0.75)
+
+[node name="Name" type="Label" parent="."]
+layout_mode = 0
+offset_top = 110.0
+offset_right = 240.0
+offset_bottom = 123.0
+scale = Vector2(2, 2)
+theme_override_colors/font_color = Color(0.9647, 0.9333, 0.8235, 1)
+text = "Valhalla Intake"
+horizontal_alignment = 1
+
+[node name="Start" type="Button" parent="."]
+layout_mode = 0
+offset_left = 200.0
+offset_top = 150.0
+offset_right = 280.0
+offset_bottom = 164.0
+focus_mode = 0
+text = "Start"
+script = ExtResource("4_guard")
+
+[node name="Quit" type="Button" parent="."]
+layout_mode = 0
+offset_left = 200.0
+offset_top = 170.0
+offset_right = 280.0
+offset_bottom = 184.0
+focus_mode = 0
+text = "Quit"
+script = ExtResource("4_guard")

@@ -19,3 +19,7 @@ stacks = Dictionary[StringName, PackedStringArray]({
 &"ragna": PackedStringArray("base-nightshirt", "hand-left-calloused", "sword", "neck-broken-left", "heads/ragna"),
 &"ketil": PackedStringArray("base-tunic", "hand-left-calloused", "wet-knee", "wound-front", "sword", "heads/ketil")
 })
+aliases = Dictionary[StringName, StringName]({
+&"hakon_ignored": &"hakon-returned",
+&"hakon_missed": &"hakon-returned"
+})

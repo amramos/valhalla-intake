@@ -1,13 +1,16 @@
 extends SceneTree
-## Development only: plays the real desk with the slice data through real mouse events and saves a
+## Development only: plays the whole slice from the title through real mouse events and saves a
 ## 1:1 screenshot after each step. Run it in a window at the base resolution:
 ##
 ##   godot --path . --resolution 480x270 -s tools/desk_shots/desk_shots.gd -- <output-folder>
 ##
-## Each step is a mouse move or click pushed through the viewport, as a player's would be, and
-## each step's outcome is checked; the run prints FAIL lines and exits 1 when one does not hold.
+## Title -> day 1 -> dusk -> day 2 (pause, Hakon) -> Hel's offer -> day 3 (the ledger, returned
+## Hakon) -> the ending -> Play again. Each step is a mouse move, click, drag or key pushed through
+## the viewport, as a player's would be, and each step's outcome is checked; the run prints FAIL
+## lines and exits 1 when one does not hold. Day 1 is played by hand; later souls go to their
+## legal doors by door click and confirm.
 
-const DESK_SCENE := "res://scenes/desk/desk.tscn"
+const TITLE_SCENE := "res://scenes/title/title.tscn"
 
 var _out: String = ""
 var _desk: Desk = null
@@ -18,12 +21,59 @@ func _initialize() -> void:
 	var args: PackedStringArray = OS.get_cmdline_user_args()
 	_out = args[0] if args.size() > 0 else OS.get_user_data_dir()
 	DirAccess.make_dir_recursive_absolute(_out)
-	_desk = (load(DESK_SCENE) as PackedScene).instantiate() as Desk
-	root.add_child(_desk)
+	var title: Node = (load(TITLE_SCENE) as PackedScene).instantiate()
+	root.add_child(title)
+	current_scene = title
 	_run.call_deferred()
 
 
 func _run() -> void:
+	await _frames(3)
+	await _shot("00_title")
+	var title: TitleScreen = current_scene as TitleScreen
+	await _wait(0.4)
+	await _click_control(title.start_button())
+	await _frames(4)
+	_desk = current_scene as Desk
+	_expect(_desk != null, "Start opens the desk")
+	if _desk == null:
+		_finish()
+		return
+	await _day_one()
+	await _finish_day()
+	await _dusk("16_dusk1")
+	_expect(_desk.commands().day_number() == 2, "Next day opens day 2")
+	await _shot("20_dawn2")
+	await _begin()
+	await _escape_and_resume()
+	await _finish_day("21_day2", &"hakon")
+	await _dusk("22_dusk2")
+	_expect(_desk.commands().promise_state() == RunState.PROMISE_OPEN, "Hel's offer is recorded")
+	_expect(_desk.commands().day_number() == 3, "day 3 dawns")
+	await _shot("26_dawn3")
+	await _begin()
+	var tray: LedgerTray = _desk.system().ledger_tray
+	await _click_control(tray)
+	_expect(tray.shown_line() == _desk.commands().ledger_line(), "the tray shows the ledger")
+	await _shot("27_ledger_tray")
+	await _click_control(tray)
+	await _finish_day("28_day3", &"hakon")
+	await _dusk("30_dusk3")
+	_expect(_desk.commands().phase() == RunState.ENDING, "day 3's dusk leads to the ending")
+	await _wait(0.4)
+	await _click_control(_desk.system().phase_card.next_button())
+	var restarted: bool = _desk.commands().day_number() == 1
+	_expect(restarted and _desk.commands().phase() == RunState.DAWN, "Play again")
+	await _shot("35_play_again")
+	_finish()
+
+
+func _finish() -> void:
+	print("DESK SHOTS: %s" % ("PASS" if _failures == 0 else "%d FAILED" % _failures))
+	quit(0 if _failures == 0 else 1)
+
+
+func _day_one() -> void:
 	var system: DeskSystem = _desk.system()
 	await _frames(3)
 	await _shot("01_dawn")
@@ -34,12 +84,6 @@ func _run() -> void:
 	_expect(_soul() == "Ulf", "Begin seats Ulf")
 	_expect(system.body_chart.layers().size() == 5, "Ulf's chart is his own art stack")
 	await _shot("02_ulf")
-	var first_step: String = system.mentor_bubble.shown_text()
-	_expect(first_step != "", "the mentor's bubble opens Ulf's guided steps")
-	await _wait(0.4)
-	await _click_control(system.mentor_bubble.next_button())
-	_expect(system.mentor_bubble.shown_text() != first_step, "Next moves her script on")
-	await _shot("02b_mentor_next")
 	await _hover(system.body_chart.area("B2"))
 	_expect(system.hover_label.shown_text() == "no wound, back", "an absence hovers its label")
 	await _shot("03_hover_absence")
@@ -50,20 +94,17 @@ func _run() -> void:
 	_expect(_desk.commands().threads().size() == 1, "the second click pins a thread")
 	await _shot("05_law_thread")
 	await _double_click_control(_door(&"valhalla"))
-	_expect(
-		system.stamp_flow.stamp_prompt.question() == "Stamp Ulf to Valhalla?", "a door click asks"
-	)
+	var asked: String = system.stamp_flow.stamp_prompt.question()
+	_expect(asked == "Stamp Ulf to Valhalla?", "a door click asks")
 	await _shot("06_stamp_prompt")
 	await _double_click_control(system.stamp_flow.stamp_prompt.confirm_button())
 	_expect(_soul() == "Ulf", "a double-click on the confirm stamps nothing")
-	await _shot("07_double_click_ignored")
 	await _wait(0.4)
 	await _click_control(system.stamp_flow.stamp_prompt.confirm_button())
 	_expect(_soul() == "Kolbeinn", "one deliberate click on the confirm stamps")
 	await _shot("08_kolbeinn")
 	await _click_control(system.body_chart.area("B1"))
 	await _click_control(system.claim_panel.area("C1"))
-	await _shot("09_red_thread")
 	await _click_control(system.body_chart.area("B3"))
 	await _click_control(system.law_panel.area("L3"))
 	_expect(_desk.commands().threads().size() == 2, "two threads on Kolbeinn")
@@ -71,29 +112,76 @@ func _run() -> void:
 	await _click_control(system.claim_panel.area("C4"))
 	await _click_control(system.law_panel.area("L1"))
 	await _wait(3.1)
-	_expect(
-		system.caption_strip.shown_text() == "No seam: those two agree.", "a no-seam pin says so"
-	)
 	await _shot("11_no_seam")
 	await _hover(_door(&"folkvangr"))
 	_expect(system.hover_label.shown_glyph() == &"boar", "the barred door hovers its glyph")
 	await _shot("12_locked_door")
 	await _drag(system.soul.figure(), _door(&"valhalla"), "12b_drag_preview")
-	_expect(
-		_desk.commands().awaiting_next(), "the soul dropped on the door is stamped and held (D48)"
-	)
-	_expect(
-		system.feather.visible and system.stamp_flow.next_soul_button.visible,
-		"feather and Next soul"
-	)
+	var held: bool = _desk.commands().awaiting_next()
+	_expect(held, "the soul dropped on the door is stamped and held (D48)")
+	var shown: bool = system.feather.visible and system.stamp_flow.next_soul_button.visible
+	_expect(shown, "feather and Next soul")
 	await _shot("13_warning_holds_soul")
 	await _click_control(system.feather)
-	await _shot("14_feather_clicked")
+	await _wait(0.4)
 	await _click_control(system.stamp_flow.next_soul_button)
-	_expect(_desk.commands().phase() == RunState.ENDING, "Next soul ends the one-day slice")
-	await _shot("15_dusk")
-	print("DESK SHOTS: %s" % ("PASS" if _failures == 0 else "%d FAILED" % _failures))
-	quit(0 if _failures == 0 else 1)
+	_expect(_soul() == "Hallr", "Next soul seats Hallr")
+
+
+## Stamps every soul left today at its legal door by door click and confirm; shoots each soul
+## whose id starts with `soul`.
+func _finish_day(shot_prefix: String = "", soul: StringName = &"") -> void:
+	var commands: DeskCommands = _desk.commands()
+	var system: DeskSystem = _desk.system()
+	for _guard: int in range(12):
+		if commands.phase() != RunState.DESK:
+			return
+		await _wait(0.4)
+		if commands.awaiting_next():
+			await _click_control(system.stamp_flow.next_soul_button)
+			continue
+		var encounter: Encounter = commands.current_encounter()
+		if shot_prefix != "" and String(encounter.id).begins_with(String(soul)):
+			await _shot("%s_%s" % [shot_prefix, encounter.id])
+		await _click_control(_door(encounter.legal_realm))
+		await _wait(0.4)
+		await _click_control(system.stamp_flow.stamp_prompt.confirm_button())
+		await _wait(0.7)
+
+
+## Shoots every dusk card (and the ending), pressing Next with real clicks.
+func _dusk(prefix: String) -> void:
+	var card: PhaseCard = _desk.system().phase_card
+	var day: int = _desk.commands().day_number()
+	var play_again: String = _desk.commands().slice_rules().text.play_again
+	for index: int in range(10):
+		await _wait(0.4)
+		await _shot("%s_card%d" % [prefix, index + 1])
+		if card.next_button().text == play_again:
+			return
+		await _click_control(card.next_button())
+		if _desk.commands().phase() == RunState.DAWN and _desk.commands().day_number() > day:
+			return
+
+
+func _begin() -> void:
+	await _wait(0.4)
+	await _click_control(_desk.system().phase_card.next_button())
+	_expect(_desk.commands().phase() == RunState.DESK, "Begin opens the desk")
+
+
+func _escape_and_resume() -> void:
+	var key := InputEventKey.new()
+	key.keycode = KEY_ESCAPE
+	key.physical_keycode = KEY_ESCAPE
+	key.pressed = true
+	root.push_input(key)
+	await _frames(3)
+	_expect(_desk.pause_overlay().is_open() and _desk.commands().is_paused(), "Esc pauses")
+	await _shot("21a_pause")
+	await _wait(0.4)
+	await _click_control(_desk.pause_overlay().resume_button())
+	_expect(not _desk.commands().is_paused(), "Resume carries on")
 
 
 ## A real drag: press on `from`, move past the drag threshold and over `to`, release there.

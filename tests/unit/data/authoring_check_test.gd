@@ -209,3 +209,11 @@ func test_every_guided_step_fits_the_mentors_bubble() -> void:
 			)
 	assert_eq(guided, ["ulf", "kolbeinn", "hallr"] as Array[String], "D16: three guided souls")
 	assert_eq(problems, [] as Array[String])
+
+
+func test_every_witness_heading_fits_its_panel() -> void:
+	var problems: Array[String] = []
+	for pair: Array in _judged():
+		problems.append_array(_checker.check_witness_heading(pair[0]))
+	assert_gt(_checker.witness_heading_room(), 0, "the panel's width is read from the desk scene")
+	assert_eq(problems, [] as Array[String])

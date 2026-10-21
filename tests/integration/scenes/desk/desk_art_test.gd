@@ -35,6 +35,18 @@ func test_a_variant_id_finds_its_family_stack() -> void:
 	assert_eq(STACKS.key_for(&"nobody"), &"")
 
 
+func test_every_authored_encounter_has_its_stack_and_returned_hakon_wears_frost() -> void:
+	var folder: String = "res://data/encounters"
+	for file: String in DirAccess.get_files_at(folder):
+		if not file.ends_with(".tres"):
+			continue
+		var data: Resource = load(folder.path_join(file))
+		var id: StringName = data.get("id")
+		assert_ne(STACKS.key_for(id), &"", "%s has a layer stack" % id)
+	for variant: StringName in [&"hakon_ignored", &"hakon_missed"]:
+		assert_eq(STACKS.key_for(variant), &"hakon-returned", "%s is the returned Hakon" % variant)
+
+
 func test_the_chart_and_the_gate_draw_the_souls_own_layers() -> void:
 	var chart: Array[Texture2D] = _system.body_chart.layers()
 	assert_eq(chart.size(), 5, "Ulf: base, hand, wound, sword, head")

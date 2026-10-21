@@ -45,6 +45,17 @@ func items_in(group: EvidenceItem.Group) -> Array[EvidenceItem]:
 	return found
 
 
+## D52: the witness panel's heading shows the name, the part before the first comma.
+func witness_heading_name() -> String:
+	return witness_name.get_slice(",", 0).strip_edges()
+
+
+## D52: the rest, the heading's hover label ("his shield-brother"); "" if there is none.
+func witness_role() -> String:
+	var comma: int = witness_name.find(",")
+	return witness_name.substr(comma + 1).strip_edges() if comma >= 0 else ""
+
+
 func seam_between(x: String, y: String) -> Seam:
 	for seam: Seam in seams:
 		if seam.joins(x, y):

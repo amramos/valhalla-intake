@@ -31,6 +31,8 @@
 [ext_resource type="Texture2D" path="res://assets/art/ui/nameplate-hel.png" id="29_hel"]
 [ext_resource type="AudioStream" path="res://assets/audio/stamp_thud.ogg" id="30_thud"]
 [ext_resource type="AudioStream" path="res://assets/audio/seam_found.ogg" id="31_seam"]
+[ext_resource type="Script" path="res://entities/pause_overlay/pause_overlay.gd" id="32_pause"]
+[ext_resource type="Script" path="res://entities/ledger_tray/ledger_tray.gd" id="33_ledger"]
 
 [node name="Desk" type="Control"]
 layout_mode = 3
@@ -117,6 +119,14 @@ offset_top = 2.0
 offset_right = 478.0
 offset_bottom = 23.0
 script = ExtResource("5_hud")
+
+[node name="LedgerTray" type="Control" parent="."]
+layout_mode = 0
+offset_left = 467.0
+offset_top = 11.0
+offset_right = 477.0
+offset_bottom = 21.0
+script = ExtResource("33_ledger")
 
 [node name="AskHuginn" type="Button" parent="."]
 visible = false
@@ -236,6 +246,12 @@ layout_mode = 0
 mouse_filter = 2
 script = ExtResource("10_hover")
 
+[node name="PauseOverlay" type="Control" parent="."]
+layout_mode = 0
+offset_right = 480.0
+offset_bottom = 270.0
+script = ExtResource("32_pause")
+
 [node name="ThudPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("30_thud")
 
@@ -253,7 +269,7 @@ caption_strip = NodePath("../CaptionStrip")
 thud_player = NodePath("../ThudPlayer")
 walk_layer = NodePath("../WalkLayer")
 
-[node name="DeskSystem" type="Node" parent="." node_paths=PackedStringArray("body_chart", "claim_panel", "witness_panel", "law_panel", "doors", "thread_layer", "caption_strip", "hover_label", "soul", "hud", "ask_huginn", "huginn", "phase_card", "feather", "mentor_portrait", "mentor_bubble", "stamp_flow", "seam_player")]
+[node name="DeskSystem" type="Node" parent="." node_paths=PackedStringArray("body_chart", "claim_panel", "witness_panel", "law_panel", "doors", "thread_layer", "caption_strip", "hover_label", "soul", "hud", "ask_huginn", "huginn", "phase_card", "feather", "mentor_portrait", "mentor_bubble", "stamp_flow", "seam_player", "ledger_tray")]
 script = ExtResource("12_system")
 body_chart = NodePath("../BodyChart")
 claim_panel = NodePath("../ClaimPanel")
@@ -273,3 +289,4 @@ mentor_portrait = NodePath("../MentorPortrait")
 mentor_bubble = NodePath("../MentorBubble")
 stamp_flow = NodePath("../StampFlow")
 seam_player = NodePath("../SeamPlayer")
+ledger_tray = NodePath("../LedgerTray")

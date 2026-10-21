@@ -11,9 +11,13 @@ Tests that instance real scenes, mirroring the source tree.
 - `scenes/desk/desk_ui_test.gd` — the full desk UI on the fixture: Hel's tide, NEW marks, the clock
   warning, Huginn's extra answer, thread styles, the caption re-show, sounds and the thud, dragging
   the soul, the plates, the mentor's comments.
+- `scenes/desk/desk_flow_test.gd` — the flow and shell with the full content: the title, dawn cards,
+  the dusk sequence and Skip all (the ledger kept), the ledger tray, the pause with its confirmed
+  restart (the whole day-1 dawn restored) and quit, the ending and Play again, and real
+  double-clicks on the cards.
 - `scenes/desk/desk_input_test.gd` — real mouse events pushed through the desk's own SubViewport
   (GUT's window covers the root viewport): double-click guards on the confirm, the doors and the
   phase card, and the prompt clear of the doors.
 
-`tools/desk_shots/` replays a full session with real clicks in a window, checks each step and
+`tools/desk_shots/` replays the whole slice, title to ending, with real clicks in a window, checks each step and
 exits 1 on a failure.
