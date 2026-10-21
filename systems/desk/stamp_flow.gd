@@ -28,7 +28,9 @@ var commands: DeskCommands = null
 
 var _citation: String = ""
 var _cited_pair: Array[String] = []
+## The soul walking through its door, and its walk; both null once the walk has ended.
 var _walker: DragSource = null
+var _walk: Tween = null
 ## The mentor's comment on the last stamp: shown over the next soul, and again on a click on her.
 var _mentor_line: String = ""
 var _carry_mentor: bool = false
@@ -79,6 +81,12 @@ func reset() -> void:
 		_carry_mentor = false
 
 
+## A new run ("Play again"): nothing the mentor said in the last run is shown or replayed.
+func forget_run() -> void:
+	_mentor_line = ""
+	_carry_mentor = false
+
+
 func mentor_line() -> String:
 	return _mentor_line
 
@@ -112,8 +120,7 @@ func _thud(realm: StringName, layers: Array[Texture2D], from: Vector2) -> void:
 	if door == null or walk_layer == null or not is_inside_tree():
 		return
 	door.flare()
-	if _walker != null:
-		_walker.queue_free()
+	_end_walk()
 	_walker = DragSource.new()
 	_walker.name = "Walker"
 	_walker.layers = layers
@@ -123,28 +130,38 @@ func _thud(realm: StringName, layers: Array[Texture2D], from: Vector2) -> void:
 	_walker.size = soul.figure().size
 	_walker.global_position = from
 	var target := Vector2(door.get_global_rect().get_center().x - _walker.size.x / 2.0, from.y)
-	var tween: Tween = create_tween()
-	tween.tween_interval(HOLD_SECONDS)
-	tween.tween_property(_walker, "global_position", target, WALK_SECONDS)
-	tween.parallel().tween_property(_walker, "modulate:a", 0.0, WALK_SECONDS)
-	tween.tween_callback(_walker.queue_free)
+	_walk = create_tween()
+	_walk.tween_interval(HOLD_SECONDS)
+	_walk.tween_property(_walker, "global_position", target, WALK_SECONDS)
+	_walk.parallel().tween_property(_walker, "modulate:a", 0.0, WALK_SECONDS)
+	_walk.tween_callback(_end_walk)
+
+
+## Stops the walk under way, if any, and frees its figure; the reference never outlives it.
+func _end_walk() -> void:
+	if _walk != null and _walk.is_valid():
+		_walk.kill()
+	_walk = null
+	if is_instance_valid(_walker):
+		_walker.queue_free()
+	_walker = null
 
 
 func _on_stamped(result: StampResult) -> void:
 	selection_cleared.emit()
 	var held: bool = result.citation or result.warning
+	if held:
+		# The citation takes the strip first (D33); her comment waits behind it.
+		_citation = result.citation_text
+		_cited_pair = [result.citation_a, result.citation_b] as Array[String]
+		pair_lit.emit(_cited_pair.duplicate())
+		caption_strip.post(_citation, CaptionStrip.Priority.CITATION)
 	if result.mentor_line != "":
 		_mentor_line = result.mentor_line
-		# A held soul shows her comment now; otherwise the next soul's arrival shows it.
+		# A held soul shows her comment after the citation; otherwise the next soul's arrival does.
 		_carry_mentor = not held
 		if held:
 			caption_strip.post(_mentor_line, CaptionStrip.Priority.MENTOR)
-	if not held:
-		return
-	_citation = result.citation_text
-	_cited_pair = [result.citation_a, result.citation_b] as Array[String]
-	pair_lit.emit(_cited_pair.duplicate())
-	caption_strip.post(_citation, CaptionStrip.Priority.CITATION)
 
 
 ## A deliberate click on the feather shows its citation again and lights the pair (D33).

@@ -16,7 +16,9 @@ var layers: Array[Texture2D] = []:
 		queue_redraw()
 
 
-func _ready() -> void:
+# Set at construction, not in _ready, so a filter chosen before add_child stands (the walking soul
+# is decoration and ignores the mouse).
+func _init() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 
