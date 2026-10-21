@@ -1,7 +1,7 @@
 # Vertical slice — decisions ledger
 
 **State:** PROVISIONALLY APPROVED
-**Mode:** hands-off · **Plan:** `vertical-slice-plan.md` · **Epic:** (created at hand-off)
+**Mode:** hands-off · **Plan:** `vertical-slice-plan.md` · **Epic:** [#2](https://github.com/amramos/valhalla-intake/issues/2)
 **After the plan:** build with `team-lead-handsoff` (owner's choice, 2026-10-21)
 
 This is the owner's document: read this, not the plan. Every decision the plan relies on is a row
