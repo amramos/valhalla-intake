@@ -67,12 +67,16 @@ below; the plan cites these ids, and a reviewer checks that it holds every decis
 | D35 | Daily quotas | Day 1: 1 (Ulf is the only lawful Valhalla soul; mercy on Asa is a surplus). Day 2: 1 (D28). Day 3: 2 (Freydis is the only lawful one, so admitting a liar such as Ketil, or mercy, fills it). Stored in data | lead | 2026-10-21 |
 | D36 | Feather and clock accounting | Losses (citations, quota shortfall) are capped at 5 a day. Spends (Huginn's extra answer) are never capped and never count as losses. Rewards apply after the stamp's citation. Demotion is checked after every change and refills to 5. If the clock runs out during an action (a stamp, a Huginn answer), the action completes, then the horn sounds | lead | 2026-10-21 |
 | D37 | A wrong stamp on an unresolved grey thread | Permitted uncertainty: no citation, because the desk couldn't prove which side lied (GDD §1, test 2; prototype lesson). It still counts toward the ending by the worthy destination, and the recap says "couldn't be proven at the desk" | lead (from the GDD) | 2026-10-21 |
-| D38 | Seams, law threads and "no seam" | Two kinds of seam. A **lie seam** (red or grey) is evidence against testimony. A **law thread** links a piece of evidence to the decree that decides the soul and names that destination; it may confirm, as in "the saga is true" (Ulf, Asa, Ragna). Both draw threads, and both count as seams for pinning and citations. Hel's "find a seam where there is none" (D3) means Ragna has **no lie seam**; her L5 law thread exists | lead (from the review) | 2026-10-21 |
+| D38 | Seams, law threads and "no seam" | Two kinds of seam. A **lie seam** (red or grey) is evidence against testimony. A **law thread** links a piece of evidence to the decree that decides the soul and names that destination; it may confirm, as in "the saga is true" (Ulf, Asa, Ragna). Both draw threads, and both count as seams for pinning and citations. Hel's "find a seam where there is none" (D3) means Ragna has **no lie seam**; her L5 law thread exists. (Superseded in part by D44: the caption names the pinned decree's destination; precedence comes from the decree text.) | lead (from the review) | 2026-10-21 |
 | D39 | The evidence matrix, before any build | The first work package writes a slot-by-slot evidence matrix for all 15 encounters (12, Egil, and both Hakon variants). For each: facts, line intents, each lie seam and law thread, the red herrings with where their explanation lives, legal and worthy destinations, permitted uncertainty, and the human detail. Plus a coverage table showing each fact state's seam and red-herring use. The designer checks it against GDD §3.6 and D25/D32 before any content or art is built. Egil's purpose: the fallback that keeps day 3's Law-against-truth beat (a liar who died defending kin; worthy Fólkvangr, legal Hel by L2) | lead (from the review) | 2026-10-21 |
 | D40 | Values the slice takes from the GDD unchanged | The clerk starts with 10 feathers; meeting the quota pays +2; a shortfall costs −1 per soul (GDD §3.7–3.8). The worthy destination is always an open door that day (GDD §3.6). The number of body builds is whatever the matrix needs, with the fewest that cover the roster | lead (from the GDD) | 2026-10-21 |
 | D41 | Who plays at each checkpoint | 3 blind AI playtesters on different models per checkpoint (WP1 and WP6), plus the lead's own playtest at every package | lead | 2026-10-21 |
 | D42 | When the clock gets tuned | If careful playtesters end days 2–3 with more than 30% of the clock left, the clock length in data is shortened before the slice is called done. The thresholds are reported, not hidden | lead | 2026-10-21 |
 | D43 | If the return arc or the promise never fires | It is reported with the playtest numbers, and the roster isn't changed on that alone: mercy is a valid result (D28). The owner decides after playing | lead | 2026-10-21 |
+| D44 | What a law thread's caption names (from the evidence matrix, WP0) | A law thread links evidence to a decree whose condition that evidence shows, and its caption names where **that** decree sends the soul. Precedence between decrees is read from their text ("Even so", "whatever else the Law says"), never stated by a caption. So Egil can show an L5 thread to Fólkvangr while L2 still sends him to Hel. Asa's matrix drops her L1 thread, so the first unguided soul shows one clear thread (L3) | lead (build) | 2026-10-21 |
+| D45 | Law threads must not leak who lies | There is no law thread from a line the body shows false, from either line of a grey seam, or on a soul decided by a grey seam alone (Ketil). Otherwise "the saga is true" would answer the question the player must work out. The authoring check (WP4) asserts this | lead (build) | 2026-10-21 |
+| D46 | Returned Hakon's witness | None. His witness panel reads "No witness came back." Any witness would add a seam that breaks D25's "his only seam is the lie Hel taught him". The desk and the harness must handle an empty witness panel on day 3 | lead (build) | 2026-10-21 |
+| D47 | Grim's and Brand's seams (from the review of the evidence matrix) | Supersedes those two slots of D25. Grim's wet legs don't strictly disprove "I never left the hill", so his seams are now wet to the knee against "Dry when I fell." and his back wound against "Not one wound behind." (the hill line stays as context). Soft hands today don't strictly disprove "thirty winters at the oar", so Brand's seam is soft hands against "Hands hard as oak." (the rowing boast stays as context). Every red and grey pair was re-tested with "could both be true at once?" | lead (build, from review) | 2026-10-21 |
 
 **Assumed by the panel** (the owner skims these first):
 - **D3:** Hel's offer moves to day-2 dusk in the slice, so it can resolve. The demo's last scene in
@@ -109,8 +113,9 @@ below; the plan cites these ids, and a reviewer checks that it holds every decis
    - Hakon admits he left the shield-wall carrying Ivar. His law thread reads "the saga is true. L4
      sends him to Hel." The quota is 1, already filled by Sigvaldi, so mercy costs −2 feathers
      outright.
-   - Grim: wet to the knee against "I never left the hill" (a red thread).
-   - Brand: soft hands against "thirty winters at the oar".
+   - Grim: wet to the knee against "Dry when I fell.", and a back wound against "Not one wound
+     behind." (red threads).
+   - Brand: soft hands against "Hands hard as oak.".
 
    Dusk: Eyvind's prayer names their father's ring. Then Hel's offer: "Tomorrow, Ragna. Send her to
    me and I'll pay four feathers." The ledger badge lights up.
@@ -126,7 +131,7 @@ below; the plan cites these ids, and a reviewer checks that it holds every decis
      selects it and asks Huginn: "The claim lies."
 8. **Failure, two kinds:**
    - **A miss.** On day 2 the player never pins Grim's wet boots and admits him. A black feather
-     drops: "Citation: L2. His boots, wet to the knee, against 'I never left the hill'." The pair
+     drops: "Citation: L2. His back wound, against 'Not one wound behind'." The pair
      lights up, and the recap marks Grim *missed*.
    - **Uncertainty.** On day 3 the player admits Ketil without asking Huginn, to fill the quota.
      The grey thread was never resolved, so there's no citation (D37). At the ending, Ketil stands
