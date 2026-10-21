@@ -1,0 +1,58 @@
+[gd_resource type="Resource" script_class="EncounterData" format=3]
+
+[ext_resource type="Script" path="res://data/fact_data.gd" id="1_gja1c"]
+[ext_resource type="Script" path="res://data/mentor_step_data.gd" id="2_7s7rs"]
+[ext_resource type="Script" path="res://data/encounter_data.gd" id="3_xen55"]
+[ext_resource type="Script" path="res://data/seam_data.gd" id="4_grett"]
+
+[sub_resource type="Resource" id="fact_B1"]
+script = ExtResource("1_gja1c")
+id = "B1"
+label = "no wound, chest"
+view = &"front"
+place = &"torso_front"
+
+[sub_resource type="Resource" id="fact_B2"]
+script = ExtResource("1_gja1c")
+id = "B2"
+label = "spear wound, back"
+view = &"back"
+place = &"torso_back"
+
+[sub_resource type="Resource" id="fact_B3"]
+script = ExtResource("1_gja1c")
+id = "B3"
+label = "drawn sword in hand"
+view = &"front"
+place = &"hand_right"
+
+[sub_resource type="Resource" id="seam_C3_L4"]
+script = ExtResource("4_grett")
+a = "C3"
+b = "L4"
+kind = 2
+destination = &"hel"
+caption = "the saga is true. L4 sends him to Hel."
+pair_text = "'Left the fight' and L4"
+
+[sub_resource type="Resource" id="seam_W2_L4"]
+script = ExtResource("4_grett")
+a = "W2"
+b = "L4"
+kind = 2
+destination = &"hel"
+caption = "the saga is true. L4 sends him to Hel."
+
+[resource]
+script = ExtResource("3_xen55")
+id = &"hakon"
+soul_name = "Hakon"
+body = Array[ExtResource("1_gja1c")]([SubResource("fact_B1"), SubResource("fact_B2"), SubResource("fact_B3")])
+claim = Array[String](["Ivar owed me a knife.", "He fell. I lifted him.", "Left the fight.", "A spear, in my back."])
+witness_name = "Ivar"
+witness = Array[String](["No kin of his. A Jute.", "Carried me out of it.", "I died anyway. Sorry."])
+seams = Array[ExtResource("4_grett")]([SubResource("seam_C3_L4"), SubResource("seam_W2_L4")])
+legal_realm = &"hel"
+worthy_realm = &"valhalla"
+return_eligible = true
+truth = "Hakon carried Ivar out of the fight and took a spear in the back for it. Ivar died anyway."

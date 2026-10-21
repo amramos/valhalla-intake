@@ -5,6 +5,8 @@ extends Resource
 
 @export var id: StringName = &""
 @export var soul_name: String = ""
+## "him" or "her".
+@export var pronoun: String = "him"
 @export var body: Array[FactData] = []
 @export var claim: Array[String] = []
 @export var witness_name: String = ""
@@ -12,6 +14,9 @@ extends Resource
 ## Shown in an empty witness panel (D46); "" hides the panel.
 @export var witness_note: String = ""
 @export var seams: Array[SeamData] = []
+## Pairs that look like seams but resolve innocent, as "B3|C2" (D24). Data for the authoring
+## check only: a red herring is any pair that isn't a seam.
+@export var red_herrings: Array[String] = []
 @export var legal_realm: StringName = &""
 @export var worthy_realm: StringName = &""
 @export var liar: bool = false
@@ -29,6 +34,7 @@ func to_core() -> Encounter:
 	var encounter := Encounter.new()
 	encounter.id = id
 	encounter.soul_name = soul_name
+	encounter.pronoun = pronoun
 	for fact: FactData in body:
 		encounter.items.append(fact.to_core())
 	for index: int in claim.size():

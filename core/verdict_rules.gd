@@ -74,40 +74,58 @@ static func mark_for(record: VerdictRecord, day: DayRules, rules: SliceRules) ->
 static func citation_text(
 	seam: Seam, encounter: Encounter, day: DayRules, rules: SliceRules, ignored: bool
 ) -> String:
-	var decree_id: String = rules.liar_decree_id
-	if seam.kind == Seam.Kind.LAW:
-		decree_id = seam.b if day.decree(seam.b) != null else seam.a
 	var text: String = (
-		rules.citation_format
-		% [decree_id, _shown(seam.a, encounter, day), _shown(seam.b, encounter, day)]
+		rules.citation_format % [decree_of(seam, day, rules), pair_text(seam, encounter, day)]
 	)
 	if ignored:
 		text += " " + rules.threaded_line
 	return text
 
 
-## The mentor's comment on an unguided soul's illegal stamp (D16), naming the visible pair. Mercy
-## is the worthy realm chosen against the legal one; anything else is an illegal stamp. Call after
-## the stamp is settled (it reads the citation's cost). "" when the stamp was legal, the soul is
-## guided, or no seam showed the Law (permitted uncertainty, D37).
+## The decree a seam cites: a law thread's own decree, or the liars' decree for a lie seam.
+static func decree_of(seam: Seam, day: DayRules, rules: SliceRules) -> String:
+	if seam.kind != Seam.Kind.LAW:
+		return rules.liar_decree_id
+	return seam.b if day.decree(seam.b) != null else seam.a
+
+
+## The pair as a citation names it (A3): the authored text, or one built from the two items in the
+## same voice: "Wet to the knee, and 'Dry when I fell'", "'Left the fight' and L4".
+static func pair_text(seam: Seam, encounter: Encounter, day: DayRules) -> String:
+	if seam.pair_text != "":
+		return seam.pair_text
+	var first: String = _shown(seam.a, encounter, day)
+	var second: String = _shown(seam.b, encounter, day)
+	var a_item: EvidenceItem = encounter.item(seam.a)
+	var joiner: String = (
+		", and " if a_item != null and a_item.group == EvidenceItem.Group.BODY else " and "
+	)
+	return first.left(1).to_upper() + first.substr(1) + joiner + second
+
+
+## The mentor's comment on a wrong stamp (matrix A2), naming the cited pair. Mercy is the worthy
+## realm chosen against the Law; anything else is illegal, and from day 2 it says whether the soul
+## lied. Keeping Hel's promise has its own line. "" for a legal stamp, or when no seam showed the
+## Law (permitted uncertainty, D37). Call after the stamp is settled (it reads Hel's reward).
 static func mentor_line(
 	record: VerdictRecord, result: StampResult, day: DayRules, rules: SliceRules
 ) -> String:
 	var encounter: Encounter = record.encounter
-	if result.correct or not encounter.mentor_steps.is_empty() or result.citation_a == "":
+	if result.correct or result.citation_a == "":
 		return ""
-	var line_format: String = rules.mentor_illegal_format
-	if result.realm == encounter.worthy_realm:
-		line_format = rules.mentor_mercy_format
-	var line: String = (
-		line_format
-		% [_shown(result.citation_a, encounter, day), _shown(result.citation_b, encounter, day)]
-	)
+	var seam: Seam = encounter.seam_between(result.citation_a, result.citation_b)
+	var pair: String = pair_text(seam, encounter, day)
+	if result.reward > 0:
+		return rules.mentor_promise_format % pair
+	var mercy: bool = result.realm == encounter.worthy_realm
 	if result.warning:
-		line += " " + rules.mentor_warning_line
-	elif result.citation:
-		line += " " + rules.mentor_cost_format % result.citation_loss
-	return line
+		var warning: String = (
+			rules.mentor_mercy_warning_format if mercy else rules.mentor_illegal_warning_format
+		)
+		return warning % pair
+	if mercy:
+		return rules.mentor_mercy_format % pair
+	return (rules.mentor_liar_format if encounter.liar else rules.mentor_honest_format) % pair
 
 
 static func _shown(item_id: String, encounter: Encounter, day: DayRules) -> String:
@@ -116,7 +134,7 @@ static func _shown(item_id: String, encounter: Encounter, day: DayRules) -> Stri
 		return item_id if day.decree(item_id) != null else ""
 	if item.group == EvidenceItem.Group.BODY:
 		return item.text
-	return '"%s"' % item.text.trim_suffix(".")
+	return "'%s'" % item.text.trim_suffix(".")
 
 
 static func _on_desk(seam: Seam, encounter: Encounter, day: DayRules) -> bool:

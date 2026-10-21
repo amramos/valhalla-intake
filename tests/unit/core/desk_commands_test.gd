@@ -223,15 +223,18 @@ func test_the_recap_puts_wrong_verdicts_first_and_names_uncertainty() -> void:
 	var desk: DeskCommands = Fixture.desk()
 	desk.debug_jump(2, 1)
 	var day_one: DuskReport = desk.dusk_report()
-	assert_eq(day_one.recap[0], "Asa: The truth about Asa.", "Asa went to Hel, worthy of Valhalla")
-	assert_eq(day_one.recap.size(), 3)
+	assert_eq(
+		day_one.recap,
+		["The truth about Asa. The Law sent her to Hel. The truth was Valhalla."] as Array[String],
+		"only Asa: the others went where the Law and the truth agree"
+	)
 	desk.debug_jump(3, 4)
 	desk.pin("C2", "W1")
 	desk.stamp(Realm.VALHALLA)
 	var day_three: DuskReport = desk.dusk_report()
 	assert_eq(
 		day_three.recap[1],
-		"Ketil: The truth about Ketil. Couldn't be proven at the desk.",
+		"The truth about Ketil. Valhalla. Which side lied couldn't be proven at the desk.",
 		"admitted on an unanswered grey thread (D37)"
 	)
 

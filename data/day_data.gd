@@ -16,6 +16,8 @@ extends Resource
 ## The queue index the returned soul (or its fallback) takes; -1 for none (D2).
 @export var return_slot: int = -1
 @export_multiline var dusk_story: String = ""
+## The dawn card's lines in order (D34); "{clock}" stands for the day's clock.
+@export var dawn_lines: Array[String] = []
 
 
 func to_core() -> DayRules:
@@ -32,6 +34,7 @@ func to_core() -> DayRules:
 	rules.new_doors.assign(new_doors)
 	rules.return_slot = return_slot
 	rules.dusk_story = dusk_story
+	rules.dawn_lines.assign(dawn_lines)
 	return rules
 
 

@@ -1,0 +1,80 @@
+[gd_resource type="Resource" script_class="EncounterData" format=3]
+
+[ext_resource type="Script" path="res://data/fact_data.gd" id="1_ps4b5"]
+[ext_resource type="Script" path="res://data/mentor_step_data.gd" id="2_hmkqy"]
+[ext_resource type="Script" path="res://data/encounter_data.gd" id="3_wnkji"]
+[ext_resource type="Script" path="res://data/seam_data.gd" id="4_b6vw3"]
+
+[sub_resource type="Resource" id="fact_B1"]
+script = ExtResource("1_ps4b5")
+id = "B1"
+label = "spear wound, chest"
+view = &"front"
+place = &"torso_front"
+
+[sub_resource type="Resource" id="fact_B2"]
+script = ExtResource("1_ps4b5")
+id = "B2"
+label = "no wound, back"
+view = &"back"
+place = &"torso_back"
+
+[sub_resource type="Resource" id="fact_B3"]
+script = ExtResource("1_ps4b5")
+id = "B3"
+label = "drawn sword in hand"
+view = &"front"
+place = &"hand_right"
+
+[sub_resource type="Resource" id="fact_B4"]
+script = ExtResource("1_ps4b5")
+id = "B4"
+label = "night-shirt only, bare feet"
+view = &"front"
+place = &"hem"
+
+[sub_resource type="Resource" id="seam_B4_C4"]
+script = ExtResource("4_b6vw3")
+a = "B4"
+b = "C4"
+liar = 1
+caption = "the body gives the lie."
+pair_text = "A night-shirt, and 'In my mail, of course'"
+
+[sub_resource type="Resource" id="seam_C4_W3"]
+script = ExtResource("4_b6vw3")
+a = "C4"
+b = "W3"
+kind = 1
+liar = 1
+caption = "one of them lies."
+
+[sub_resource type="Resource" id="seam_C3_L5"]
+script = ExtResource("4_b6vw3")
+a = "C3"
+b = "L5"
+kind = 2
+destination = &"folkvangr"
+caption = "L5 sends him to Fólkvangr."
+
+[sub_resource type="Resource" id="seam_W1_L5"]
+script = ExtResource("4_b6vw3")
+a = "W1"
+b = "L5"
+kind = 2
+destination = &"folkvangr"
+caption = "L5 sends him to Fólkvangr."
+
+[resource]
+script = ExtResource("3_wnkji")
+id = &"egil"
+soul_name = "Egil"
+body = Array[ExtResource("1_ps4b5")]([SubResource("fact_B1"), SubResource("fact_B2"), SubResource("fact_B3"), SubResource("fact_B4")])
+claim = Array[String](["Raiders, in the night.", "Hild was in childbed.", "I held our door.", "In my mail, of course."])
+witness_name = "Kalf, one of the raiders"
+witness = Array[String](["Held his door. Long.", "Swore all the while.", "No mail. Just a shirt."])
+seams = Array[ExtResource("4_b6vw3")]([SubResource("seam_B4_C4"), SubResource("seam_C4_W3"), SubResource("seam_C3_L5"), SubResource("seam_W1_L5")])
+legal_realm = &"hel"
+worthy_realm = &"folkvangr"
+liar = true
+truth = "Egil held his door against raiders in his night-shirt while Hild gave birth. He lied about the mail."

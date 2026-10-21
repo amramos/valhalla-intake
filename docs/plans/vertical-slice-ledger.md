@@ -76,7 +76,7 @@ below; the plan cites these ids, and a reviewer checks that it holds every decis
 | D44 | What a law thread's caption names (from the evidence matrix, WP0) | A law thread links evidence to a decree whose condition that evidence shows, and its caption names where **that** decree sends the soul. Precedence between decrees is read from their text ("Even so", "whatever else the Law says"), never stated by a caption. So Egil can show an L5 thread to Fólkvangr while L2 still sends him to Hel. Asa's matrix drops her L1 thread, so the first unguided soul shows one clear thread (L3) | lead (build) | 2026-10-21 |
 | D45 | Law threads must not leak who lies | There is no law thread from a line the body shows false, from either line of a grey seam, or on a soul decided by a grey seam alone (Ketil). Otherwise "the saga is true" would answer the question the player must work out. The authoring check (WP4) asserts this | lead (build) | 2026-10-21 |
 | D46 | Returned Hakon's witness | None. His witness panel reads "No witness came back." Any witness would add a seam that breaks D25's "his only seam is the lie Hel taught him". The desk and the harness must handle an empty witness panel on day 3 | lead (build) | 2026-10-21 |
-| D47 | Grim's and Brand's seams (from the review of the evidence matrix) | Supersedes those two slots of D25. Grim's wet legs don't strictly disprove "I never left the hill", so his seams are now wet to the knee against "Dry when I fell." and his back wound against "Not one wound behind." (the hill line stays as context). Soft hands today don't strictly disprove "thirty winters at the oar", so Brand's seam is soft hands against "Hands hard as oak." (the rowing boast stays as context). Every red and grey pair was re-tested with "could both be true at once?" | lead (build, from review) | 2026-10-21 |
+| D47 | Grim's and Brand's seams (from the review of the evidence matrix) | Supersedes those two slots of D25. Grim's wet legs don't strictly disprove "I never left the hill", so his seams are now wet to the knee against "Dry when I fell." and his back wound against "No wound on my back." (the hill line stays as context). Soft hands today don't strictly disprove "thirty winters at the oar", so Brand's seam is soft hands against "Hands hard as oak." (the rowing boast stays as context). Every red and grey pair was re-tested with "could both be true at once?" | lead (build, from review) | 2026-10-21 |
 | D48 | When the next soul arrives after a citation (from the core review) | After a stamp that draws a citation (or a day-1 warning), the stamped soul stays on the desk with its cited pair lit and the black feather showing; the next soul arrives only when the player clicks "Next soul". The clock doesn't run meanwhile. Without a citation the next soul arrives at once. This is how D33's "clicking the feather lights its pair" can work: the pair must still be on the desk | lead (build, from review) | 2026-10-21 |
 | D49 | Decree wrap (from the WP1 fit check) | Supersedes D7's "decrees may wrap to 2 lines": decrees wrap to **at most 3 lines**. In m5x7 no layout puts L1 on 2 lines while the claim column survives; the A3 Law panel holds L1–L5 verbatim (3/2/2/2/3 lines) with 12 px spare | lead (build, fit check) | 2026-10-21 |
 | D50 | Testimony line cap (from the WP1 fit check) | Supersedes D7's "about 18–22 characters": a claim or witness line, **prefix included, is at most 132 px in m5x7** (about 20–21 characters). Panels never wrap testimony. WP4 rewords the matrix lines that run over, and the authoring check measures widths with the font | lead (build, fit check) | 2026-10-21 |
@@ -98,7 +98,7 @@ below; the plan cites these ids, and a reviewer checks that it holds every decis
    The Law: L1, L2, L3." The desk opens: the gate band with Valhalla's spear door and Hel's serpent
    door (Fólkvangr's boar door barred), Huginn's empty perch, and Ulf waiting with his name plate.
 2. **Learning the verb (Ulf).** The mentor's bubble: "Read the body first." Hovering shows labels
-   ("axe wound, front", "sword, gripped"). She highlights his claim C1 and decree L1; the player
+   ("spear wound, chest", "sword in hand"). She highlights his claim C1 and decree L1; the player
    clicks one, then the other, and a law thread draws: "C1–L1: the saga is true. L1 sends him to
    Valhalla." She points at the doors. The player clicks the spear door, "Stamp Ulf to Valhalla?",
    and confirms. A short hold, the door flares, and Ulf walks through.
@@ -117,8 +117,8 @@ below; the plan cites these ids, and a reviewer checks that it holds every decis
    - Hakon admits he left the shield-wall carrying Ivar. His law thread reads "the saga is true. L4
      sends him to Hel." The quota is 1, already filled by Sigvaldi, so mercy costs −2 feathers
      outright.
-   - Grim: wet to the knee against "Dry when I fell.", and a back wound against "Not one wound
-     behind." (red threads).
+   - Grim: wet to the knee against "Dry when I fell.", and a back wound against "No wound on
+     my back." (red threads).
    - Brand: soft hands against "Hands hard as oak.".
 
    Dusk: Eyvind's prayer names their father's ring. Then Hel's offer: "Tomorrow, Ragna. Send her to
@@ -135,7 +135,7 @@ below; the plan cites these ids, and a reviewer checks that it holds every decis
      selects it and asks Huginn: "The claim lies."
 8. **Failure, two kinds:**
    - **A miss.** On day 2 the player never pins Grim's wet boots and admits him. A black feather
-     drops: "Citation: L2. His back wound, against 'Not one wound behind'." The pair
+     drops: "Citation: L2. His back wound, against 'No wound on my back'." The pair
      lights up, and the recap marks Grim *missed*.
    - **Uncertainty.** On day 3 the player admits Ketil without asking Huginn, to fill the quota.
      The grey thread was never resolved, so there's no citation (D37). At the ending, Ketil stands

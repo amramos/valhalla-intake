@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="DayData" format=3]
+
+[ext_resource type="Script" path="res://data/decree_data.gd" id="1_vccvb"]
+[ext_resource type="Resource" path="res://data/decrees/l1.tres" id="2_k8ees"]
+[ext_resource type="Resource" path="res://data/decrees/l2.tres" id="3_txs78"]
+[ext_resource type="Resource" path="res://data/decrees/l3.tres" id="4_eq0qp"]
+[ext_resource type="Resource" path="res://data/decrees/l4.tres" id="5_nfx8t"]
+[ext_resource type="Resource" path="res://data/decrees/l5.tres" id="6_4k50r"]
+[ext_resource type="Script" path="res://data/encounter_data.gd" id="7_gsvuo"]
+[ext_resource type="Resource" path="res://data/encounters/freydis.tres" id="8_rk4or"]
+[ext_resource type="Resource" path="res://data/encounters/ragna.tres" id="9_teffk"]
+[ext_resource type="Resource" path="res://data/encounters/ketil.tres" id="10_ilauo"]
+[ext_resource type="Script" path="res://data/day_data.gd" id="11_0xwlc"]
+
+[resource]
+script = ExtResource("11_0xwlc")
+day = 3
+quota = 2
+clock_seconds = 300.0
+doors_open = Array[StringName]([&"valhalla", &"hel", &"folkvangr"])
+decrees = Array[ExtResource("1_vccvb")]([ExtResource("2_k8ees"), ExtResource("3_txs78"), ExtResource("4_eq0qp"), ExtResource("5_nfx8t"), ExtResource("6_4k50r")])
+citations = true
+huginn_answers = 2
+new_decree_ids = Array[String](["L5"])
+new_doors = Array[StringName]([&"folkvangr"])
+encounters = Array[ExtResource("7_gsvuo")]([ExtResource("8_rk4or"), ExtResource("9_teffk"), ExtResource("10_ilauo")])
+return_slot = 1
+dawn_lines = Array[String](["Day 3.", "Odin wants 2 souls for Valhalla.", "The clock: {clock}.", "NEW L5: Those who fell defending hearth and kin go to Fólkvangr, whatever L1, L3 and L4 say.", "NEW door: Fólkvangr opens.", "Huginn perches on your desk. He answers only about a thread you made: which side of a grey thread lies. 2 answers a day, 5 s each. A third costs 2 feathers."])

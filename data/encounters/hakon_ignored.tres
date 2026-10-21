@@ -1,0 +1,57 @@
+[gd_resource type="Resource" script_class="EncounterData" format=3]
+
+[ext_resource type="Script" path="res://data/fact_data.gd" id="1_7h70e"]
+[ext_resource type="Script" path="res://data/mentor_step_data.gd" id="2_3cuqy"]
+[ext_resource type="Script" path="res://data/encounter_data.gd" id="3_kafvq"]
+[ext_resource type="Script" path="res://data/seam_data.gd" id="4_n0qd7"]
+
+[sub_resource type="Resource" id="fact_B1"]
+script = ExtResource("1_7h70e")
+id = "B1"
+label = "no wound, chest"
+view = &"front"
+place = &"torso_front"
+
+[sub_resource type="Resource" id="fact_B2"]
+script = ExtResource("1_7h70e")
+id = "B2"
+label = "spear wound, back"
+view = &"back"
+place = &"torso_back"
+
+[sub_resource type="Resource" id="fact_B3"]
+script = ExtResource("1_7h70e")
+id = "B3"
+label = "drawn sword in hand"
+view = &"front"
+place = &"hand_right"
+
+[sub_resource type="Resource" id="seam_B1_C3"]
+script = ExtResource("4_n0qd7")
+a = "B1"
+b = "C3"
+liar = 1
+caption = "the body gives the lie."
+pair_text = "No wound on his chest, and 'One wound: the chest'"
+
+[sub_resource type="Resource" id="seam_B2_C3"]
+script = ExtResource("4_n0qd7")
+a = "B2"
+b = "C3"
+liar = 1
+caption = "the body gives the lie."
+
+[resource]
+script = ExtResource("3_kafvq")
+id = &"hakon_ignored"
+soul_name = "Hakon"
+body = Array[ExtResource("1_7h70e")]([SubResource("fact_B1"), SubResource("fact_B2"), SubResource("fact_B3")])
+claim = Array[String](["You read it. Then Hel.", "Hel taught me better.", "One wound: the chest.", "Ivar owed me a knife."])
+witness_note = "No witness came back."
+seams = Array[ExtResource("4_n0qd7")]([SubResource("seam_B1_C3"), SubResource("seam_B2_C3")])
+legal_realm = &"hel"
+worthy_realm = &"valhalla"
+liar = true
+plate_label = "Back from Hel. His saga was true."
+returned = true
+truth = "Hakon's saga was true. Hel taught him to hide the wound in his back."

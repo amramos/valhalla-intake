@@ -15,6 +15,8 @@ var liar: Liar = Liar.NONE
 var destination: StringName = &""
 ## Shown in the caption strip once the seam is threaded.
 var caption: String = ""
+## How a citation names this pair (matrix A3); "" builds it from the two items.
+var pair_text: String = ""
 
 
 static func make(

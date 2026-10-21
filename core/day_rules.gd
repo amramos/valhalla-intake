@@ -20,6 +20,8 @@ var new_doors: Array[StringName] = []
 var return_slot: int = -1
 ## The dusk story beat for this day ("" for none).
 var dusk_story: String = ""
+## The dawn card's lines in order (D34); "{clock}" stands for the day's clock.
+var dawn_lines: Array[String] = []
 
 
 func is_timed() -> bool:

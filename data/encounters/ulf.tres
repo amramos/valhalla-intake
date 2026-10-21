@@ -1,64 +1,70 @@
 [gd_resource type="Resource" script_class="EncounterData" format=3]
 
-[ext_resource type="Script" path="res://data/fact_data.gd" id="1_ga5bn"]
-[ext_resource type="Script" path="res://data/encounter_data.gd" id="2_mlgv4"]
-[ext_resource type="Script" path="res://data/seam_data.gd" id="3_xr0ur"]
-[ext_resource type="Script" path="res://data/mentor_step_data.gd" id="4_mentor"]
+[ext_resource type="Script" path="res://data/fact_data.gd" id="1_mlgv4"]
+[ext_resource type="Script" path="res://data/mentor_step_data.gd" id="2_xr0ur"]
+[ext_resource type="Script" path="res://data/encounter_data.gd" id="3_8k2ct"]
+[ext_resource type="Script" path="res://data/seam_data.gd" id="4_uxvf1"]
 
-[sub_resource type="Resource" id="Resource_8k2ct"]
-script = ExtResource("1_ga5bn")
+[sub_resource type="Resource" id="fact_B1"]
+script = ExtResource("1_mlgv4")
 id = "B1"
-label = "wound, front"
+label = "spear wound, chest"
 view = &"front"
 place = &"torso_front"
 
-[sub_resource type="Resource" id="Resource_uxvf1"]
-script = ExtResource("1_ga5bn")
+[sub_resource type="Resource" id="fact_B2"]
+script = ExtResource("1_mlgv4")
 id = "B2"
 label = "no wound, back"
 view = &"back"
 place = &"torso_back"
 
-[sub_resource type="Resource" id="Resource_i307y"]
-script = ExtResource("1_ga5bn")
+[sub_resource type="Resource" id="fact_B3"]
+script = ExtResource("1_mlgv4")
 id = "B3"
-label = "sword, gripped"
+label = "drawn sword in hand"
 view = &"front"
 place = &"hand_right"
 
-[sub_resource type="Resource" id="Resource_effuw"]
-script = ExtResource("3_xr0ur")
+[sub_resource type="Resource" id="mentor_1"]
+script = ExtResource("2_xr0ur")
+text = "Hover each mark."
+highlight = Array[String](["B1", "B2", "B3"])
+
+[sub_resource type="Resource" id="mentor_2"]
+script = ExtResource("2_xr0ur")
+text = "Line one, decree one."
+highlight = Array[String](["C1", "L1"])
+
+[sub_resource type="Resource" id="mentor_3"]
+script = ExtResource("2_xr0ur")
+text = "Click one, then the other."
+highlight = Array[String](["C1", "L1"])
+until = 1
+
+[sub_resource type="Resource" id="mentor_4"]
+script = ExtResource("2_xr0ur")
+text = "The Law agrees. Stamp him."
+door = &"valhalla"
+until = 2
+
+[sub_resource type="Resource" id="seam_C1_L1"]
+script = ExtResource("4_uxvf1")
 a = "C1"
 b = "L1"
 kind = 2
 destination = &"valhalla"
 caption = "the saga is true. L1 sends him to Valhalla."
-
-[sub_resource type="Resource" id="Resource_mentor1"]
-script = ExtResource("4_mentor")
-text = "Read the body first."
-highlight = Array[String](["B1", "B2", "B3"])
-
-[sub_resource type="Resource" id="Resource_mentor2"]
-script = ExtResource("4_mentor")
-text = "His first line. The first decree. Pin them."
-highlight = Array[String](["C1", "L1"])
-until = 1
-
-[sub_resource type="Resource" id="Resource_mentor3"]
-script = ExtResource("4_mentor")
-text = "The Law agrees with him. Stamp him."
-door = &"valhalla"
-until = 2
+pair_text = "'Speared, in battle' and L1"
 
 [resource]
-script = ExtResource("2_mlgv4")
+script = ExtResource("3_8k2ct")
 id = &"ulf"
 soul_name = "Ulf"
-body = Array[ExtResource("1_ga5bn")]([SubResource("Resource_8k2ct"), SubResource("Resource_uxvf1"), SubResource("Resource_i307y")])
-claim = Array[String](["Axed, in battle.", "Took it in the chest.", "Sword up to the end.", "Sif gets the goat now."])
-seams = Array[ExtResource("3_xr0ur")]([SubResource("Resource_effuw")])
+body = Array[ExtResource("1_mlgv4")]([SubResource("fact_B1"), SubResource("fact_B2"), SubResource("fact_B3")])
+claim = Array[String](["Speared, in battle.", "Took it in the chest.", "Sword up to the end.", "Sif gets the goat."])
+seams = Array[ExtResource("4_uxvf1")]([SubResource("seam_C1_L1")])
 legal_realm = &"valhalla"
 worthy_realm = &"valhalla"
-mentor_steps = Array[ExtResource("4_mentor")]([SubResource("Resource_mentor1"), SubResource("Resource_mentor2"), SubResource("Resource_mentor3")])
-truth = "Axed in the shield-wall at Ness, sword up to the end."
+mentor_steps = Array[ExtResource("2_xr0ur")]([SubResource("mentor_1"), SubResource("mentor_2"), SubResource("mentor_3"), SubResource("mentor_4")])
+truth = "Ulf was speared in the shield-wall at Ness, sword up to the end."

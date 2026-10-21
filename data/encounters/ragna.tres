@@ -1,0 +1,83 @@
+[gd_resource type="Resource" script_class="EncounterData" format=3]
+
+[ext_resource type="Script" path="res://data/fact_data.gd" id="1_ed4v0"]
+[ext_resource type="Script" path="res://data/mentor_step_data.gd" id="2_x15ii"]
+[ext_resource type="Script" path="res://data/encounter_data.gd" id="3_dphat"]
+[ext_resource type="Script" path="res://data/seam_data.gd" id="4_i70em"]
+
+[sub_resource type="Resource" id="fact_B1"]
+script = ExtResource("1_ed4v0")
+id = "B1"
+label = "no wound, chest"
+view = &"front"
+place = &"torso_front"
+
+[sub_resource type="Resource" id="fact_B2"]
+script = ExtResource("1_ed4v0")
+id = "B2"
+label = "no wound, back"
+view = &"back"
+place = &"torso_back"
+
+[sub_resource type="Resource" id="fact_B3"]
+script = ExtResource("1_ed4v0")
+id = "B3"
+label = "drawn sword in hand"
+view = &"front"
+place = &"hand_right"
+
+[sub_resource type="Resource" id="fact_B4"]
+script = ExtResource("1_ed4v0")
+id = "B4"
+label = "broken neck"
+view = &"front"
+place = &"neck"
+
+[sub_resource type="Resource" id="fact_B5"]
+script = ExtResource("1_ed4v0")
+id = "B5"
+label = "night-shirt only, bare feet"
+view = &"front"
+place = &"hem"
+
+[sub_resource type="Resource" id="seam_C2_L5"]
+script = ExtResource("4_i70em")
+a = "C2"
+b = "L5"
+kind = 2
+destination = &"folkvangr"
+caption = "the saga is true. L5 sends her to Fólkvangr."
+pair_text = "'I held the door' and L5"
+
+[sub_resource type="Resource" id="seam_C3_L5"]
+script = ExtResource("4_i70em")
+a = "C3"
+b = "L5"
+kind = 2
+destination = &"folkvangr"
+caption = "the saga is true. L5 sends her to Fólkvangr."
+
+[sub_resource type="Resource" id="seam_W1_L5"]
+script = ExtResource("4_i70em")
+a = "W1"
+b = "L5"
+kind = 2
+destination = &"folkvangr"
+caption = "the saga is true. L5 sends her to Fólkvangr."
+
+[resource]
+script = ExtResource("3_dphat")
+id = &"ragna"
+soul_name = "Ragna"
+pronoun = "her"
+body = Array[ExtResource("1_ed4v0")]([SubResource("fact_B1"), SubResource("fact_B2"), SubResource("fact_B3"), SubResource("fact_B4"), SubResource("fact_B5")])
+claim = Array[String](["They came at night.", "I held the door.", "My boys behind me.", "Then the roof fell."])
+witness_name = "Skeggi, one of the raiders"
+witness = Array[String](["She held that door.", "So we fired the roof.", "Her boys got out."])
+seams = Array[ExtResource("4_i70em")]([SubResource("seam_C2_L5"), SubResource("seam_C3_L5"), SubResource("seam_W1_L5")])
+red_herrings = Array[String](["B5|C2", "B1|C2", "B2|C2", "B4|C2", "C4|L1"])
+legal_realm = &"folkvangr"
+worthy_realm = &"folkvangr"
+hel_marked = true
+plate_label = "Hel asked for her"
+truth = "Ragna held her door while her boys got out. The raiders fired the roof."

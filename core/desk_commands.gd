@@ -137,6 +137,13 @@ func pin(a: String, b: String) -> PinResult:
 	if result.kind == PinResult.Kind.THREAD:
 		record.threads.append(result.seam)
 		record.answers.append("")
+		if result.seam.kind == Seam.Kind.GREY and not _state.grey_commented_today:
+			_state.grey_commented_today = true
+			result.mentor_line = _state.rules.mentor_grey_line
+			if _state.day_rules().huginn_answers > 0:
+				result.mentor_line = _state.rules.mentor_grey_huginn_line
+	if record.pins.size() == 1:
+		MentorGuide.finish_reading(record)
 	if result.seam != null:
 		MentorGuide.finish(record, MentorStep.Until.PIN, result.seam)
 	elif result.kind == PinResult.Kind.NO_SEAM and _state.clock.is_timed():
@@ -286,6 +293,11 @@ func promise_soul() -> String:
 
 func promise_reward() -> int:
 	return _state.rules.hel_reward
+
+
+## The ledger's entry for Hel's promise in its current state (matrix A6); "" before her offer.
+func ledger_line() -> String:
+	return _state.ledger_line()
 
 
 ## NEW marks on today's new decrees and doors show until the day's first stamp (D34).

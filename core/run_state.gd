@@ -37,8 +37,12 @@ var paused: bool = false
 var huginn_left: int = 0
 var stamps_today: int = 0
 var citations_today: Array[String] = []
+## The mentor comments on the day's first grey thread only (matrix A2).
+var grey_commented_today: bool = false
 var promise: StringName = PROMISE_NONE
 var promise_soul: String = ""
+## Where the named soul was stamped, once judged.
+var promise_realm: StringName = &""
 var promise_changed_today: bool = false
 ## Decided at the dusk before the day with a return slot (D2).
 var returning: Encounter = null
@@ -57,6 +61,7 @@ func reset(
 	economy = Economy.new(rules)
 	promise = PROMISE_NONE
 	promise_soul = ""
+	promise_realm = &""
 	returning = null
 	dusk = null
 	paused = false
@@ -89,6 +94,7 @@ func open_day() -> void:
 	huginn_left = day.huginn_answers
 	stamps_today = 0
 	citations_today = []
+	grey_commented_today = false
 	promise_changed_today = false
 	economy.start_day()
 
@@ -128,11 +134,11 @@ func end_day() -> void:
 	else:
 		report.quota_delta = -economy.lose((day.quota - report.admitted) * rules.quota_short_cost)
 	report.demoted = economy.demotions > demotions
-	report.recap = _recap(day.day)
+	report.recap = RecapWriter.lines(_records_of(day.day), day, rules)
 	report.never_judged = _never_judged(day.day)
 	report.story = day.dusk_story
 	if promise_changed_today:
-		report.requests.append(rules.promise_format % [promise_soul, promise])
+		report.requests.append(ledger_line())
 	if has_next_day():
 		_prepare_tomorrow(report)
 	report.feathers = economy.feathers
@@ -166,7 +172,8 @@ func _prepare_tomorrow(report: DuskReport) -> void:
 			if encounter.hel_marked:
 				promise = PROMISE_OPEN
 				promise_soul = encounter.soul_name
-				report.requests.append(rules.hel_offer_format % [promise_soul, rules.hel_reward])
+				report.requests.append(rules.hel_offer_format % promise_soul)
+				report.requests.append(ledger_line())
 				break
 	if days[tomorrow].return_slot < 0:
 		return
@@ -181,25 +188,17 @@ func _prepare_tomorrow(report: DuskReport) -> void:
 			report.returned_line = rules.returned_format % variant.soul_name
 
 
-func _recap(day: int) -> Array[String]:
-	var wrong: Array[VerdictRecord] = []
-	var rest: Array[VerdictRecord] = []
+## The ledger's entry for Hel's promise; "" before her offer.
+func ledger_line() -> String:
+	return Ledger.line(promise, promise_soul, promise_realm, rules)
+
+
+func _records_of(day: int) -> Array[VerdictRecord]:
+	var found: Array[VerdictRecord] = []
 	for record: VerdictRecord in records:
-		if record.day != day:
-			continue
-		if record.judged() and record.verdict != record.encounter.worthy_realm:
-			wrong.append(record)
-		else:
-			rest.append(record)
-	var lines: Array[String] = []
-	for record: VerdictRecord in wrong + rest:
-		if lines.size() >= 3:
-			break
-		var line: String = "%s: %s" % [record.encounter.soul_name, record.encounter.truth]
-		if record.result != null and record.result.uncertain:
-			line += " " + rules.uncertain_line
-		lines.append(line)
-	return lines
+		if record.day == day:
+			found.append(record)
+	return found
 
 
 func _never_judged(day: int) -> Array[String]:
@@ -222,10 +221,12 @@ func settle_stamp(record: VerdictRecord, result: StampResult) -> void:
 		promise_changed_today = true
 		if result.realm == Realm.HEL:
 			promise = PROMISE_KEPT
+			promise_realm = result.realm
 			result.reward = rules.hel_reward
 			economy.gain(result.reward)
 		else:
 			promise = PROMISE_BROKEN
+			promise_realm = result.realm
 	result.feathers_delta = economy.feathers - feathers_before
 	result.demoted = economy.demotions > demotions_before
 	record.verdict = result.realm

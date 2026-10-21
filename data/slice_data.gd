@@ -27,6 +27,27 @@ extends Resource
 @export_group("Ending")
 @export var tide_threshold: int = 0
 @export var hollow_threshold: int = 0
+@export_group("Desk text (matrix section A)")
+@export var desk_text: DeskTextData = null
+@export var recap_agree_format: String = ""
+@export var recap_legal_format: String = ""
+@export var recap_mercy_format: String = ""
+@export var recap_neither_format: String = ""
+@export var recap_uncertain_format: String = ""
+@export var recap_never_line: String = ""
+@export var ledger_open_format: String = ""
+@export var ledger_kept_format: String = ""
+@export var ledger_broken_format: String = ""
+@export var ledger_lapsed_format: String = ""
+@export_group("The mentor (A2)")
+@export var mentor_mercy_warning_format: String = ""
+@export var mentor_illegal_warning_format: String = ""
+@export var mentor_mercy_format: String = ""
+@export var mentor_liar_format: String = ""
+@export var mentor_honest_format: String = ""
+@export var mentor_promise_format: String = ""
+@export var mentor_grey_line: String = ""
+@export var mentor_grey_huginn_line: String = ""
 @export_group("Law and desk text")
 @export var liar_decree_id: String = ""
 @export var liar_realm: StringName = &""
@@ -34,14 +55,8 @@ extends Resource
 @export var huginn_witness_answer: String = ""
 @export var citation_format: String = ""
 @export var threaded_line: String = ""
-@export var uncertain_line: String = ""
 @export var returned_format: String = ""
 @export var hel_offer_format: String = ""
-@export var promise_format: String = ""
-@export var mentor_mercy_format: String = ""
-@export var mentor_illegal_format: String = ""
-@export var mentor_warning_line: String = ""
-@export var mentor_cost_format: String = ""
 
 
 func rules_to_core() -> SliceRules:
@@ -60,20 +75,34 @@ func rules_to_core() -> SliceRules:
 	rules.clock_warning_seconds = clock_warning_seconds
 	rules.tide_threshold = tide_threshold
 	rules.hollow_threshold = hollow_threshold
+	if desk_text != null:
+		rules.text = desk_text.to_core()
+	rules.recap_agree_format = recap_agree_format
+	rules.recap_legal_format = recap_legal_format
+	rules.recap_mercy_format = recap_mercy_format
+	rules.recap_neither_format = recap_neither_format
+	rules.recap_uncertain_format = recap_uncertain_format
+	rules.recap_never_line = recap_never_line
+	rules.ledger_open_format = ledger_open_format
+	rules.ledger_kept_format = ledger_kept_format
+	rules.ledger_broken_format = ledger_broken_format
+	rules.ledger_lapsed_format = ledger_lapsed_format
+	rules.mentor_mercy_warning_format = mentor_mercy_warning_format
+	rules.mentor_illegal_warning_format = mentor_illegal_warning_format
+	rules.mentor_mercy_format = mentor_mercy_format
+	rules.mentor_liar_format = mentor_liar_format
+	rules.mentor_honest_format = mentor_honest_format
+	rules.mentor_promise_format = mentor_promise_format
+	rules.mentor_grey_line = mentor_grey_line
+	rules.mentor_grey_huginn_line = mentor_grey_huginn_line
 	rules.liar_decree_id = liar_decree_id
 	rules.liar_realm = liar_realm
 	rules.huginn_claim_answer = huginn_claim_answer
 	rules.huginn_witness_answer = huginn_witness_answer
 	rules.citation_format = citation_format
 	rules.threaded_line = threaded_line
-	rules.uncertain_line = uncertain_line
 	rules.returned_format = returned_format
 	rules.hel_offer_format = hel_offer_format
-	rules.promise_format = promise_format
-	rules.mentor_mercy_format = mentor_mercy_format
-	rules.mentor_illegal_format = mentor_illegal_format
-	rules.mentor_warning_line = mentor_warning_line
-	rules.mentor_cost_format = mentor_cost_format
 	return rules
 
 
