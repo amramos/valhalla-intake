@@ -184,7 +184,7 @@ func buy_huginn_answer() -> bool:
 		return false
 	if _state.huginn_left > 0 or not _state.economy.can_spend(_state.rules.huginn_extra_cost):
 		return false
-	_state.economy.spend(_state.rules.huginn_extra_cost)
+	_state.spend_on_huginn()
 	_state.huginn_left += 1
 	desk_changed.emit()
 	return true
@@ -325,6 +325,7 @@ func ending() -> EndingReport:
 	report.rank_name = _state.economy.rank_name()
 	report.promise_soul = _state.promise_soul
 	report.promise_state = _state.promise
+	report.promise_line = _state.ledger_line()
 	return report
 
 

@@ -181,3 +181,12 @@ func test_a_mentor_step_too_long_for_the_bubble_fails() -> void:
 	ulf.mentor_steps[0].text = "Read the body first, every mark of it, front and back, then the claim."
 	var problems: String = "\n".join(_checker.check_mentor(ulf, _slice.days[0].to_core()))
 	assert_string_contains(problems, "the bubble holds")
+
+
+func test_a_witness_heading_too_wide_for_its_panel_fails() -> void:
+	var sigvaldi: Encounter = _broken(&"sigvaldi")
+	sigvaldi.witness_name = "Bjornolfr Thorgrimsson Longbeard, his shield-brother"
+	var problems: String = "\n".join(_checker.check_witness_heading(sigvaldi))
+	assert_string_contains(
+		problems, "the witness heading 'WITNESS Bjornolfr Thorgrimsson Longbeard'"
+	)

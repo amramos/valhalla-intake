@@ -3,6 +3,8 @@ extends RefCounted
 ## What the HUD shows at one moment; the desk system fills it from DeskCommands.
 
 var time_left: float = INF
+## False once the day has ended (dusk, the ending): the clock cell is left blank, never stale.
+var clock_shown: bool = true
 var feathers: int = 0
 ## (souls admitted today, today's quota).
 var quota := Vector2i.ZERO

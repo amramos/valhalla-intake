@@ -78,6 +78,23 @@ func test_the_extra_answer_note_shows_once_todays_answers_are_spent() -> void:
 	_system.ask_huginn.pressed.emit()
 	assert_ne(_desk.commands().thread_answer(2), "", "the third answer is bought and given")
 	assert_eq(_desk.commands().feathers(), before - 2)
+	var text: DeskText = _desk.commands().slice_rules().text
+	var bought: String = text.huginn_bought_format % _desk.commands().thread_answer(2)
+	_system.caption_strip._process(_system.caption_strip.hold_seconds)
+	assert_eq(_system.caption_strip.shown_text(), bought, "A4: the bought answer says its price")
+	_system._on_ask_huginn_hovered()
+	assert_eq(_system.hover_label.shown_text(), text.huginn_extra_hover, "A4")
+
+
+func test_ask_huginn_is_greyed_until_a_grey_thread_is_selected() -> void:
+	_open(Fixture.commands())
+	_pin("C1", "W1")
+	assert_true(_system.ask_huginn.disabled)
+	_system._on_ask_huginn_hovered()
+	var text: DeskText = _desk.commands().slice_rules().text
+	assert_eq(_system.hover_label.shown_text(), text.huginn_select_hover, "A4")
+	_knot(0).press()
+	assert_false(_system.ask_huginn.disabled)
 
 
 func test_the_three_thread_kinds_differ_by_colour_and_pattern_and_use_no_reserved_colour() -> void:
@@ -104,7 +121,9 @@ func test_a_click_on_a_threads_bead_shows_its_caption_again() -> void:
 	_pin("C2", "L5")
 	_system.caption_strip.take_over("something else")
 	_knot(0).press()
-	assert_eq(_system.caption_strip.shown_text(), "L5 sends him to Fólkvangr.", "D33")
+	assert_eq(
+		_system.caption_strip.shown_text(), "C2 against L5: L5 sends him to Fólkvangr.", "D33, A1"
+	)
 
 
 func test_a_seam_plays_its_sound_and_a_stamp_its_thud_flare_and_walk() -> void:

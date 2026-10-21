@@ -15,7 +15,7 @@ func _initialize() -> void:
 		return
 	var path: String = args[0]
 	var command: String = " ".join(args.slice(1)).strip_edges()
-	var harness: Harness = Harness.new(SliceLoader.load_slice())
+	var harness: Harness = Harness.new(SliceLoader.load_slice(), true)
 	var history: Array[String] = []
 	if command != "new":
 		history = _read(path)

@@ -40,3 +40,34 @@ var returned_name_format: String = "%s (returned)"
 ## Format: feathers, rank name.
 var standing_format: String = "Feathers: %d. Rank: %s."
 var play_again: String = "Play again"
+## Dusk (A6). Format: the day.
+var dusk_title_format: String = "Dusk, day %d."
+## Format: the rank name.
+var rank_format: String = "Rank: %s."
+## The day's feather changes (D36). Formats: dawn and now; a soul and the loss;
+var feathers_dawn_format: String = "Feathers: %d at dawn, %d now."
+## the cost; Hel's reward; the signed quota result; the cap's loss and the full loss.
+var feather_citation_format: String = "Citation (%s): -%d."
+var feather_huginn_format: String = "Huginn's extra answer: -%d."
+var feather_hel_format: String = "Hel paid %d."
+var feather_quota_format: String = "Quota: %+d."
+var feather_cap_format: String = "Loss cap reached: -%d instead of -%d."
+## Placeholder until section A has it. Format: the new rank, the refill.
+var demoted_format: String = "Demoted to %s: feathers refilled to %d."
+## The shell (D31).
+var title_name: String = "Valhalla Intake"
+var start_label: String = "Start"
+var quit_label: String = "Quit"
+var pause_title: String = "Paused"
+var resume_label: String = "Resume"
+var restart_label: String = "Restart the run"
+var restart_confirm: String = "Restart the run from day 1? Everything since is lost."
+var quit_confirm: String = "Quit the game?"
+var confirm_yes: String = "Yes"
+var confirm_no: String = "No"
+var begin_label: String = "Begin"
+var next_label: String = "Next"
+var skip_all_label: String = "Skip all"
+var next_day_label: String = "Next day"
+var ledger_title: String = "Ledger"
+var ledger_empty: String = "No requests yet."

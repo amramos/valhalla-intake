@@ -1,6 +1,6 @@
 extends RefCounted
-## The text harness (D13): runs commands on DeskCommands as the desk does, and prints only what
-## the desk shows (through DeskView).
+## The text harness (D13): runs commands on DeskCommands as the desk does, screen by screen
+## (title, dawn, desk, dusk cards, ending, pause), and prints only what the desk shows (DeskView).
 
 const DeskView := preload("res://tools/harness/desk_view.gd")
 ## Simulated reading time per stamp; thinking time is not simulated, only action costs.
@@ -12,12 +12,17 @@ var view: DeskView
 var last_ok: bool = false
 
 var _horn: bool = false
+## The screen a declined confirm returns to.
+var _back: StringName = DeskView.PAUSED
 var _warning: bool = false
 
 
-func _init(p_desk: DeskCommands) -> void:
+## at_title: start on the title screen, as the game does (play.gd); tests start at dawn.
+func _init(p_desk: DeskCommands, at_title: bool = false) -> void:
 	desk = p_desk
 	view = DeskView.new(desk)
+	if at_title:
+		view.screen = DeskView.TITLE
 	desk.set_stamp_seconds(STAMP_SECONDS)
 	desk.horn.connect(_on_horn)
 	desk.clock_warning.connect(_on_warning)
@@ -31,6 +36,7 @@ func act(command: String) -> String:
 	if words.is_empty() or words[0] == "look":
 		return ""
 	var text: String = _run(words)
+	view.phases.sync(desk)
 	if _warning:
 		text += "\nThirty seconds left."
 	if _horn:
@@ -58,9 +64,13 @@ func _run(words: PackedStringArray) -> String:
 		"jump": _cmd_jump,
 		"wait": _cmd_wait,
 		"ack": _cmd_ack,
+		"skip": _cmd_skip,
+		"pause": _cmd_pause,
 	}
 	var text: String = ""
-	if handlers.has(words[0]):
+	if view.screen != &"":
+		text = _overlay(words[0])
+	elif handlers.has(words[0]):
 		text = (handlers[words[0]] as Callable).call(words)
 	return text if text != "" else _refuse("You can't do that now: %s" % " ".join(words))
 
@@ -88,7 +98,7 @@ func _cmd_huginn(words: PackedStringArray) -> String:
 func _cmd_buy(_words: PackedStringArray) -> String:
 	if not desk.buy_huginn_answer():
 		return ""
-	return "Huginn takes 2 feathers for one more answer."
+	return (_text().huginn_bought_format % "").strip_edges()
 
 
 func _cmd_stamp(words: PackedStringArray) -> String:
@@ -97,21 +107,100 @@ func _cmd_stamp(words: PackedStringArray) -> String:
 	return _stamp(_realm(words[1]))
 
 
-## "next" calls the next soul after a citation (D48), or the next dawn at dusk.
+## "next" calls the next soul after a citation (D48); at dusk it turns the card, and after the
+## last card it opens the next dawn, or after day 3's dusk the ending (PhaseFlow, as on the desk).
 func _cmd_next(_words: PackedStringArray) -> String:
 	if desk.awaiting_next():
 		desk.next_soul()
 		if desk.phase() == &"desk":
 			return "Next at the desk: %s." % _soul_name()
 		return "The last soul is gone; the day is over."
-	if desk.phase() != &"dusk":
+	if not _at_dusk_cards():
 		return ""
-	desk.next_day()
-	return "Dawn of day %d." % desk.day_number()
+	view.phases.advance(desk)
+	return _after_cards()
 
 
+## "skip" is dusk's "Skip all": straight to the next dawn, or the ending after day 3; nothing with
+## consequences is lost (D15).
+func _cmd_skip(_words: PackedStringArray) -> String:
+	if not _at_dusk_cards():
+		return ""
+	view.phases.skip(desk)
+	return _after_cards()
+
+
+## A dusk card shows: the dusk, or day 3's dusk before the ending.
+func _at_dusk_cards() -> bool:
+	view.phases.sync(desk)
+	var ending: bool = desk.phase() == &"ending" and not view.phases.showing_ending()
+	return desk.phase() == &"dusk" or ending
+
+
+func _after_cards() -> String:
+	if desk.phase() == &"dawn":
+		return "Dawn of day %d." % desk.day_number()
+	if view.phases.showing_ending():
+		return "The ending: %s." % ScreenText.ending_lines(desk.ending(), desk.slice_rules())[0]
+	return "%s (card %d)" % [_text().next_label, view.phases.card_index() + 1]
+
+
+## At the ending "restart" is "Play again"; on the desk or at dusk it opens the pause menu's
+## confirm (D31).
 func _cmd_restart(_words: PackedStringArray) -> String:
+	if _at_ending():
+		return _restart()
+	_pause()
+	view.screen = DeskView.CONFIRM_RESTART
+	return _text().restart_confirm
+
+
+func _cmd_pause(_words: PackedStringArray) -> String:
+	if _at_ending():
+		return ""
+	_pause()
+	return _text().pause_title
+
+
+## Commands on a screen over the run: the title, the pause menu and its confirms (D31).
+func _overlay(command: String) -> String:
+	var key: String = "%s %s" % [view.screen, command]
+	if key == "confirm_restart yes":
+		return _restart()
+	var t: DeskText = _text()
+	var moves: Dictionary = {
+		"title start": [&"", "Day %d dawns." % desk.day_number()],
+		"title quit": [DeskView.CONFIRM_QUIT, t.quit_confirm],
+		"paused quit": [DeskView.CONFIRM_QUIT, t.quit_confirm],
+		"paused resume": [&"", t.resume_label],
+		"paused restart": [DeskView.CONFIRM_RESTART, t.restart_confirm],
+		"confirm_quit yes": [DeskView.CLOSED, t.quit_label],
+		"confirm_quit no": [_back, t.confirm_no],
+		"confirm_restart no": [DeskView.PAUSED, t.confirm_no],
+	}
+	if not moves.has(key):
+		return ""
+	if view.screen in [DeskView.TITLE, DeskView.PAUSED]:
+		_back = view.screen
+	view.screen = moves[key][0]
+	desk.set_paused(view.screen != &"" and view.screen != DeskView.TITLE)
+	return moves[key][1]
+
+
+func _at_ending() -> bool:
+	view.phases.sync(desk)
+	return desk.phase() == &"ending" and view.phases.showing_ending()
+
+
+func _pause() -> void:
+	desk.set_paused(true)
+	view.screen = DeskView.PAUSED
+
+
+func _restart() -> String:
+	view.phases.reset()
 	desk.restart_run()
+	view.screen = &""
 	view.caption = ""
 	return "The run restarts at the dawn of day 1."
 
@@ -120,6 +209,7 @@ func _cmd_restart(_words: PackedStringArray) -> String:
 func _cmd_jump(words: PackedStringArray) -> String:
 	if words.size() < 3 or not words[1].is_valid_int() or not words[2].is_valid_int():
 		return ""
+	view.phases.reset()
 	desk.debug_jump(words[1].to_int(), words[2].to_int(), words.has("mercy"))
 	view.caption = ""
 	return "(debug) Jumped to day %d, soul %s." % [desk.day_number(), _soul_name()]
@@ -145,16 +235,17 @@ func _cmd_wait(words: PackedStringArray) -> String:
 func _pin(a: String, b: String) -> String:
 	var result: PinResult = desk.pin(a, b)
 	match result.kind:
-		PinResult.Kind.THREAD:
-			view.caption = result.seam.caption
-			return "A %s thread: %s" % [DeskView.KIND_NAMES[result.seam.kind], result.seam.caption]
-		PinResult.Kind.ALREADY:
-			view.caption = result.seam.caption
-			return "Already threaded: %s" % result.seam.caption
+		PinResult.Kind.THREAD, PinResult.Kind.ALREADY:
+			view.caption = _text().thread_format % [a, b, result.seam.caption]
+			var kind: String = DeskView.KIND_NAMES[result.seam.kind]
+			var line: String = "A %s thread. %s" % [kind, view.caption]
+			if result.mentor_line != "":
+				line += "\nThe mentor: %s" % result.mentor_line
+			return line
 		PinResult.Kind.NO_SEAM:
 			if result.seconds_lost > 0.0:
-				return "No seam: those two agree. -%d s" % roundi(result.seconds_lost)
-			return "No seam: those two agree."
+				return _text().no_seam_timed_format % roundi(result.seconds_lost)
+			return _text().no_seam_line
 	return _refuse("Those can't be pinned: %s and %s." % [a, b])
 
 
@@ -162,7 +253,7 @@ func _ask(number: int) -> String:
 	var answer: String = desk.ask_huginn(number - 1)
 	if answer == "":
 		return _refuse("Huginn doesn't answer that.")
-	return "Huginn, on thread %d: %s" % [number, answer]
+	return "Thread %d. %s" % [number, answer]
 
 
 func _stamp(realm: StringName) -> String:
@@ -182,13 +273,17 @@ func _stamp(realm: StringName) -> String:
 	if result.reward > 0:
 		lines.append("Hel pays %d feathers." % result.reward)
 	if result.demoted:
-		lines.append("Demoted: %s. Feathers refilled." % desk.rank_name())
+		lines.append(_text().demoted_format % [desk.rank_name(), desk.feathers()])
 	view.caption = ""
 	if desk.awaiting_next():
 		lines.append("%s stays on the desk with the black feather until you call: next." % soul)
 	elif desk.phase() == &"desk":
 		lines.append("Next at the desk: %s." % _soul_name())
 	return "\n".join(lines)
+
+
+func _text() -> DeskText:
+	return desk.slice_rules().text
 
 
 func _soul_name() -> String:

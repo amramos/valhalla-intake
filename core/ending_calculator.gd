@@ -10,6 +10,7 @@ static func calculate(records: Array[VerdictRecord], rules: SliceRules) -> Endin
 		var encounter: Encounter = record.encounter
 		var entry := EndingEntry.new()
 		entry.soul_name = encounter.soul_name
+		entry.returned = encounter.returned
 		entry.day = record.day
 		entry.verdict = record.verdict
 		entry.worthy = encounter.worthy_realm

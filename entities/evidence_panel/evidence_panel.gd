@@ -28,6 +28,8 @@ var _note_label: Label = null
 var _content_bottom: int = 0
 ## Lines marked NEW (D34): a bar in the margin and a note in the heading.
 var _new_ids: Array[String] = []
+## The heading's hover label (the witness's full description, D52); "" for none.
+var _heading_hover: String = ""
 
 
 func _ready() -> void:
@@ -35,6 +37,8 @@ func _ready() -> void:
 	_heading_label = _make_label(get_theme_color(&"ink_soft", &"DeskPalette"))
 	_heading_label.name = "Heading"
 	add_child(_heading_label)
+	_heading_label.mouse_entered.connect(_on_heading_entered)
+	_heading_label.mouse_exited.connect(func() -> void: item_hover_ended.emit(""))
 	_note_label = _make_label(get_theme_color(&"ink_soft", &"DeskPalette"))
 	_note_label.name = "Note"
 	add_child(_note_label)
@@ -42,8 +46,18 @@ func _ready() -> void:
 
 
 ## Shows the lines; `note` stands in for an empty panel ("No witness came back.", D46).
-func show_lines(items: Array[EvidenceItem], title: String = heading, note: String = "") -> void:
+## `heading_hover` is the heading's hover label ("" for none).
+func show_lines(
+	items: Array[EvidenceItem],
+	title: String = heading,
+	note: String = "",
+	heading_hover: String = ""
+) -> void:
 	heading = title
+	_heading_hover = heading_hover
+	_heading_label.mouse_filter = (
+		Control.MOUSE_FILTER_STOP if heading_hover != "" else Control.MOUSE_FILTER_IGNORE
+	)
 	_layout(items, note)
 
 
@@ -58,6 +72,11 @@ func set_new(item_ids: Array[String]) -> void:
 
 func is_new(item_id: String) -> bool:
 	return _new_ids.has(item_id) and _areas.has(item_id)
+
+
+## The heading's hover area (tests and tools).
+func heading_hover_area() -> Control:
+	return _heading_label
 
 
 func heading_text() -> String:
@@ -183,6 +202,11 @@ func _add_line(item: EvidenceItem, y: int) -> int:
 	_areas[item.id] = hit
 	_labels[item.id] = label
 	return lines * LINE_PITCH
+
+
+func _on_heading_entered() -> void:
+	if _heading_hover != "":
+		item_hover_started.emit("", _heading_hover, _heading_label.get_global_rect())
 
 
 func _heading_text() -> String:

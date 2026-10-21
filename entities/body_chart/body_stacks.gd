@@ -6,13 +6,18 @@ extends Resource
 ## Mirrors `docs/art/slice-asset-manifest.json` (a test keeps them equal).
 
 @export var stacks: Dictionary[StringName, PackedStringArray] = {}
+## Encounter ids whose stack has another name (the returned Hakon variants share one stack).
+@export var aliases: Dictionary[StringName, StringName] = {}
 @export var chart_folder: String = "res://assets/art/body"
 @export var soul_folder: String = "res://assets/art/souls"
 
 
-## The stack key for an encounter id: the id itself, or the longest key the id starts with once
-## "_" reads as "-" (returned Hakon's variants share the "hakon-returned" stack). &"" if none.
+## The stack key for an encounter id: its alias (the returned Hakon variants share the
+## "hakon-returned" stack), the id itself, or the longest key the id starts with once "_" reads
+## as "-". &"" if none.
 func key_for(encounter_id: StringName) -> StringName:
+	if aliases.has(encounter_id) and stacks.has(aliases[encounter_id]):
+		return aliases[encounter_id]
 	var wanted: String = String(encounter_id).replace("_", "-")
 	if stacks.has(StringName(wanted)):
 		return StringName(wanted)

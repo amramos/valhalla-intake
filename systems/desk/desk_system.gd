@@ -5,10 +5,7 @@ extends Node
 ## the mentor's guided step) and runs the clock while a soul is at the desk. The stamp itself is
 ## StampFlow's. It reads nothing but DeskCommands' getters and signals.
 
-const NO_SEAM_TEXT := "No seam: those two agree."
-const NO_SEAM_COST_FORMAT := "No seam: those two agree. -%d s"
 const HORN_TEXT := "The horn. The day is over."
-const PICK_KNOT_TEXT := "Pick a grey thread's knot first."
 
 @export var body_chart: BodyChart
 @export var claim_panel: EvidencePanel
@@ -28,6 +25,7 @@ const PICK_KNOT_TEXT := "Pick a grey thread's knot first."
 @export var mentor_bubble: MentorBubble
 @export var stamp_flow: StampFlow
 @export var seam_player: AudioStreamPlayer
+@export var ledger_tray: LedgerTray
 
 var commands: DeskCommands = null
 var selection := PinSelection.new()
@@ -41,6 +39,7 @@ var _lit: Array[String] = []
 ## Said when the desk empties (the horn); outlives the soul it ended.
 var _announcement: String = ""
 var _warned: bool = false
+var _phases := PhaseFlow.new()
 
 
 func bind(p_commands: DeskCommands) -> void:
@@ -72,7 +71,11 @@ func bind(p_commands: DeskCommands) -> void:
 	mentor_portrait.clicked.connect(_on_mentor_clicked)
 	mentor_bubble.acknowledged.connect(_on_mentor_acknowledged)
 	ask_huginn.pressed.connect(_on_ask_huginn)
+	_phases.on_restart = restart
 	phase_card.advanced.connect(_on_phase_advanced)
+	phase_card.skipped.connect(_on_phase_skipped)
+	ask_huginn.mouse_entered.connect(_on_ask_huginn_hovered)
+	ask_huginn.mouse_exited.connect(hover_label.hide_label)
 	refresh()
 
 
@@ -97,7 +100,8 @@ func refresh() -> void:
 	DeskReadouts.show_doors(doors, commands)
 	_refresh_hud()
 	law_panel.set_new(DeskReadouts.new_decrees(commands))
-	PhaseFlow.show_card(phase_card, commands)
+	_phases.show(phase_card, commands)
+	ledger_tray.set_line(commands.ledger_line(), _text().ledger_empty)
 	stamp_flow.refresh()
 	_show_mentor_step()
 	_apply_highlights()
@@ -106,6 +110,27 @@ func refresh() -> void:
 func cancel_selection() -> void:
 	selection.cancel()
 	_apply_highlights()
+
+
+## A restarted run (D31): every trace of the old one leaves the desk.
+func restart() -> void:
+	_phases.reset()
+	_announcement = ""
+	_warned = false
+	commands.restart_run()
+	# Pause's Restart and Play again both land here: the last run's comments stay with it.
+	stamp_flow.forget_run()
+	_clear_desk()
+
+
+## Empties the desk outright: the soul, its evidence, the caption strip, the stamp preview and door
+## selection, the half-made pin, the lit pair and Huginn's thread. A restart from a soul at the desk
+## needs it because refresh() redraws a soul only when it changes, and none is seated before or
+## after the restart.
+func _clear_desk() -> void:
+	_shown_encounter = commands.current_encounter()
+	_show_encounter(_shown_encounter)
+	refresh()
 
 
 func _show_encounter(encounter: Encounter) -> void:
@@ -126,11 +151,15 @@ func _show_encounter(encounter: Encounter) -> void:
 	)
 	var witness: Array[EvidenceItem] = _items_in(EvidenceItem.Group.WITNESS)
 	var witness_title: String = ""
+	var witness_hover: String = ""
 	var note: String = ""
 	if encounter != null:
-		witness_title = "WITNESS " + encounter.witness_name if encounter.witness_name != "" else ""
+		# D52: the heading names the witness; the full authored description is its hover.
+		var name: String = encounter.witness_heading_name()
+		witness_title = "WITNESS " + name if name != "" else ""
+		witness_hover = encounter.witness_name
 		note = encounter.witness_note
-	witness_panel.show_lines(witness, witness_title, note)
+	witness_panel.show_lines(witness, witness_title, note, witness_hover)
 	witness_panel.visible = not witness.is_empty() or note != ""
 	law_panel.show_lines(_items_in(EvidenceItem.Group.LAW), "LAW")
 
@@ -178,18 +207,27 @@ func _pin(a: String, b: String) -> void:
 		return
 	match result.kind:
 		PinResult.Kind.THREAD:
-			caption_strip.post(result.seam.caption, CaptionStrip.Priority.THREAD)
+			caption_strip.post(_caption(result.seam), CaptionStrip.Priority.THREAD)
 			if seam_player != null and seam_player.stream != null and seam_player.is_inside_tree():
 				seam_player.play()
 		PinResult.Kind.ALREADY:
 			_lit = [a, b] as Array[String]
-			caption_strip.take_over(result.seam.caption)
+			caption_strip.take_over(_caption(result.seam))
 		PinResult.Kind.NO_SEAM:
-			var text: String = NO_SEAM_TEXT
+			var text: String = _text().no_seam_line
 			if result.seconds_lost > 0.0:
-				text = NO_SEAM_COST_FORMAT % roundi(result.seconds_lost)
+				text = _text().no_seam_timed_format % roundi(result.seconds_lost)
 			caption_strip.take_over(text)
 	_apply_highlights()
+
+
+## A thread's caption as the strip shows it: "{a} against {b}: {caption}" (A1).
+func _caption(seam: Seam) -> String:
+	return _text().thread_format % [seam.a, seam.b, seam.caption]
+
+
+func _text() -> DeskText:
+	return commands.slice_rules().text
 
 
 ## Lights a pair (a held citation, the feather); the mentor's highlight shows when nothing is lit.
@@ -246,17 +284,21 @@ func _on_mentor_acknowledged() -> void:
 	commands.mentor_ack()
 
 
-func _on_phase_advanced() -> void:
-	if commands.phase() == RunState.ENDING:
-		# "Play again" starts a new run: the last run's comments stay with it.
-		stamp_flow.forget_run()
-	PhaseFlow.advance(commands)
-
-
 func _on_horn() -> void:
 	# The horn empties the desk; the refresh that follows shows this after clearing the strip.
 	_announcement = HORN_TEXT
 	caption_strip.take_over(HORN_TEXT)
+
+
+## A dusk card turned without a desk change (no refresh follows), so the card is drawn here.
+func _on_phase_advanced() -> void:
+	_phases.advance(commands)
+	_phases.show(phase_card, commands)
+
+
+func _on_phase_skipped() -> void:
+	_phases.skip(commands)
+	_phases.show(phase_card, commands)
 
 
 func _on_clock_warning() -> void:
@@ -273,26 +315,23 @@ func _on_knot_clicked(thread_index: int) -> void:
 	if thread_index < 0 or thread_index >= threads.size():
 		return
 	var answer: String = commands.thread_answer(thread_index)
-	caption_strip.take_over(answer if answer != "" else threads[thread_index].caption)
+	caption_strip.take_over(answer if answer != "" else _caption(threads[thread_index]))
 	if threads[thread_index].kind == Seam.Kind.GREY:
 		huginn_thread = -1 if huginn_thread == thread_index else thread_index
 		refresh()
 
 
 func _on_ask_huginn() -> void:
-	if _input_held():
+	if _input_held() or huginn_thread < 0:
 		return
-	if huginn_thread < 0:
-		caption_strip.take_over(PICK_KNOT_TEXT)
-		return
-	if commands.thread_answer(huginn_thread) == "" and commands.huginn_left() <= 0:
-		# Today's answers are spent; one more costs feathers (D30).
-		if not commands.buy_huginn_answer():
-			return
-	var answer: String = commands.ask_huginn(huginn_thread)
+	var answer: String = HuginnAsk.ask(commands, huginn_thread)
 	# An answer whose cost ended the day is not queued over the horn's announcement.
 	if answer != "" and commands.phase() == RunState.DESK:
 		caption_strip.post(answer, CaptionStrip.Priority.HUGINN)
+
+
+func _on_ask_huginn_hovered() -> void:
+	_show_hover(HuginnAsk.hover_text(commands, huginn_thread), ask_huginn.get_global_rect())
 
 
 ## No pin, knot or Huginn answer while a stamped soul waits (D48) or the stamp preview is open
@@ -306,4 +345,5 @@ func _refresh_hud() -> void:
 	readout.warning = _warned and commands.day_rules().is_timed()
 	hud.refresh(readout)
 	ask_huginn.visible = readout.huginn_on and commands.phase() == RunState.DESK
+	ask_huginn.disabled = huginn_thread < 0
 	huginn.visible = readout.huginn_on

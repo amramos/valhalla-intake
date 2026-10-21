@@ -15,6 +15,11 @@ const SAGA_TRUE := "the saga is true. "
 ## The mentor's bubble (entities/mentor/mentor_bubble.gd, 60x64): its label is 52 px wide from the
 ## top; a READ step's "Next" button starts 48 px down, other steps have 61 px.
 const BUBBLE_TEXT_WIDTH := 52
+## The evidence panels (entities/evidence_panel/evidence_panel.gd: PADDING) and the witness
+## heading's prefix (systems/desk/desk_system.gd).
+const DESK_SCENE := "res://scenes/desk/desk.tscn"
+const PANEL_PADDING := 2
+const WITNESS_PREFIX := "WITNESS "
 const BUBBLE_TEXT_HEIGHT_READ := 48
 const BUBBLE_TEXT_HEIGHT := 61
 const THEME_PATH := "res://scenes/desk/desk_theme.tres"
@@ -135,6 +140,42 @@ func check_mentor(soul: Encounter, day: DayRules) -> Array[String]:
 				"%s: mentor pin step %s is not a seam" % [soul.id, "|".join(step.highlight)]
 			)
 	return problems
+
+
+## D52: the witness heading (systems/desk/desk_system.gd writes "WITNESS " + the name) fits the
+## witness panel's inner width, read from the desk scene.
+func check_witness_heading(soul: Encounter) -> Array[String]:
+	if soul.witness_heading_name() == "" or _font == null:
+		return []
+	var heading: String = WITNESS_PREFIX + soul.witness_heading_name()
+	var width: int = width_of(heading)
+	if width <= witness_heading_room():
+		return []
+	return [
+		(
+			"%s: the witness heading '%s' is %d px; the panel holds %d (D52)"
+			% [soul.id, heading, width, witness_heading_room()]
+		)
+	]
+
+
+## The witness panel's inner width: its width in scenes/desk/desk.tscn less the panel's padding.
+func witness_heading_room() -> int:
+	var scene: PackedScene = load(DESK_SCENE) as PackedScene
+	if scene == null:
+		return 0
+	var state: SceneState = scene.get_state()
+	for node: int in state.get_node_count():
+		if state.get_node_name(node) != &"WitnessPanel":
+			continue
+		var edges: Dictionary = {}
+		for property: int in state.get_node_property_count(node):
+			edges[state.get_node_property_name(node, property)] = state.get_node_property_value(
+				node, property
+			)
+		var width: float = edges.get(&"offset_right", 0.0) - edges.get(&"offset_left", 0.0)
+		return int(width) - PANEL_PADDING * 2
+	return 0
 
 
 ## The souls whose wrong stamp is cited only once Huginn has answered a grey thread (D30).

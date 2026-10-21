@@ -12,7 +12,9 @@ system connects them to the commands. None of them reads the run state directly.
 | `waiting_soul/` | The soul at the gate (its front-view stack, draggable) and its plain, frost or Hel plate (D21) |
 | `hud/` | Clock (with the 30 s warning), feathers, quota, Huginn, the extra-answer note and the ledger badge (D21, D22, D30); `HudReadout` is what it shows |
 | `stamp_prompt/` | "Stamp <name> to <realm>?" and the guarded confirm (D9) |
-| `phase_card/` | A minimal dawn, dusk and ending card with one button (WP1 stand-in) |
+| `phase_card/` | A dawn card, one dusk card or the ending: given text, sized to fit, "Next" and "Skip all" (D15, D23, D34) |
+| `pause_overlay/` | The pause that dims the desk: Resume, Restart the run and Quit, each final choice confirmed (D31) |
+| `ledger_tray/` | The ledger icon's click area and its one-line view of Hel's promise (D3, D29) |
 | `mentor/` | The mentor's speech bubble for guided step prompts (D16) |
 
 Art comes from `assets/art/` (WP2) as texture slots set in `scenes/desk/desk.tscn`. An encounter

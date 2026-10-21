@@ -52,7 +52,12 @@ func test_play_again_forgets_the_last_runs_mentor_comment() -> void:
 	_click(_system.stamp_flow.next_soul_button)
 	_stamp(&"valhalla")
 	assert_eq(_desk.commands().phase(), RunState.ENDING, "the run is over")
-	_advance_card()
+	# The last day's dusk cards, then the ending's Play again, reach the new run's dawn; then Begin.
+	for _card: int in 10:
+		if _desk.commands().phase() == RunState.DAWN:
+			break
+		_advance_card()
+	assert_eq(_desk.commands().phase(), RunState.DAWN, "Play again reached the new run's dawn")
 	_advance_card()
 	assert_eq(_soul(), "Asgaut", "a new run seats its first soul")
 	assert_eq(_system.stamp_flow.mentor_line(), "", "nothing she said last run is retained")

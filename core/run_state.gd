@@ -37,6 +37,9 @@ var paused: bool = false
 var huginn_left: int = 0
 var stamps_today: int = 0
 var citations_today: Array[String] = []
+## The day's feather changes, explained at dusk (D36).
+var feathers_at_dawn: int = 0
+var feather_lines: Array[String] = []
 ## The mentor comments on the day's first grey thread only (matrix A2).
 var grey_commented_today: bool = false
 var promise: StringName = PROMISE_NONE
@@ -94,9 +97,11 @@ func open_day() -> void:
 	huginn_left = day.huginn_answers
 	stamps_today = 0
 	citations_today = []
+	feather_lines = []
 	grey_commented_today = false
 	promise_changed_today = false
 	economy.start_day()
+	feathers_at_dawn = economy.feathers
 
 
 ## Seats queue[slot] at the desk, or ends the day when the queue is done.
@@ -130,9 +135,9 @@ func end_day() -> void:
 	var demotions: int = economy.demotions
 	if report.admitted >= day.quota:
 		report.quota_delta = rules.quota_met_reward
-		economy.gain(rules.quota_met_reward)
+		_gain(rules.quota_met_reward, rules.text.feather_quota_format % report.quota_delta)
 	else:
-		report.quota_delta = -economy.lose((day.quota - report.admitted) * rules.quota_short_cost)
+		report.quota_delta = -_lose((day.quota - report.admitted) * rules.quota_short_cost, "")
 	report.demoted = economy.demotions > demotions
 	report.recap = RecapWriter.lines(_records_of(day.day), day, rules)
 	report.never_judged = _never_judged(day.day)
@@ -141,6 +146,8 @@ func end_day() -> void:
 		report.requests.append(ledger_line())
 	if has_next_day():
 		_prepare_tomorrow(report)
+	report.feathers_at_dawn = feathers_at_dawn
+	report.feather_lines = feather_lines.duplicate()
 	report.feathers = economy.feathers
 	report.rank = economy.rank
 	report.rank_name = economy.rank_name()
@@ -215,7 +222,7 @@ func settle_stamp(record: VerdictRecord, result: StampResult) -> void:
 	var feathers_before: int = economy.feathers
 	var demotions_before: int = economy.demotions
 	if result.citation:
-		result.citation_loss = economy.lose(rules.citation_cost)
+		result.citation_loss = _lose(rules.citation_cost, record.encounter.soul_name)
 		citations_today.append(result.citation_text)
 	if record.encounter.hel_marked and promise == PROMISE_OPEN:
 		promise_changed_today = true
@@ -223,7 +230,7 @@ func settle_stamp(record: VerdictRecord, result: StampResult) -> void:
 			promise = PROMISE_KEPT
 			promise_realm = result.realm
 			result.reward = rules.hel_reward
-			economy.gain(result.reward)
+			_gain(result.reward, rules.text.feather_hel_format % result.reward)
 		else:
 			promise = PROMISE_BROKEN
 			promise_realm = result.realm
@@ -235,3 +242,37 @@ func settle_stamp(record: VerdictRecord, result: StampResult) -> void:
 	stamps_today += 1
 	slot += 1
 	current = null
+
+
+## Huginn's extra answer: a spend, never a loss (D30, D36).
+func spend_on_huginn() -> void:
+	var demotions: int = economy.demotions
+	economy.spend(rules.huginn_extra_cost)
+	feather_lines.append(rules.text.feather_huginn_format % rules.huginn_extra_cost)
+	_note_demotion(demotions)
+
+
+## A capped loss: a citation (named by its soul) or, with no soul, the quota shortfall.
+func _lose(amount: int, soul: String) -> int:
+	var demotions: int = economy.demotions
+	var applied: int = economy.lose(amount)
+	if soul != "":
+		feather_lines.append(rules.text.feather_citation_format % [soul, applied])
+	else:
+		feather_lines.append(rules.text.feather_quota_format % -applied)
+	if applied < amount:
+		feather_lines.append(rules.text.feather_cap_format % [applied, amount])
+	_note_demotion(demotions)
+	return applied
+
+
+func _gain(amount: int, line: String) -> void:
+	var demotions: int = economy.demotions
+	economy.gain(amount)
+	feather_lines.append(line)
+	_note_demotion(demotions)
+
+
+func _note_demotion(demotions_before: int) -> void:
+	if economy.demotions > demotions_before:
+		feather_lines.append(rules.text.demoted_format % [economy.rank_name(), economy.feathers])
