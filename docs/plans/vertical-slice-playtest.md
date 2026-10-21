@@ -4,7 +4,9 @@
 ending, before the D53 text fixes. **How it was played:** three blind AI playtesters on different
 models (D41) played through the text harness (D13). They had only the play command: no design, no
 source, no debug commands. **Not tested:** human reading pace, the feel of the stamp, and
-readability on a real screen. Those are the owner's play (D27).
+readability on a real screen. Those are the owner's play (D27). D41's "lead's own playtest" was
+not a blind play, since the lead wrote the content. It was the scripted harness runs of each
+package and `tools/desk_shots/`, which plays all three days on the real desk with real mouse events.
 
 ## Scores and the bar
 

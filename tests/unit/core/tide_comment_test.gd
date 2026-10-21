@@ -33,3 +33,20 @@ func test_a_guided_soul_gets_the_tide_comment_too() -> void:
 	desk.start_run(Fixture.days(), queues, Fixture.rules(), Fixture.variants())
 	desk.debug_jump(1, 3)
 	assert_eq(desk.stamp(Realm.HEL).mentor_line, "The Law is kept. Hel's tide grows by one.")
+
+
+func test_a_first_figure_from_an_unseen_broken_law_never_says_the_law_is_kept() -> void:
+	# A wrong stamp no visible seam shows draws no comment of its own (D37), so the tide's
+	# explanation must not open by praising obedience.
+	var queues: Array = Fixture.queues()
+	var soul: Encounter = queues[0][0]
+	soul.seams.clear()
+	soul.legal_realm = Realm.VALHALLA
+	soul.worthy_realm = Realm.VALHALLA
+	var desk := DeskCommands.new()
+	desk.start_run(Fixture.days(), queues, Fixture.rules(), Fixture.variants())
+	desk.begin_day()
+	var result: StampResult = desk.stamp(Realm.HEL)
+	assert_false(result.correct, "Hel broke the Law, unseen")
+	assert_eq(desk.hel_tide(), 1)
+	assert_eq(result.mentor_line, "Hel's tide grows by one.")

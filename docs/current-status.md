@@ -26,7 +26,7 @@ plays the slice, then sets the full encounter count (GDD §11, question 1).
 
 | Epic | State | Notes |
 |---|---|---|
-| #2 Vertical slice of the inspection desk | In Review | WP0–WP6 (#3–#9) merged by the hands-off lead under ADR-0007 |
+| #2 Vertical slice of the inspection desk | In Review | WP0–WP5 (#3–#8) merged by the hands-off lead under ADR-0007; WP6 (#9) is PR #17 |
 
 ## Open and owed
 
@@ -46,7 +46,7 @@ plays the slice, then sets the full encounter count (GDD §11, question 1).
 
 ## Validation
 
-**GUT baseline:** 29 scripts, 246 tests, all passing (2026-10-21, Godot 4.7.1, on the WP6 branch). A
+**GUT baseline:** 29 scripts, 247 tests, all passing (2026-10-21, Godot 4.7.1, on the WP6 branch). A
 script count that drops for no visible reason means a test file failed to load (`docs/gotchas.md`).
 Other checks: lint, art coverage and `tools/desk_shots/`. The authoring check runs inside the
 suite.
