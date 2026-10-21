@@ -19,6 +19,8 @@ extends Resource
 @export var plate_label: String = ""
 @export var returned: bool = false
 @export var return_eligible: bool = false
+## The guided steps on a tutorial soul (D16); empty on unguided souls.
+@export var mentor_steps: Array[MentorStepData] = []
 ## The recap: what really happened.
 @export_multiline var truth: String = ""
 
@@ -48,5 +50,7 @@ func to_core() -> Encounter:
 	encounter.plate_label = plate_label
 	encounter.returned = returned
 	encounter.return_eligible = return_eligible
+	for step: MentorStepData in mentor_steps:
+		encounter.mentor_steps.append(step.to_core())
 	encounter.truth = truth
 	return encounter

@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://data/fact_data.gd" id="1_ga5bn"]
 [ext_resource type="Script" path="res://data/encounter_data.gd" id="2_mlgv4"]
 [ext_resource type="Script" path="res://data/seam_data.gd" id="3_xr0ur"]
+[ext_resource type="Script" path="res://data/mentor_step_data.gd" id="4_mentor"]
 
 [sub_resource type="Resource" id="Resource_8k2ct"]
 script = ExtResource("1_ga5bn")
@@ -33,6 +34,23 @@ kind = 2
 destination = &"valhalla"
 caption = "the saga is true. L1 sends him to Valhalla."
 
+[sub_resource type="Resource" id="Resource_mentor1"]
+script = ExtResource("4_mentor")
+text = "Read the body first."
+highlight = Array[String](["B1", "B2", "B3"])
+
+[sub_resource type="Resource" id="Resource_mentor2"]
+script = ExtResource("4_mentor")
+text = "His first line. The first decree. Pin them."
+highlight = Array[String](["C1", "L1"])
+until = 1
+
+[sub_resource type="Resource" id="Resource_mentor3"]
+script = ExtResource("4_mentor")
+text = "The Law agrees with him. Stamp him."
+door = &"valhalla"
+until = 2
+
 [resource]
 script = ExtResource("2_mlgv4")
 id = &"ulf"
@@ -42,4 +60,5 @@ claim = Array[String](["Axed, in battle.", "Took it in the chest.", "Sword up to
 seams = Array[ExtResource("3_xr0ur")]([SubResource("Resource_effuw")])
 legal_realm = &"valhalla"
 worthy_realm = &"valhalla"
+mentor_steps = Array[ExtResource("4_mentor")]([SubResource("Resource_mentor1"), SubResource("Resource_mentor2"), SubResource("Resource_mentor3")])
 truth = "Axed in the shield-wall at Ness, sword up to the end."

@@ -38,6 +38,10 @@ extends Resource
 @export var returned_format: String = ""
 @export var hel_offer_format: String = ""
 @export var promise_format: String = ""
+@export var mentor_mercy_format: String = ""
+@export var mentor_illegal_format: String = ""
+@export var mentor_warning_line: String = ""
+@export var mentor_cost_format: String = ""
 
 
 func rules_to_core() -> SliceRules:
@@ -66,6 +70,10 @@ func rules_to_core() -> SliceRules:
 	rules.returned_format = returned_format
 	rules.hel_offer_format = hel_offer_format
 	rules.promise_format = promise_format
+	rules.mentor_mercy_format = mentor_mercy_format
+	rules.mentor_illegal_format = mentor_illegal_format
+	rules.mentor_warning_line = mentor_warning_line
+	rules.mentor_cost_format = mentor_cost_format
 	return rules
 
 

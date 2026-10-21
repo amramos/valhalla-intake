@@ -32,3 +32,10 @@ var returned_format: String = "%s is back."
 var hel_offer_format: String = "Hel's offer: send %s to her tomorrow, and she pays %d feathers."
 ## Format: the named soul, then the promise's state.
 var promise_format: String = "Hel's promise, %s: %s."
+## The mentor on unguided souls (D16). Formats: each side of the visible pair.
+var mentor_mercy_format: String = "%s, and %s. Kind."
+var mentor_illegal_format: String = "%s, and %s. That breaks the Law."
+## Appended on day 1, where a broken Law is only a warning (D28).
+var mentor_warning_line: String = "From tomorrow, that costs feathers."
+## Appended after a citation. Format: the feathers it cost.
+var mentor_cost_format: String = "That cost you %d."

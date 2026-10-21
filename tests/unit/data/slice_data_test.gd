@@ -113,3 +113,18 @@ func test_the_loader_returns_a_desk_at_day_one_dawn() -> void:
 	assert_eq(result.kind, PinResult.Kind.THREAD)
 	assert_eq(desk.stamp(Realm.VALHALLA).correct, true)
 	assert_eq(desk.current_encounter().soul_name, "Kolbeinn")
+
+
+func test_ulf_and_kolbeinn_carry_the_mentors_guided_steps() -> void:
+	var ulf: Encounter = _soul(&"ulf")
+	assert_eq(ulf.mentor_steps.size(), 3)
+	assert_eq(ulf.mentor_steps[1].highlight, ["C1", "L1"] as Array[String])
+	assert_eq(ulf.mentor_steps[1].until, MentorStep.Until.PIN)
+	assert_eq(ulf.mentor_steps[2].door, Realm.VALHALLA)
+	var kolbeinn: Encounter = _soul(&"kolbeinn")
+	assert_eq(kolbeinn.mentor_steps[1].highlight, ["B1", "C1"] as Array[String])
+	assert_eq(kolbeinn.mentor_steps[2].until, MentorStep.Until.STAMP)
+	assert_eq(kolbeinn.mentor_steps[2].door, Realm.HEL)
+	var rules: SliceRules = _slice.rules_to_core()
+	assert_eq(rules.mentor_mercy_format, "%s, and %s. Kind.")
+	assert_eq(rules.mentor_warning_line, "From tomorrow, that costs feathers.")

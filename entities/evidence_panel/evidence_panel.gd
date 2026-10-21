@@ -26,6 +26,8 @@ var _labels: Dictionary[String, Label] = {}
 var _heading_label: Label = null
 var _note_label: Label = null
 var _content_bottom: int = 0
+## Lines marked NEW (D34): a bar in the margin and a note in the heading.
+var _new_ids: Array[String] = []
 
 
 func _ready() -> void:
@@ -43,6 +45,23 @@ func _ready() -> void:
 func show_lines(items: Array[EvidenceItem], title: String = heading, note: String = "") -> void:
 	heading = title
 	_layout(items, note)
+
+
+## Marks lines NEW until the day's first stamp (D34); an empty list clears the marks.
+func set_new(item_ids: Array[String]) -> void:
+	if item_ids == _new_ids:
+		return
+	_new_ids = item_ids.duplicate()
+	_heading_label.text = _heading_text()
+	queue_redraw()
+
+
+func is_new(item_id: String) -> bool:
+	return _new_ids.has(item_id) and _areas.has(item_id)
+
+
+func heading_text() -> String:
+	return _heading_label.text if _heading_label.visible else ""
 
 
 func has_item(item_id: String) -> bool:
@@ -123,7 +142,7 @@ func _layout(items: Array[EvidenceItem], note: String) -> void:
 	var y: int = PADDING
 	_heading_label.visible = heading != ""
 	if heading != "":
-		_heading_label.text = heading
+		_heading_label.text = _heading_text()
 		_heading_label.position = Vector2(PADDING, y - LABEL_TOP)
 		y += LINE_PITCH
 	for item: EvidenceItem in items:
@@ -166,6 +185,16 @@ func _add_line(item: EvidenceItem, y: int) -> int:
 	return lines * LINE_PITCH
 
 
+func _heading_text() -> String:
+	var shown: Array[String] = []
+	for id: String in _new_ids:
+		if _areas.has(id) or _labels.is_empty():
+			shown.append(id)
+	if shown.is_empty():
+		return heading
+	return "%s  NEW: %s" % [heading, ", ".join(shown)]
+
+
 func _make_label(color: Color) -> Label:
 	var label := Label.new()
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -177,3 +206,10 @@ func _draw() -> void:
 	var area := Rect2(Vector2.ZERO, size)
 	draw_rect(area, get_theme_color(&"parchment", &"DeskPalette"))
 	draw_rect(area.grow(-0.5), get_theme_color(&"frame", &"DeskPalette"), false, 1.0)
+	for id: String in _new_ids:
+		if _areas.has(id):
+			var line: PinSelectable = _areas[id]
+			draw_rect(
+				Rect2(0, line.position.y, 2, line.size.y),
+				get_theme_color(&"select_light", &"DeskPalette")
+			)

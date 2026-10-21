@@ -86,6 +86,30 @@ static func citation_text(
 	return text
 
 
+## The mentor's comment on an unguided soul's illegal stamp (D16), naming the visible pair. Mercy
+## is the worthy realm chosen against the legal one; anything else is an illegal stamp. Call after
+## the stamp is settled (it reads the citation's cost). "" when the stamp was legal, the soul is
+## guided, or no seam showed the Law (permitted uncertainty, D37).
+static func mentor_line(
+	record: VerdictRecord, result: StampResult, day: DayRules, rules: SliceRules
+) -> String:
+	var encounter: Encounter = record.encounter
+	if result.correct or not encounter.mentor_steps.is_empty() or result.citation_a == "":
+		return ""
+	var line_format: String = rules.mentor_illegal_format
+	if result.realm == encounter.worthy_realm:
+		line_format = rules.mentor_mercy_format
+	var line: String = (
+		line_format
+		% [_shown(result.citation_a, encounter, day), _shown(result.citation_b, encounter, day)]
+	)
+	if result.warning:
+		line += " " + rules.mentor_warning_line
+	elif result.citation:
+		line += " " + rules.mentor_cost_format % result.citation_loss
+	return line
+
+
 static func _shown(item_id: String, encounter: Encounter, day: DayRules) -> String:
 	var item: EvidenceItem = encounter.item(item_id)
 	if item == null:

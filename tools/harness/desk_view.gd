@@ -53,6 +53,7 @@ func _describe_dawn() -> String:
 	lines.append("Odin wants %d for Valhalla today." % day.quota)
 	lines.append("Clock: %s." % (_clock() if day.is_timed() else "untimed"))
 	lines.append("Doors: %s" % _doors())
+	lines.append(_tide())
 	lines.append(
 		"Citations: %s." % ("a broken Law costs feathers" if day.citations else "warnings only")
 	)
@@ -84,6 +85,7 @@ func _describe_desk() -> String:
 	lines.append(hud)
 	lines.append_array(_ledger())
 	lines.append("Doors: %s" % _doors())
+	lines.append(_tide())
 	var plate: String = "At the desk: %s" % soul.soul_name
 	if soul.returned:
 		plate += " (frost-burned name plate)"
@@ -108,6 +110,7 @@ func _describe_desk() -> String:
 	lines.append("The Law:")
 	lines.append_array(_law_lines())
 	lines.append_array(_thread_lines())
+	lines.append_array(_mentor_lines())
 	if caption != "":
 		lines.append("Caption: %s" % caption)
 	var held: StampResult = desk.pending_stamp()
@@ -140,6 +143,7 @@ func _describe_dusk() -> String:
 		lines.append(report.story)
 	if report.returned_line != "":
 		lines.append(report.returned_line)
+	lines.append(_tide())
 	lines.append_array(_ledger())
 	lines.append("Feathers: %d | Rank: %s" % [report.feathers, report.rank_name])
 	return "\n".join(lines)
@@ -176,6 +180,9 @@ func _desk_actions() -> Array[String]:
 	for item: EvidenceItem in desk.visible_items():
 		ids.append(item.id)
 	var lines: Array[String] = ["  pin <id> <id>         ids: %s" % " ".join(ids)]
+	var step: MentorStep = desk.mentor_step()
+	if step != null and step.until == MentorStep.Until.READ:
+		lines.append("  ack                   the mentor's next step")
 	var greys: Array[String] = []
 	var threads: Array[Seam] = desk.threads()
 	for index: int in threads.size():
@@ -240,6 +247,26 @@ func _doors() -> String:
 			state = "open [NEW]"
 		parts.append("%s (%s)" % [Realm.display_name(realm), state])
 	return ", ".join(parts)
+
+
+## The figures at Hel's door, with empty slots up to the threshold (D21).
+func _tide() -> String:
+	return "Hel's tide: %d of %d" % [desk.hel_tide(), desk.slice_rules().tide_threshold]
+
+
+## The mentor's bubble on a guided soul (D16): her words, what she lights, what finishes it.
+func _mentor_lines() -> Array[String]:
+	var step: MentorStep = desk.mentor_step()
+	if step == null:
+		return []
+	var line: String = "The mentor: %s" % step.text
+	if not step.highlight.is_empty():
+		line += " [lit: %s]" % ", ".join(step.highlight)
+	if step.door != &"":
+		line += " [points at the %s door]" % Realm.display_name(step.door)
+	var waits: Array[String] = ["ack to go on", "pin the lit pair", "stamp"]
+	line += " (%s)" % waits[step.until]
+	return [line]
 
 
 ## The ledger entry stays readable in every phase once Hel has asked (D3, D15).

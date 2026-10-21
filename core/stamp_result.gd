@@ -21,6 +21,8 @@ var ignored: bool = false
 var uncertain: bool = false
 ## Feathers paid by a kept request at this stamp (Hel, D29).
 var reward: int = 0
+## The mentor's comment on an unguided soul (D16): mercy or an illegal stamp; "" for none.
+var mentor_line: String = ""
 ## The net change at this stamp: citation, reward and any demotion refill.
 var feathers_delta: int = 0
 var demoted: bool = false

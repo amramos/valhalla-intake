@@ -57,6 +57,7 @@ func _run(words: PackedStringArray) -> String:
 		"restart": _cmd_restart,
 		"jump": _cmd_jump,
 		"wait": _cmd_wait,
+		"ack": _cmd_ack,
 	}
 	var text: String = ""
 	if handlers.has(words[0]):
@@ -124,6 +125,15 @@ func _cmd_jump(words: PackedStringArray) -> String:
 	return "(debug) Jumped to day %d, soul %s." % [desk.day_number(), _soul_name()]
 
 
+## "ack" finishes the mentor's READ step.
+func _cmd_ack(_words: PackedStringArray) -> String:
+	var step: MentorStep = desk.mentor_step()
+	if step == null or step.until != MentorStep.Until.READ:
+		return ""
+	desk.mentor_ack()
+	return "You nod to the mentor."
+
+
 ## Debug: wait <seconds> of real time on the desk.
 func _cmd_wait(words: PackedStringArray) -> String:
 	if words.size() != 2 or not words[1].is_valid_float():
@@ -143,8 +153,8 @@ func _pin(a: String, b: String) -> String:
 			return "Already threaded: %s" % result.seam.caption
 		PinResult.Kind.NO_SEAM:
 			if result.seconds_lost > 0.0:
-				return "No seam. The clock loses %d s." % int(result.seconds_lost)
-			return "No seam."
+				return "No seam: those two agree. -%d s" % roundi(result.seconds_lost)
+			return "No seam: those two agree."
 	return _refuse("Those can't be pinned: %s and %s." % [a, b])
 
 
@@ -162,13 +172,13 @@ func _stamp(realm: StringName) -> String:
 		return _refuse("That door is closed.")
 	var lines: Array[String] = ["%s goes through to %s." % [soul, Realm.display_name(realm)]]
 	if result.warning:
-		lines.append(
-			"The mentor warns: %s From tomorrow, that costs feathers." % result.citation_text
-		)
+		lines.append("A warning, no feathers today: %s" % result.citation_text)
 	if result.citation:
 		lines.append(
 			"A black feather drops (-%d): %s" % [result.citation_loss, result.citation_text]
 		)
+	if result.mentor_line != "":
+		lines.append("The mentor: %s" % result.mentor_line)
 	if result.reward > 0:
 		lines.append("Hel pays %d feathers." % result.reward)
 	if result.demoted:

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="BodyStacks" format=3]
+
+[ext_resource type="Script" path="res://entities/body_chart/body_stacks.gd" id="1_stacks"]
+
+[resource]
+script = ExtResource("1_stacks")
+stacks = Dictionary[StringName, PackedStringArray]({
+&"ulf": PackedStringArray("base-tunic", "hand-left-calloused", "wound-front", "sword", "heads/ulf"),
+&"kolbeinn": PackedStringArray("base-nightshirt", "hand-left-calloused", "heads/kolbeinn"),
+&"hallr": PackedStringArray("base-tunic", "hand-left-calloused", "sword", "neck-broken", "heads/hallr"),
+&"asa": PackedStringArray("base-tunic", "hand-left-calloused", "wound-front", "heads/asa"),
+&"sigvaldi": PackedStringArray("base-tunic", "hand-left-calloused", "wound-front", "wound-back", "sword", "heads/sigvaldi"),
+&"hakon": PackedStringArray("base-tunic", "hand-left-calloused", "wound-back", "sword", "heads/hakon"),
+&"grim": PackedStringArray("base-tunic", "hand-left-calloused", "wet-knee", "wound-back", "heads/grim"),
+&"brand": PackedStringArray("base-tunic", "hand-left-soft", "wound-front", "heads/brand"),
+&"freydis": PackedStringArray("base-tunic", "hand-left-soft", "wound-back", "sword", "heads/freydis"),
+&"hakon-returned": PackedStringArray("base-tunic", "hand-left-calloused", "wound-back", "sword", "heads/hakon-frost"),
+&"egil": PackedStringArray("base-nightshirt", "hand-left-calloused", "wound-front", "sword", "heads/egil"),
+&"ragna": PackedStringArray("base-nightshirt", "hand-left-calloused", "sword", "neck-broken-left", "heads/ragna"),
+&"ketil": PackedStringArray("base-tunic", "hand-left-calloused", "wet-knee", "wound-front", "sword", "heads/ketil")
+})
