@@ -39,8 +39,9 @@ light, as D29 expected.
   when the first figure joins it.
 - **Citations were misread as applying only to pinned seams** (C, after "You threaded it
   yourself"). *Fixed:* the day-2 dawn card states the rule plainly.
-- **Day 3's quota and feathers vanished**, because the ending replaces day 3's dusk (C). *Fixed:*
-  the ending lists day 3's quota and feather changes.
+- **Day 3's quota and feathers vanished** (C). This was the harness, not the game: the desk always
+  showed day 3's dusk before the ending, but the harness jumped straight to the ending. *Fixed in
+  the harness* (PR #16 review), so both now show day 3's dusk card, then the ending.
 - **The 10 s cost of a pin with no seam discouraged exploring** (A, B). *Kept:* that cost is the
   design's answer to pinning every pair (D8, D24).
 - **The day-2 prayer sets up Eyvind with no payoff** (C). *Expected:* Eyvind reaches the desk on
