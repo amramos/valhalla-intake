@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="SliceData" format=3]
+
+[ext_resource type="Script" path="res://data/day_data.gd" id="1_j3ajh"]
+[ext_resource type="Resource" path="res://data/days/day_1.tres" id="2_nx84g"]
+[ext_resource type="Script" path="res://data/slice_data.gd" id="3_ofkn3"]
+
+[resource]
+script = ExtResource("3_ofkn3")
+days = Array[ExtResource("1_j3ajh")]([ExtResource("2_nx84g")])
+start_feathers = 10
+quota_met_reward = 2
+quota_short_cost = 1
+citation_cost = 2
+daily_loss_cap = 5
+demote_refill = 5
+huginn_extra_cost = 2
+hel_reward = 4
+rank_names = Array[String](["Chooser of the Slain", "Gate-warden", "Hall-sweeper"])
+no_seam_seconds = 10.0
+huginn_seconds = 5.0
+clock_warning_seconds = 30.0
+tide_threshold = 3
+hollow_threshold = 2
+liar_decree_id = "L2"
+liar_realm = &"hel"
+huginn_claim_answer = "The claim lies."
+huginn_witness_answer = "The witness lies."
+citation_format = "Citation: %s. %s against %s."
+threaded_line = "You threaded it yourself."
+uncertain_line = "Couldn't be proven at the desk."
+returned_format = "%s is back."
+hel_offer_format = "Hel's offer: send %s to her tomorrow, and she pays %d feathers."
+promise_format = "Hel's promise, %s: %s."

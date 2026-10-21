@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="DecreeData" format=3]
+
+[ext_resource type="Script" path="res://data/decree_data.gd" id="1_ys8lq"]
+
+[resource]
+script = ExtResource("1_ys8lq")
+id = "L2"
+text = "Whoever lies to the Gate goes to Hel, whatever else the Law says."
