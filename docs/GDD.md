@@ -7,6 +7,7 @@ the appendix are the owner's to confirm.
 **Amendments:** 2026-10-21 — **core loop chosen by prototype: pins are validated instantly, as threads; a pin with no seam costs extra time (§3.3, Appendix A)**
 2026-10-21 — **vertical-slice planning: the desk becomes layout A3, doors in the gate band; the clock runs in real time plus action costs; claims run 3–4 lines; decree wording made consistent (§3.1, §3.7, §5; `docs/plans/vertical-slice-ledger.md` D4, D7, D10, D21, D32)**
 2026-10-21 — **vertical slice built (days 1–3, 12 encounters): §2 and §3 marked [BUILT] for it; the clock length waits on the owner's first play (ledger D54)**
+2026-10-23 — **game UI overhaul planned (`docs/plans/game-ui-ledger.md`, ADR-0009): the claim and witness are told line by line and the clock waits for the telling (§3.1, §3.7); dusk and the ending are the clerk's day-book (§3.10); sound and options (§7, §8); disguised gods or monsters parked (§10). Three pillars added to §1**
 
 This is the **single source of truth for design and scope**. Where it conflicts with an older ADR,
 this document wins and the ADR gets a superseded note. Where it conflicts with the code, the code
@@ -32,6 +33,20 @@ fight against you at Ragnarök.
 **Closest comparables:** Papers, Please (decrees that pile up day by day, at a desk, under time
 pressure), Death and Taxes (a god-boss and visible consequences of your verdicts), Return of the
 Obra Dinn (a death read as evidence), Valkyrie Profile (a god redefining the "worthy hero").
+
+### The three pillars (2026-10-23)
+
+Every presentation decision is tested against these (`docs/plans/game-ui-ledger.md` D1):
+
+1. **The weight of the stamp.** Every verdict is a moral act with a cost you can see. The stamp
+   is final and physical, the loudest moment in the game, and its cost lands where you can see it.
+   The 12th soul must feel faster than the 1st.
+2. **The dead tell their tale.** A soul stands before you and speaks its saga in its own voice; it
+   is not a form. The telling never tells: voice, pace and sheet are the same for a liar and a
+   hero; only the words and the body differ.
+3. **A desk at the end of the world.** Everything the player reads or touches is an object on a
+   stone desk at Valhalla's gate. Heroism is read, not told: the body shows events, never motives.
+   Days pass as light, sound and a day-book closing, never as a dialog box.
 
 ### The rule that governs everything
 
@@ -74,7 +89,12 @@ One screen, no page-flipping, at 480×270. This is layout A3; see
 - **Bottom:** a caption strip for thread captions, Huginn's answers, citations and the mentor's
   comments.
 
-Every item that can be part of a contradiction is visible at once. Every body fact has a
+Every item that can be part of a contradiction is visible at once **after the telling**: the
+claim and then the witness are told line by line (seconds; any click ends it), and the stamp can't
+be raised until the telling ends (ledger D4). The panels are objects: saga sheets headed by the
+speaker's name, the Law a sealed scroll with roman numerals, captions in the clerk's note with a
+speaker mark, the HUD a candle and tallies, the stamp slammed onto the soul's writ (D6–D14).
+Every body fact has a
 plain-language label on hover. Mood (fog, torchlight) never covers the body.
 
 ### 3.2 Evidence
@@ -143,8 +163,8 @@ Rules that keep it fair (from the prototype, Appendix A):
   Two decrees that contradict each other always mean Loki's forgery.
 
 ### 3.7 Pressure: clock, quota, citations
-- **Day clock:** real time while a soul is at the desk, plus action costs (a pin with no seam, a
-  Huginn answer). The dusk horn ends the day, and souls not judged by dusk simply go unjudged.
+- **Day clock:** real time from the end of the soul's telling, plus action costs (a pin with no
+  seam, a Huginn answer) (ledger D5). The dusk horn ends the day, and souls not judged by dusk simply go unjudged.
 - **Quota:** Odin wants N souls in Valhalla each day. Meeting it earns +2 feathers; each soul short
   costs −1. It is never an instant fail, and it is the main pressure to ignore a seam.
 - **Citation:** a stamp that breaks the Law where a contradiction was visible costs −2 feathers. A
@@ -174,7 +194,9 @@ A request either asks you to ignore a seam, or to find one where there is none. 
 anything else is off-rule and is cut. Loki appears only in the story, and in his forgery.
 
 ### 3.10 Dusk
-Dusk takes 90 seconds or less, and every beat can be skipped:
+Dusk takes 90 seconds or less, and every beat can be skipped. It is the clerk's **day-book**
+opened over the dimmed desk, one spread per beat group, pages turned by their dog-ear; the ending
+is its last page after a short tableau (ledger D22, D23):
 - citations and quota;
 - the **recap**: what really happened to 2–3 souls, telling a broken decree apart from an
   unresolved truth;
@@ -285,8 +307,10 @@ still frames, and no fourth-wall or meta tricks.
 - **Palette mood:** ash greys and cold blues, ember orange for Valhalla's door and bile green for
   Hel's. Colour is never the only cue: threads and doors also differ by pattern or icon.
 - **Audio mood:**
-  - low drones, distant horns, wind, raven calls;
-  - silence while you inspect, a hymn at dusk;
+  - low drones, distant horns, wind, raven calls, at the title and between days only;
+  - silence while you inspect: at the desk only actions sound (voice blips pitched per soul, the
+    pin's tack, the thread's pull, the stamp's slam, the feather's caw); a drone under the day-book
+    stands in for the hymn at dusk (ledger D25);
   - the **stamp thud** is the most satisfying sound in the game, and a distinct **"seam found"**
     sound is the second.
 - **Marketing:** a separate painted key-art piece for the capsule: a bloodied soul, an ember door
@@ -298,7 +322,8 @@ still frames, and no fourth-wall or meta tricks.
 - **Platforms:** Windows and web first. Mac and Linux follow once the demo validates.
 - **Session length:** days of about 8–10 minutes, a first run of about 90–120 minutes. Autosave at
   each dawn.
-- **Accessibility:** text size and dialogue fast-forward.
+- **Accessibility:** text speed (normal, fast, instant), reduce motion, volume and mute, in a
+  small options panel (ledger D37). Text size is not offered: one font at 480×270 (ADR-0008).
 - **Price and store:**
   - a free web demo of days 1–3 on itch.io;
   - the full game for $9.99 on itch.io;
@@ -369,7 +394,9 @@ still frames, and no fourth-wall or meta tricks.
 - an endless mode;
 - a daily-seed challenge;
 - a second campaign from Freyja's side;
-- a fourth recurring arc.
+- a fourth recurring arc;
+- **gods or monsters in disguise** at the desk (the owner's idea, 2026-10-23): needs body facts and
+  authored seams that expose them, never a detection mechanic; for days 4–8 (ledger D29).
 
 ## 11. Open questions **[OPEN]**
 

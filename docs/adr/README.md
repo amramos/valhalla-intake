@@ -42,3 +42,4 @@ Copy `0000-template.md`, give it the next number and a short slug, fill it in, a
 | [0006](0006-pixelforge-art-lint.md) | pixelforge lints every asset against the style guide | Accepted |
 | [0007](0007-handsoff-lead-may-merge.md) | Under team-lead-handsoff, the lead may merge reviewed PRs to main | Accepted |
 | [0008](0008-pixel-font.md) | One pixel font: m5x7 (CC0) | Accepted |
+| [0009](0009-game-ui-presentation-rules.md) | Game UI presentation rules: the telling never tells, the clock waits for it, one presentation gate, generated sound and `user://` options | Accepted |
