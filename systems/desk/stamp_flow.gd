@@ -9,11 +9,17 @@ extends Node
 ## its door and the next soul walks in. A stamp with a citation (or a day-1 warning) holds the soul,
 ## its writ, its lit pair and the black feather on the desk; a click on the held writ ("Send it
 ## on") lets it walk. Nothing in the slam reads the truth (D14). No undo.
+##
+## What the stamp leaves (the citation and her comment on the note, the feather's fall, the tide's
+## step) is StampConsequences', landed at the impact from the StampResult in hand (D16, D38).
 
 ## The cited pair to light (or [] to clear), for the desk system that owns highlights.
 signal pair_lit(pair: Array[String])
 ## Any half-made pin must be dropped (a stamp just happened).
 signal selection_cleared
+## The slam window opened again at the walk's start: the stamped soul's evidence may leave the desk
+## now, and the next soul's come in (D14, D15).
+signal slam_released
 
 ## From the press: the hold before the impact, the stamp on the paper before the flare, and the
 ## whole slam window (the one block, D27), after which the walk begins.
@@ -21,8 +27,11 @@ const HOLD_SECONDS := 0.07
 const IMPACT_SECONDS := 0.1
 const SLAM_SECONDS := 0.5
 const WALK_SECONDS := 0.5
-const JOLT_PX := 2
+const JOLT_PX := 3
 const JOLT_SECONDS := 0.1
+## The feather's drift (StampConsequences'), beside the slam's timings it follows.
+const FEATHER_DRIFT_FROM_X := StampConsequences.FEATHER_DRIFT_FROM_X
+const FEATHER_DRIFT_SECONDS := StampConsequences.FEATHER_DRIFT_SECONDS
 
 @export var doors: Array[Door] = []
 @export var stamp_prompt: StampPrompt
@@ -32,6 +41,8 @@ const JOLT_SECONDS := 0.1
 @export var next_soul_button: Button = null
 @export var caption_strip: CaptionStrip
 @export var thud_player: AudioStreamPlayer
+## The feather's dry caw (D16); optional (a desk without it falls silently).
+@export var caw_player: AudioStreamPlayer = null
 ## Where the walking soul is drawn (above the gate band, under the desk's panels).
 @export var walk_layer: Control
 
@@ -43,8 +54,7 @@ var jolt_callback: Callable = Callable()
 ## Reduce motion (D37) makes the jolt, the walks and the sweep instant; null reads as off.
 var options: Options = null
 
-var _citation: String = ""
-var _cited_pair: Array[String] = []
+var _consequences := StampConsequences.new()
 ## True from the commit until the walk begins.
 var _slamming: bool = false
 ## The slam and the walk after it (or a held soul's walk); null once over.
@@ -53,16 +63,13 @@ var _slam: Tween = null
 var _leaving: SoulWalk = null
 ## A held soul, kept from its stamp for the walk that "Send it on" starts.
 var _held: SoulWalk = null
-## The mentor's comment on the last stamp: shown over the next soul, and again on a click on her.
-var _mentor_line: String = ""
-var _carry_mentor: bool = false
-## Her comment on a held stamp waits behind the citation's hold; true until the strip shows it.
-var _mentor_unseen: bool = false
 
 
 func bind(p_commands: DeskCommands) -> void:
 	commands = p_commands
-	commands.stamped.connect(_on_stamped)
+	_consequences.bind(commands, gate, feather, caw_player, caption_strip, doors)
+	_consequences.pair_lit.connect(pair_lit.emit)
+	_consequences.selection_cleared.connect(selection_cleared.emit)
 	for door: Door in doors:
 		door.door_clicked.connect(ask)
 		door.drag_hovered.connect(ask)
@@ -70,10 +77,15 @@ func bind(p_commands: DeskCommands) -> void:
 	stamp_prompt.confirmed.connect(_commit)
 	stamp_prompt.cancelled.connect(_clear_door_selection)
 	stamp_prompt.send_on_requested.connect(_send_on)
-	feather.clicked.connect(_on_feather_clicked)
+	# The doors stay bright with the writ and the stamp while the desk dims (D56); the pause covers
+	# all of it.
+	var companions: Array[CanvasItem] = []
+	companions.assign(doors)
+	stamp_prompt.marks().set_companions(companions)
+	if gate != null:
+		gate.pause_changed.connect(stamp_prompt.marks().set_suspended)
 	if next_soul_button != null:
 		next_soul_button.pressed.connect(_send_on)
-	caption_strip.text_shown.connect(_on_caption_shown)
 
 
 ## Raises the stamp for `realm` over the soul's writ (a door click or a drag over the door); never
@@ -99,28 +111,27 @@ func refresh() -> void:
 	var waiting: bool = commands.phase() == RunState.DESK and commands.awaiting_next()
 	if next_soul_button != null:
 		next_soul_button.visible = waiting
-	feather.visible = waiting and _citation != ""
+	_consequences.show_feather(waiting)
 	soul.set_draggable(not waiting and commands.current_encounter() != null)
 	if not _slamming:
 		stamp_prompt.set_held(waiting)
 		_arrive()
 
 
-## A new soul (or an empty desk): the last soul's citation and stamp are gone, its name gives way
-## on the writ; the mentor's comment on the stamp that seated it goes to the (freshly cleared)
-## caption strip, unless the horn's announcement already holds it: her comment never queues behind
-## the horn. A slam under way is left to finish: core seats the next soul inside the stamp.
+## A new soul (or an empty desk): the last soul's stamp is put down and its name gives way on the
+## writ. A slam under way is left to finish: core seats the next soul inside the stamp.
 func reset() -> void:
 	stamp_prompt.withdraw()
 	var encounter: Encounter = commands.current_encounter()
 	stamp_prompt.set_soul_name(encounter.soul_name if encounter != null else "")
 	_clear_door_selection()
-	_citation = ""
-	_cited_pair.clear()
-	_mentor_unseen = false
-	if _carry_mentor and caption_strip.shown_text() == "":
-		caption_strip.post_caption(_mentor_caption())
-	_carry_mentor = false
+
+
+## The new soul's evidence is on the desk (after the slam, if one was under way): the last soul's
+## citation is gone, and the mentor's comment on the stamp that seated it goes to the freshly
+## cleared note (StampConsequences).
+func reset_note() -> void:
+	_consequences.reset()
 
 
 ## A new run (Pause's Restart or "Play again"): the slam, the walk and the sweep stop where they
@@ -130,17 +141,20 @@ func forget_run() -> void:
 	stamp_prompt.reset_writ()
 	soul.finish_arrival()
 	_held = null
-	_mentor_line = ""
-	_carry_mentor = false
-	_mentor_unseen = false
+	_consequences.forget_run()
+
+
+## Hel's tide as the desk must draw it: a stamp's new figure waits for the slam's impact (D38).
+func displayed_tide() -> int:
+	return _consequences.displayed_tide()
 
 
 func mentor_line() -> String:
-	return _mentor_line
+	return _consequences.mentor_line()
 
 
 func citation() -> String:
-	return _citation
+	return _consequences.citation()
 
 
 ## True from the stamp's press until its walk begins.
@@ -192,6 +206,7 @@ func _commit(realm: StringName) -> void:
 		gate.slam_lock()
 	var result: StampResult = commands.stamp(realm)
 	var held: bool = result.citation or result.warning
+	_consequences.hold(held, result.tide_delta == 1)
 	if held:
 		_held = leaving
 	else:
@@ -219,15 +234,17 @@ func _run_slam(realm: StringName, held: bool) -> void:
 	_watch(_slam)
 
 
-## The thud, the jolt and the ink, at one instant.
+## The squash, the ink and the yield first, then the thud and the jolt in the same call: the
+## sound starts on the very frame the stamp lands, never before it (D55).
 func _impact(realm: StringName) -> void:
+	_watch(stamp_prompt.slam(realm))
 	if thud_player != null and thud_player.stream != null and thud_player.is_inside_tree():
 		thud_player.play()
 		if gate != null:
 			gate.watch_player(thud_player)
 	if not _reduce_motion() and jolt_callback.is_valid():
 		jolt_callback.call(JOLT_PX, JOLT_SECONDS)
-	_watch(stamp_prompt.slam(realm))
+	_consequences.land(_reduce_motion())
 
 
 func _flare(realm: StringName) -> void:
@@ -241,6 +258,7 @@ func _release(held: bool) -> void:
 	_slamming = false
 	if gate != null:
 		gate.slam_release()
+	slam_released.emit()
 	if held:
 		stamp_prompt.set_held(true)
 	else:
@@ -253,10 +271,7 @@ func _release(held: bool) -> void:
 func _send_on() -> void:
 	if not commands.awaiting_next() or _slamming:
 		return
-	# "Send it on" inside the citation's hold would clear her waiting comment with the strip; it
-	# goes to the next soul instead, as an unheld stamp's does.
-	if _mentor_unseen:
-		_carry_mentor = true
+	_consequences.send_on()
 	var leaving: SoulWalk = _held
 	_held = null
 	stamp_prompt.reduce_motion = _reduce_motion()
@@ -291,6 +306,7 @@ func _stop_slam() -> void:
 		_slam.kill()
 	_slam = null
 	_end_walk()
+	_consequences.cancel()
 	if _slamming:
 		_slamming = false
 		if gate != null:
@@ -310,47 +326,6 @@ func _watch(tween: Tween) -> void:
 
 func _reduce_motion() -> bool:
 	return options != null and options.reduce_motion
-
-
-func _on_stamped(result: StampResult) -> void:
-	selection_cleared.emit()
-	var held: bool = result.citation or result.warning
-	if held:
-		# The citation takes the strip first (D33); her comment waits behind it.
-		_citation = result.citation_text
-		_cited_pair = [result.citation_a, result.citation_b] as Array[String]
-		pair_lit.emit(_cited_pair.duplicate())
-		caption_strip.post_caption(_citation_caption())
-	if result.mentor_line != "":
-		_mentor_line = result.mentor_line
-		# A held soul shows her comment after the citation; otherwise the next soul's arrival does.
-		_carry_mentor = not held
-		if held:
-			_mentor_unseen = true
-			caption_strip.post_caption(_mentor_caption())
-
-
-func _on_caption_shown(text: String) -> void:
-	if text == _mentor_line:
-		_mentor_unseen = false
-
-
-## A deliberate click on the feather shows its citation again and lights the pair (D33).
-func _on_feather_clicked() -> void:
-	caption_strip.take_over_caption(_citation_caption())
-	pair_lit.emit(_cited_pair.duplicate())
-
-
-## The citation as the note shows it: the black feather's mark, written out, its pair lit (D10).
-func _citation_caption() -> Caption:
-	return Caption.make(
-		_citation, CaptionStrip.Priority.CITATION, &"feather", _cited_pair.duplicate(), true
-	)
-
-
-## Her comment as the note shows it: her face as the mark, written out (D10).
-func _mentor_caption() -> Caption:
-	return Caption.make(_mentor_line, CaptionStrip.Priority.MENTOR, &"mentor", [], true)
 
 
 func _is_open(realm: StringName) -> bool:

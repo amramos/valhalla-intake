@@ -197,6 +197,24 @@ func test_the_pause_stops_the_telling_and_resume_carries_it_on() -> void:
 	assert_true(_system.is_telling(), "the tale goes on where it was")
 
 
+## The review's case: each bob's tween was dropped, so the pause let a dipped soul spring back.
+## The gate watches it now: the pause holds a bob mid-dip.
+func test_the_pause_holds_the_speaking_soul_mid_bob() -> void:
+	_open(Fixture.normal())
+	var figure: DragSource = _system.soul.figure()
+	var dipped: Callable = func() -> bool:
+		return figure.position.y == WaitingSoul.FIGURE_AT.y + WaitingSoul.BOB_PX
+	await wait_until(dipped, 2.0)
+	assert_true(dipped.call(), "a voice blip dips the speaking soul")
+	_desk.toggle_pause()
+	await wait_seconds(WaitingSoul.BOB_SECONDS + 0.1)
+	assert_true(dipped.call(), "the pause holds the bob where it was")
+	_desk.pause_overlay().resume_button().pressed.emit()
+	await wait_seconds(WaitingSoul.BOB_SECONDS + 0.05)
+	_system.finish_tellings()
+	assert_eq(figure.position.y, WaitingSoul.FIGURE_AT.y, "resumed and told, the soul stands")
+
+
 func test_a_restart_during_the_tale_ends_it_unfinished() -> void:
 	_open(Fixture.normal())
 	_desk.toggle_pause()

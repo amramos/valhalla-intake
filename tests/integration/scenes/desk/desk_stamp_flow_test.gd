@@ -40,7 +40,7 @@ func test_a_stamp_slams_once_inks_the_writ_and_jolts_once() -> void:
 	await wait_seconds(StampFlow.HOLD_SECONDS + StampFlow.IMPACT_SECONDS / 2.0)
 	assert_true(flow.stamp_prompt.is_inked(), "the impact inks the writ")
 	assert_eq(flow.stamp_prompt.writ().inked_glyph(), &"serpent", "with Hel's glyph")
-	assert_eq(_jolts, [StampFlow.JOLT_PX] as Array[int], "the desk band jolts once, 2 px")
+	assert_eq(_jolts, [StampFlow.JOLT_PX] as Array[int], "the desk band jolts once, 3 px")
 	await wait_seconds(StampFlow.SLAM_SECONDS + StampFlow.WALK_SECONDS + SLACK)
 	assert_signal_emit_count(_desk.commands(), "stamped", 1, "one stamp")
 	assert_eq(_jolts.size(), 1, "one slam per stamp")

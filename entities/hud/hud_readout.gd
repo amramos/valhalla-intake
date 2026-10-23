@@ -3,6 +3,8 @@ extends RefCounted
 ## What the HUD shows at one moment; the desk system fills it from DeskCommands.
 
 var time_left: float = INF
+## The day's full clock, so the candle burns down in proportion; 0 on an untimed day (D11).
+var clock_seconds: float = 0.0
 ## False once the day has ended (dusk, the ending): the clock cell is left blank, never stale.
 var clock_shown: bool = true
 var feathers: int = 0

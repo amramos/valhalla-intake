@@ -4,7 +4,9 @@ extends Control
 ## layers are the chart's front view cropped (BodyStacks), so it shows nothing the chart doesn't.
 ## It can be dragged onto a door (D9). The plate is plain, frost-burned for a returned soul, or
 ## carries Hel's mark; it hovers the encounter's plate label. A soul shown after `prepare_arrival`
-## waits off-screen to the left, its name off the plate, until `arrive` walks it in (D15).
+## waits off-screen to the left, its name off the plate, until `arrive` walks it in (D15). While
+## it tells its tale it speaks (D4, D17): the plate lights and the figure dips 1 px on each voice
+## blip; otherwise it is still.
 
 signal plate_hover_started(text: String, area: Rect2)
 signal plate_hover_ended
@@ -16,6 +18,9 @@ const FIGURE_SIZE := Vector2(48, 96)
 ## Where an arriving figure waits, off the left edge of the screen, and its walk in.
 const ARRIVE_FROM_X := -60.0
 const ARRIVE_SECONDS := 0.3
+## A speaking soul's dip on each blip, and how long it stays down (blips come at most ~13 a second).
+const BOB_PX := 1
+const BOB_SECONDS := 0.05
 
 @export var stacks: BodyStacks = null
 @export var plate_plain: Texture2D = null
@@ -26,6 +31,8 @@ const ARRIVE_SECONDS := 0.3
 
 ## Set by `prepare_arrival`: the next soul shown waits off-screen until `arrive`.
 var arrive_pending: bool = false
+## Reduce motion (D37): a speaking soul's plate still lights, but it never bobs.
+var reduce_motion: bool = false
 
 var _figure: DragSource = null
 var _plate: Control = null
@@ -33,6 +40,8 @@ var _name: Label = null
 var _plate_label: String = ""
 var _plate_texture: Texture2D = null
 var _arrival: Tween = null
+var _speaking: bool = false
+var _bob: Tween = null
 
 
 func _ready() -> void:
@@ -140,6 +149,38 @@ func set_draggable(on: bool) -> void:
 	_figure.enabled = on
 
 
+## The soul tells its tale (on) or has finished (off): while on, the plate lights, its name in
+## text_light on a select_light backing (D4). Off also ends a bob under way.
+func set_speaking(on: bool) -> void:
+	_speaking = on
+	if not on:
+		_stop_bob()
+	_plate.queue_redraw()
+
+
+func is_speaking() -> bool:
+	return _speaking
+
+
+## One voice blip while speaking: the figure dips `BOB_PX` and comes back after `BOB_SECONDS`
+## (D17). Only its height moves, so a walk-in under way keeps its course. Nothing while silent,
+## under reduce motion or outside the tree. Returns the bob's tween, or null.
+func bob() -> Tween:
+	if not _speaking or reduce_motion or not is_inside_tree():
+		return null
+	_stop_bob()
+	_figure.position.y = FIGURE_AT.y + BOB_PX
+	_bob = create_tween()
+	_bob.tween_interval(BOB_SECONDS)
+	_bob.tween_callback(_lift)
+	return _bob
+
+
+## The lit plate's backing inside the plate's 1 px rim, in the plate's pixels (tests).
+func speaking_backing() -> Rect2:
+	return Rect2(Vector2.ONE, _plate.size - Vector2(2, 2))
+
+
 func _draw_plate() -> void:
 	if _plate_texture != null:
 		_plate.draw_texture(_plate_texture, Vector2.ZERO)
@@ -147,6 +188,19 @@ func _draw_plate() -> void:
 		_plate.draw_rect(
 			Rect2(Vector2.ZERO, _plate.size), get_theme_color(&"plate", &"DeskPalette")
 		)
+	if _speaking:
+		_plate.draw_rect(speaking_backing(), get_theme_color(&"select_light", &"DeskPalette"))
+
+
+func _stop_bob() -> void:
+	if _bob != null and _bob.is_valid():
+		_bob.kill()
+	_bob = null
+	_lift()
+
+
+func _lift() -> void:
+	_figure.position.y = FIGURE_AT.y
 
 
 func _on_plate_entered() -> void:

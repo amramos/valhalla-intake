@@ -39,6 +39,7 @@
 [ext_resource type="AudioStream" path="res://assets/audio/thread_pull.wav" id="37_pull"]
 [ext_resource type="AudioStream" path="res://assets/audio/no_seam_tick.wav" id="38_tick"]
 [ext_resource type="AudioStream" path="res://assets/audio/horn.wav" id="39_horn"]
+[ext_resource type="AudioStream" path="res://assets/audio/caw.wav" id="40_caw"]
 
 [node name="Desk" type="Control"]
 layout_mode = 3
@@ -120,10 +121,10 @@ plate_hel = ExtResource("29_hel")
 
 [node name="Hud" type="Control" parent="."]
 layout_mode = 0
-offset_left = 384.0
-offset_top = 2.0
+offset_left = 352.0
+offset_top = 0.0
 offset_right = 478.0
-offset_bottom = 23.0
+offset_bottom = 25.0
 script = ExtResource("5_hud")
 
 [node name="LedgerTray" type="Control" parent="."]
@@ -145,10 +146,10 @@ focus_mode = 0
 text = "Ask Huginn"
 
 [node name="StampPrompt" parent="." instance=ExtResource("6_prompt")]
-offset_left = 150.0
-offset_top = 77.0
+offset_left = 97.0
+offset_top = 65.0
 offset_right = 330.0
-offset_bottom = 96.0
+offset_bottom = 101.0
 
 [node name="BodyChart" type="Control" parent="."]
 layout_mode = 0
@@ -270,10 +271,13 @@ stream = ExtResource("38_tick")
 [node name="HornPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("39_horn")
 
+[node name="CawPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("40_caw")
+
 [node name="PresentationGate" type="Node" parent="."]
 script = ExtResource("34_gate")
 
-[node name="StampFlow" type="Node" parent="." node_paths=PackedStringArray("doors", "stamp_prompt", "soul", "feather", "caption_strip", "thud_player", "walk_layer")]
+[node name="StampFlow" type="Node" parent="." node_paths=PackedStringArray("doors", "stamp_prompt", "soul", "feather", "caption_strip", "thud_player", "caw_player", "walk_layer")]
 script = ExtResource("15_stamp")
 doors = [NodePath("../DoorValhalla"), NodePath("../DoorHel"), NodePath("../DoorFolkvangr")]
 stamp_prompt = NodePath("../StampPrompt")
@@ -281,6 +285,7 @@ soul = NodePath("../Soul")
 feather = NodePath("../Feather")
 caption_strip = NodePath("../CaptionStrip")
 thud_player = NodePath("../ThudPlayer")
+caw_player = NodePath("../CawPlayer")
 walk_layer = NodePath("../WalkLayer")
 
 [node name="DeskSystem" type="Node" parent="." node_paths=PackedStringArray("body_chart", "claim_panel", "witness_panel", "law_panel", "doors", "thread_layer", "caption_strip", "hover_label", "soul", "hud", "ask_huginn", "huginn", "phase_card", "feather", "mentor_portrait", "mentor_bubble", "stamp_flow", "seam_player", "ledger_tray", "gate", "blip_player", "tack_player", "pull_player", "tick_player", "horn_player")]

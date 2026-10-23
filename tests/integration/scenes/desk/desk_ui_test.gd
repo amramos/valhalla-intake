@@ -35,6 +35,8 @@ func test_hels_tide_shows_its_figures_and_empty_slots_up_to_the_threshold() -> v
 	_system.stamp_flow.stamp_prompt.send_on()
 	_stamp(&"hel")
 	assert_eq(_desk.commands().hel_tide(), 1, "the returned soul was worthy of Valhalla")
+	# The new figure steps in at the slam's impact (D38).
+	await wait_seconds(StampFlow.HOLD_SECONDS + 0.05)
 	assert_eq(hel.tide, Vector2i(1, threshold), "one figure drawn")
 	assert_eq(hel.tide_rect().size.y, 6.0, "6 px figures")
 

@@ -58,11 +58,13 @@ func test_clicking_the_selected_item_again_or_right_clicking_cancels() -> void:
 	assert_eq(_desk.commands().threads().size(), 0, "no pin was made")
 
 
-func test_a_no_seam_pin_says_so_and_draws_nothing() -> void:
+func test_a_no_seam_pin_says_so_and_draws_no_thread_of_the_souls() -> void:
 	_begin()
 	_system.claim_panel.area("C4").press()
 	_system.law_panel.area("L3").press()
-	assert_eq(_threads().size(), 0)
+	assert_eq(_desk.commands().threads().size(), 0)
+	assert_eq(_threads().size(), 1, "one line on the desk")
+	assert_true(_threads()[0].is_slack(), "the slack thread, dropping off the desk (D36)")
 	assert_eq(_system.caption_strip.shown_text(), "No seam between those two.")
 
 
@@ -129,7 +131,7 @@ func test_cancelling_the_prompt_stamps_nothing() -> void:
 
 func test_every_body_fact_is_a_hit_area_of_at_least_8_by_8_with_its_label() -> void:
 	_begin()
-	_stamp(&"valhalla")
+	await _stamp_and_seat(&"valhalla")
 	for item: EvidenceItem in _desk.commands().visible_items():
 		if item.group != EvidenceItem.Group.BODY:
 			continue
@@ -141,7 +143,7 @@ func test_every_body_fact_is_a_hit_area_of_at_least_8_by_8_with_its_label() -> v
 
 func test_threads_never_cross_a_panel_of_text() -> void:
 	_begin()
-	_stamp(&"valhalla")
+	await _stamp_and_seat(&"valhalla")
 	_pin("B1", "C1")
 	_pin("B3", "L3")
 	assert_eq(_threads().size(), 2)
@@ -199,6 +201,12 @@ func _stamp(realm: StringName) -> void:
 	_door(realm).press()
 	_system.stamp_flow.stamp_prompt.confirm_button().arm_now()
 	_system.stamp_flow.stamp_prompt.confirm_button().pressed.emit()
+
+
+## Stamps, then waits out the slam: the next soul's evidence comes in when it releases (D14).
+func _stamp_and_seat(realm: StringName) -> void:
+	_stamp(realm)
+	await wait_seconds(StampFlow.SLAM_SECONDS + 0.1)
 
 
 func _door(realm: StringName) -> Door:

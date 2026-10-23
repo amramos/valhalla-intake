@@ -194,7 +194,7 @@ func test_the_stamp_and_the_writ_draw_palette_colours_only() -> void:
 	var face: StampFace = _face()
 	assert_eq(Palette.strays(face.drawn_colors()), [] as Array[String], "the stamp")
 	var bounds: Rect2 = Palette.bounds(face.drawn_rects())
-	assert_true(Rect2(Vector2.ZERO, Vector2(StampFace.SIZE)).encloses(bounds), "inside 16x16")
+	assert_true(Rect2(Vector2.ZERO, Vector2(StampFace.SIZE)).encloses(bounds), "inside 24x32")
 	var paper: ParchmentFrame = _prompt.writ().get_node("Paper") as ParchmentFrame
 	assert_eq(Palette.strays(paper.drawn_colors()), [] as Array[String], "the writ's paper")
 	var ink: Array[Color] = [_prompt.writ().ink_color()]

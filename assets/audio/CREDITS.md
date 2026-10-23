@@ -15,6 +15,7 @@ then reads every file back and checks its length and peak level.
 | `thread_pull.wav` | a thread drawn taut | 120 ms | -6 dBFS |
 | `no_seam_tick.wav` | a pin with no seam | 60 ms | -6 dBFS |
 | `horn.wav` | the horn at the end of the day | 1.2 s | -6 dBFS |
+| `caw.wav` | the dry caw of the black feather on a citation (D16) | 150 ms | -6 dBFS |
 
 ## Kenney's sounds
 

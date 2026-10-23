@@ -10,22 +10,32 @@ extends SceneTree
 ## lines and exits 1 when one does not hold. Day 1 is played by hand; later souls go to their
 ## legal doors by door click and confirm.
 ##
-## Every soul's tale is let run to its end at the player's text speed before anything is pressed
-## (a press during it would only finish it, D27). For the time budget (D42) the run prints one
-## `FORCED <soul> <seconds>` line per soul: the presentation gate's gated seconds (tellings,
-## written captions, the slam window) from the end of the previous soul's slam to the end of this
-## soul's, so a soul's slam and the first moments of the next tale, which overlap, count once, for
-## the soul stamped.
+## The whole slice is played at the "instant" text speed, handed in through `Desk.use_options`, so
+## what is left is the time no player can skip. For the time budget (D30) the run prints one
+## `FORCED <soul> <seconds>` line per soul: the presentation gate's gated seconds (written
+## captions, the slam window) from the end of the previous soul's slam to the end of this soul's,
+## so a soul's slam and the first moments of the next tale, which overlap, count once, for the soul
+## stamped. An honest soul over `FORCED_BUDGET` fails the run.
+##
+## After "Play again" a second pass plays days 1 and 2 again at the normal text speed, each tale
+## let run to its end before anything is pressed (a press during it would only finish it, D27),
+## and prints one `TELLING <soul> <seconds>` line per soul: the same count with the tellings in.
 
 const TITLE_SCENE := "res://scenes/title/title.tscn"
 ## No tale takes longer than this; a longer wait is a failure, not a hang.
 const MAX_TALE_SECONDS := 30.0
+## Forced (unskippable) seconds an honest soul may cost at most (D30).
+const FORCED_BUDGET := 2.0
 
 var _out: String = ""
 var _desk: Desk = null
 var _failures: int = 0
 ## The soul whose forced seconds the gate is counting; "" for none.
 var _forced_soul: String = ""
+## Whether that soul tells the truth: only an honest soul is held to the budget.
+var _forced_honest: bool = false
+## The pass's line label: FORCED at the instant speed, TELLING at the normal one.
+var _label: String = "FORCED"
 
 
 func _initialize() -> void:
@@ -50,6 +60,9 @@ func _run() -> void:
 	if _desk == null:
 		_finish()
 		return
+	var instant := Options.new()
+	instant.text_speed = Options.INSTANT
+	_desk.use_options(instant)
 	await _day_one()
 	await _finish_day()
 	_account("")
@@ -81,7 +94,25 @@ func _run() -> void:
 	var restarted: bool = _desk.commands().day_number() == 1
 	_expect(restarted and _desk.commands().phase() == RunState.DAWN, "Play again")
 	await _shot("35_play_again")
+	await _telling_pass()
 	_finish()
+
+
+## Days 1 and 2 again at the normal text speed: TELLING lines, and a tale caught halfway.
+func _telling_pass() -> void:
+	_label = "TELLING"
+	_desk.use_options(Options.new())
+	await _begin()
+	_account(_soul())
+	await _wait(1.0)
+	_expect(_desk.system().is_telling(), "at the normal speed the tale is told line by line (D4)")
+	await _shot("40_ulf_telling")
+	await _finish_day()
+	_account("")
+	await _dusk("", false)
+	await _begin()
+	await _finish_day()
+	_account("")
 
 
 func _finish() -> void:
@@ -101,8 +132,7 @@ func _day_one() -> void:
 	_expect(system.body_chart.layers().size() == 5, "Ulf's chart is his own art stack")
 	_account(_soul())
 	await _wait(1.0)
-	_expect(system.is_telling(), "Ulf tells his tale line by line (D4)")
-	await _shot("02a_ulf_telling")
+	_expect(not system.is_telling(), "at the instant speed the tale shows at once (D37)")
 	await _await_tale()
 	await _shot("02_ulf")
 	await _hover(system.body_chart.area("B2"))
@@ -182,14 +212,15 @@ func _finish_day(shot_prefix: String = "", soul: StringName = &"") -> void:
 		await _wait(0.7)
 
 
-## Shoots every dusk card (and the ending), pressing Next with real clicks.
-func _dusk(prefix: String) -> void:
+## Shoots every dusk card (and the ending) unless `shoot` is off, pressing Next with real clicks.
+func _dusk(prefix: String, shoot: bool = true) -> void:
 	var card: PhaseCard = _desk.system().phase_card
 	var day: int = _desk.commands().day_number()
 	var play_again: String = _desk.commands().slice_rules().text.play_again
 	for index: int in range(10):
 		await _wait(0.4)
-		await _shot("%s_card%d" % [prefix, index + 1])
+		if shoot:
+			await _shot("%s_card%d" % [prefix, index + 1])
 		if card.next_button().text == play_again:
 			return
 		await _click_control(card.next_button())
@@ -259,16 +290,22 @@ func _await_tale() -> void:
 	_expect(not system.is_telling(), "the tale ends by itself within %d s" % MAX_TALE_SECONDS)
 
 
-## Prints the forced seconds of the soul counted so far (if it is not `soul`) and starts counting
-## for `soul` ("" ends the count: the day is over).
+## Prints the gated seconds of the soul counted so far (if it is not `soul`) and starts counting
+## for `soul` ("" ends the count: the day is over). An honest soul's FORCED over the budget fails.
 func _account(soul: String) -> void:
 	if soul == _forced_soul:
 		return
 	var gate: PresentationGate = _desk.gate()
 	if _forced_soul != "":
-		print("FORCED %s %.2f" % [_forced_soul, gate.gated_seconds()])
+		var seconds: float = gate.gated_seconds()
+		print("%s %s %.2f" % [_label, _forced_soul, seconds])
+		if _label == "FORCED" and _forced_honest:
+			var what: String = "honest %s forced %.2f s, over %.1f s (D30)"
+			_expect(seconds <= FORCED_BUDGET, what % [_forced_soul, seconds, FORCED_BUDGET])
 	gate.reset_gated_seconds()
 	_forced_soul = soul
+	var encounter: Encounter = _desk.commands().current_encounter()
+	_forced_honest = soul != "" and encounter != null and not encounter.liar
 
 
 func _expect(condition: bool, what: String) -> void:

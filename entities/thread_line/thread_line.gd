@@ -19,8 +19,9 @@ signal knot_hover_ended
 const KNOT_SIZE := 8
 const BEAD_SIZE := 6
 const PIN_SIZE := PinSelectable.PIN_SIZE
-## How far the slack thread falls when a pin finds no seam (D36).
+## How far the slack thread falls when a pin finds no seam (D36), and for how long at most.
 const DROP_PIXELS := 20
+const SLACK_SECONDS := 0.4
 ## The tied knot: "#" is thread, "o" the loop filled once Huginn has answered.
 const KNOT: Array[String] = [
 	"..####..",
@@ -61,12 +62,19 @@ var selected: bool = false:
 		if _knot != null:
 			_knot.selected = value
 		queue_redraw()
+## How far a slack thread may fall before a drawn pixel would enter a paper (ThreadBoard sets it):
+## the drop ends, and the thread frees itself, the frame it would fall further, so it only ever
+## falls through a gutter.
+var drop_limit: int = DROP_PIXELS
 
 var _knot: PinSelectable = null
 ## How many route pixels show while the thread is drawn taut; -1 for all.
 var _reveal: int = -1
 ## How far the thread has fallen, in pixels.
 var _drop: int = 0
+## A pin with no seam: the thread hangs slack, its pins out, in a dull unbroken strand that belongs
+## to no kind, so it never reads as a red, grey or law thread (D36).
+var _slack: bool = false
 ## The desk's other hit areas (global): pin heads and the knot keep clear of them.
 var _avoid: Array[Rect2] = []
 ## What the last `_draw` painted, in order, in local pixels (tests).
@@ -132,19 +140,46 @@ func is_drawing_in() -> bool:
 	return _reveal >= 0
 
 
-## A pin with no seam (D36, D51): the thread goes slack and falls `DROP_PIXELS`, then is freed.
-## Purely cosmetic: its knot stops taking the mouse at once. Returns the tween (null when freed at
-## once).
-func slacken_and_drop(seconds: float = 0.4) -> Tween:
+## A pin with no seam (D36, D51): the thread goes slack (its pins out, its knot gone, a dull strand)
+## and falls `DROP_PIXELS`, gathering speed, then is freed; it is freed sooner, at `drop_limit`,
+## when falling further would carry it onto a paper. Purely cosmetic: it never takes the mouse.
+## Returns the tween (null when freed at once).
+func slacken_and_drop(seconds: float = SLACK_SECONDS) -> Tween:
+	_slack = true
 	if _knot != null:
 		_knot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_knot.visible = false
 	if seconds <= 0.0 or not is_inside_tree():
 		queue_free()
 		return null
+	queue_redraw()
 	var tween: Tween = create_tween()
-	tween.tween_method(_set_drop, 0.0, float(DROP_PIXELS), seconds)
+	var fall: MethodTweener = tween.tween_method(_set_drop, 0.0, float(DROP_PIXELS), seconds)
+	fall.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tween.tween_callback(queue_free)
 	return tween
+
+
+## True once the thread has gone slack (a pin with no seam).
+func is_slack() -> bool:
+	return _slack
+
+
+## How far the slack thread has fallen, in pixels.
+func fallen() -> int:
+	return _drop
+
+
+## Every pixel the strand covers at rest, in global pixels: each route pixel and the 3 px across
+## it toward the gutter's middle (the slack drop's clearance and tests).
+func stroke() -> Array[Vector2i]:
+	var out: Array[Vector2i] = []
+	var route: Array[Vector2i] = pixels()
+	for index: int in range(route.size()):
+		var side: Vector2i = _side(route, index)
+		for across: int in range(3):
+			out.append(route[index] + side * across)
+	return out
 
 
 ## True when pixel `at` (global) lies on the drawn route.
@@ -229,7 +264,7 @@ func _draw() -> void:
 			continue
 		_paint(Rect2(Vector2(route[index]) - origin, Vector2.ONE), color)
 		_paint(Rect2(Vector2(route[index] + _side(route, index)) - origin, Vector2.ONE), edge)
-	if shown == 0:
+	if shown == 0 or _slack:
 		return
 	var pins: Array[Rect2] = pin_head_rects()
 	_draw_pin(pins[0], origin)
@@ -324,11 +359,19 @@ func _set_reveal(count: int) -> void:
 
 
 func _set_drop(pixels_down: float) -> void:
-	_drop = roundi(pixels_down)
+	var next: int = roundi(pixels_down)
+	if next > drop_limit:
+		# One more pixel would put the strand on a paper: it is gone instead.
+		if not is_queued_for_deletion():
+			queue_free()
+		return
+	_drop = next
 	queue_redraw()
 
 
 func _pattern_on(step: int) -> bool:
+	if _slack:
+		return true
 	match kind:
 		Seam.Kind.GREY:
 			return step % 2 == 0
@@ -338,6 +381,8 @@ func _pattern_on(step: int) -> bool:
 
 
 func _color() -> Color:
+	if _slack:
+		return get_theme_color(&"text_muted", &"DeskPalette")
 	match kind:
 		Seam.Kind.GREY:
 			return get_theme_color(&"thread_grey", &"DeskPalette")
@@ -348,6 +393,8 @@ func _color() -> Color:
 
 ## The core's lighter edge: Wood 4 beside the rust red, Parchment 2 beside grey and law.
 func _edge_color() -> Color:
+	if _slack:
+		return get_theme_color(&"glyph_dim", &"DeskPalette")
 	if kind == Seam.Kind.RED:
 		return get_theme_color(&"thread_red_light", &"DeskPalette")
 	return get_theme_color(&"pin_highlight", &"DeskPalette")

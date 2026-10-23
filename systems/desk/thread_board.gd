@@ -6,6 +6,8 @@ extends RefCounted
 const GREY_KNOT_HOVER := "grey thread: one of them lies"
 
 var router := ThreadRouter.new()
+## The clerk's note, a paper a slack thread may never fall onto; optional (set by the desk).
+var note: Control = null
 
 var _chart: BodyChart
 var _claim: EvidencePanel
@@ -41,8 +43,8 @@ func rebuild(
 	for panel: EvidencePanel in [_claim, _witness, _law]:
 		avoid.append_array(panel.hit_rects())
 	for index: int in range(threads.size()):
-		var a: EvidenceItem = _find(items, threads[index].a)
-		var b: EvidenceItem = _find(items, threads[index].b)
+		var a: EvidenceItem = find_item(items, threads[index].a)
+		var b: EvidenceItem = find_item(items, threads[index].b)
 		if a == null or b == null:
 			continue
 		var answer: String = answers[index] if index < answers.size() else ""
@@ -66,6 +68,53 @@ func rebuild(
 	return lines
 
 
+## A pin with no seam (D36): a thread routed between `a` and `b` on the thread layer, with no knot
+## or bead, for the desk to slacken and drop at once. It is no thread of the soul's: the next
+## rebuild frees it with the rest. Null when either item is missing.
+func make_slack(a: EvidenceItem, b: EvidenceItem) -> ThreadLine:
+	if a == null or b == null:
+		return null
+	var line := ThreadLine.new()
+	line.name = "Slack"
+	_layer.add_child(line)
+	line.size = _layer.size
+	var ends: Array = _ends(a, b)
+	line.points = router.route(ends[0], ends[1], ends[2], ends[3], ends[4], ends[5], 0)
+	line.caps = router.caps(ends[0], ends[1], ends[2], ends[3], ends[4], ends[5])
+	line.drop_limit = clear_drop(line.stroke(), papers(), ThreadLine.DROP_PIXELS)
+	line.queue_redraw()
+	return line
+
+
+## The papers on the desk, in global pixels: the slab, the shown sheets, the Law and the note.
+func papers() -> Array[Rect2]:
+	var rects: Array[Rect2] = [_chart.get_global_rect()]
+	for paper: Control in [_claim, _witness, _law, note]:
+		if paper != null and paper.is_visible_in_tree():
+			rects.append(paper.get_global_rect())
+	return rects
+
+
+## How far (0 to `most` pixels) the strand of pixels `stroke` can fall straight down before any of
+## its pixels would lie on one of `sheets`; 0 when the strand already lies on one.
+static func clear_drop(stroke: Array[Vector2i], sheets: Array[Rect2], most: int) -> int:
+	for drop: int in range(most + 1):
+		for pixel: Vector2i in stroke:
+			var below := Vector2(pixel.x, pixel.y + drop)
+			for sheet: Rect2 in sheets:
+				if sheet.has_point(below):
+					return maxi(drop - 1, 0)
+	return most
+
+
+## The visible item with `item_id` among `items`; null when none.
+static func find_item(items: Array[EvidenceItem], item_id: String) -> EvidenceItem:
+	for item: EvidenceItem in items:
+		if item.id == item_id:
+			return item
+	return null
+
+
 ## A grey knot hovers Huginn's answer once given; every other bead hovers its caption.
 func _hover_for(seam: Seam, answer: String) -> String:
 	if seam.kind != Seam.Kind.GREY:
@@ -83,13 +132,6 @@ func _ends(a: EvidenceItem, b: EvidenceItem) -> Array:
 		_anchor(b),
 		_holder(b).get_global_rect(),
 	]
-
-
-func _find(items: Array[EvidenceItem], item_id: String) -> EvidenceItem:
-	for item: EvidenceItem in items:
-		if item.id == item_id:
-			return item
-	return null
 
 
 func _anchor(item: EvidenceItem) -> Rect2:
