@@ -22,7 +22,8 @@ func test_a_first_figure_from_a_broken_law_adds_the_tide_to_her_comment() -> voi
 	assert_eq(desk.hel_tide(), 0, "mercy so far")
 	var result: StampResult = desk.stamp(Realm.HEL)
 	assert_eq(
-		result.mentor_line, "'I held the door' and L5. Hel pays well. Hel's tide grows by one."
+		result.mentor_line,
+		"'I held the door' and decree V. Hel pays well. Hel's tide grows by one."
 	)
 
 

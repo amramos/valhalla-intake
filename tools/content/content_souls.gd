@@ -46,8 +46,8 @@ static func _day_one() -> Array[Dictionary]:
 				"Sif gets the goat.",
 			],
 			"seams":
-			[["C1", "L1", "law", "valhalla", "the saga is true. L1 sends him to Valhalla."]],
-			"cite": ["C1", "L1", "'Speared, in battle' and L1"],
+			[["C1", "L1", "law", "valhalla", "the saga is true. Decree I sends him to Valhalla."]],
+			"cite": ["C1", "L1", "'Speared, in battle' and decree I"],
 			"mentor":
 			[
 				["Hover each mark.", "read", "body"],
@@ -83,15 +83,15 @@ static func _day_one() -> Array[Dictionary]:
 				["B1", "C1", "red"],
 				["B4", "C2", "red"],
 				["B3", "C3", "red"],
-				["B3", "L3", "law", "hel", "L3 sends him to Hel."],
+				["B3", "L3", "law", "hel", "Decree III sends him to Hel."],
 			],
 			"cite": ["B1", "C1", "No wound on his chest, and 'Danes axed my chest'"],
 			"mentor":
 			[
 				["Read him. All of him.", "read", "body+claim"],
-				["His chest. His C1.", "read", "B1|C1"],
+				["His chest. His first line.", "read", "B1|C1"],
 				["Pin them.", "pin", "B1|C1"],
-				["Bodies don't lie. L2 takes liars.", "stamp", "door:hel"],
+				["Bodies don't lie. Decree II takes liars.", "stamp", "door:hel"],
 			],
 		},
 		{
@@ -122,7 +122,7 @@ static func _day_one() -> Array[Dictionary]:
 			"mentor":
 			[
 				["Your turn to read.", "read", "body+claim"],
-				["His chest. His C3.", "read", "B1|C3"],
+				["His chest. His third line.", "read", "B1|C3"],
 				["Pin them.", "pin", "B1|C3"],
 				["Where does a liar go?", "stamp", ""],
 			],
@@ -149,8 +149,8 @@ static func _day_one() -> Array[Dictionary]:
 				"It broke. I kept on.",
 				"My girl has the farm.",
 			],
-			"seams": [["B3", "L3", "law", "hel", "the saga is true. L3 sends her to Hel."]],
-			"cite": ["B3", "L3", "Her empty hand, and L3"],
+			"seams": [["B3", "L3", "law", "hel", "the saga is true. Decree III sends her to Hel."]],
+			"cite": ["B3", "L3", "Her empty hand, and decree III"],
 			"herrings": ["B3|C2"],
 		},
 	]
@@ -182,8 +182,8 @@ static func _day_two() -> Array[Dictionary]:
 			"witness_name": "Bjorn, his shield-brother",
 			"witness": ["Our wall broke.", "A Dane got in behind.", "Speared his back."],
 			"seams":
-			[["C1", "L1", "law", "valhalla", "the saga is true. L1 sends him to Valhalla."]],
-			"cite": ["C1", "L1", "'Fell in battle. Ness' and L1"],
+			[["C1", "L1", "law", "valhalla", "the saga is true. Decree I sends him to Valhalla."]],
+			"cite": ["C1", "L1", "'Fell in battle. Ness' and decree I"],
 			"herrings": ["B2|L4", "B2|C1", "B3|C2"],
 		},
 		{
@@ -213,10 +213,10 @@ static func _day_two() -> Array[Dictionary]:
 			"witness": ["No kin of his. A Jute.", "Carried me out of it.", "I died anyway. Sorry."],
 			"seams":
 			[
-				["C3", "L4", "law", "hel", "the saga is true. L4 sends him to Hel."],
-				["W2", "L4", "law", "hel", "the saga is true. L4 sends him to Hel."],
+				["C3", "L4", "law", "hel", "the saga is true. Decree IV sends him to Hel."],
+				["W2", "L4", "law", "hel", "the saga is true. Decree IV sends him to Hel."],
 			],
-			"cite": ["C3", "L4", "'Left the fight' and L4"],
+			"cite": ["C3", "L4", "'Left the fight' and decree IV"],
 		},
 		{
 			"id": "grim",
@@ -249,7 +249,7 @@ static func _day_two() -> Array[Dictionary]:
 				["B4", "C2", "red"],
 				["C1", "W1", "grey"],
 				["C4", "W2", "grey"],
-				["B3", "L3", "law", "hel", "L3 sends him to Hel."],
+				["B3", "L3", "law", "hel", "Decree III sends him to Hel."],
 			],
 			"cite": ["B2", "C3", "His back wound, and 'No wound on my back'"],
 		},
@@ -284,7 +284,7 @@ static func _day_two() -> Array[Dictionary]:
 				["B1", "C3", "red"],
 				["B2", "C3", "red"],
 				["C1", "W1", "grey"],
-				["B3", "L3", "law", "hel", "L3 sends him to Hel."],
+				["B3", "L3", "law", "hel", "Decree III sends him to Hel."],
 			],
 			"cite": ["B4", "C2", "Soft hands, and 'Hands hard as oak'"],
 		},
@@ -319,8 +319,8 @@ static func _day_three() -> Array[Dictionary]:
 			"witness_name": "Bersi, a crewman",
 			"witness": ["She went over first.", "One hid by the mast.", "Got her from behind."],
 			"seams":
-			[["C1", "L1", "law", "valhalla", "the saga is true. L1 sends her to Valhalla."]],
-			"cite": ["C1", "L1", "'Slain in a sea-battle' and L1"],
+			[["C1", "L1", "law", "valhalla", "the saga is true. Decree I sends her to Valhalla."]],
+			"cite": ["C1", "L1", "'Slain in a sea-battle' and decree I"],
 			"herrings": ["B2|L4", "B2|C3", "B4|C3"],
 		},
 		{
@@ -352,11 +352,29 @@ static func _day_three() -> Array[Dictionary]:
 			"witness": ["She held that door.", "So we fired the roof.", "Her boys got out."],
 			"seams":
 			[
-				["C2", "L5", "law", "folkvangr", "the saga is true. L5 sends her to Fólkvangr."],
-				["C3", "L5", "law", "folkvangr", "the saga is true. L5 sends her to Fólkvangr."],
-				["W1", "L5", "law", "folkvangr", "the saga is true. L5 sends her to Fólkvangr."],
+				[
+					"C2",
+					"L5",
+					"law",
+					"folkvangr",
+					"the saga is true. Decree V sends her to Fólkvangr."
+				],
+				[
+					"C3",
+					"L5",
+					"law",
+					"folkvangr",
+					"the saga is true. Decree V sends her to Fólkvangr."
+				],
+				[
+					"W1",
+					"L5",
+					"law",
+					"folkvangr",
+					"the saga is true. Decree V sends her to Fólkvangr."
+				],
 			],
-			"cite": ["C2", "L5", "'I held the door' and L5"],
+			"cite": ["C2", "L5", "'I held the door' and decree V"],
 			"herrings": ["B5|C2", "B1|C2", "B2|C2", "B4|C2", "C4|L1"],
 		},
 		{
@@ -460,8 +478,8 @@ static func _returned() -> Array[Dictionary]:
 				[
 					["B4", "C4", "red"],
 					["C4", "W3", "grey"],
-					["C3", "L5", "law", "folkvangr", "L5 sends him to Fólkvangr."],
-					["W1", "L5", "law", "folkvangr", "L5 sends him to Fólkvangr."],
+					["C3", "L5", "law", "folkvangr", "Decree V sends him to Fólkvangr."],
+					["W1", "L5", "law", "folkvangr", "Decree V sends him to Fólkvangr."],
 				],
 				"cite": ["B4", "C4", "A night-shirt, and 'In my mail, of course'"],
 			}

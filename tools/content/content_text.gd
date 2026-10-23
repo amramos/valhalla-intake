@@ -23,7 +23,7 @@ static func days() -> Array[Dictionary]:
 				"Day 1.",
 				"Odin wants 1 soul for Valhalla.",
 				"Untimed today.",
-				"The Law: L1, L2, L3.",
+				"The Law: I, II, III.",
 				"Doors: Valhalla and Hel. Fólkvangr is barred.",
 				(
 					"Send a worthy soul to Hel and they join her tide. At three, they break"
@@ -54,7 +54,7 @@ static func days() -> Array[Dictionary]:
 				"Day 2.",
 				"Odin wants 1 soul for Valhalla.",
 				"The clock: {clock}. It runs while a soul is at the desk.",
-				"NEW L4: Even so, those who fled the battle go to Hel.",
+				"NEW IV: Even so, those who fled the battle go to Hel.",
 				"Witnesses arrive. Claim against witness makes a grey thread.",
 				"Citations begin today: 2 feathers for any stamp against what the desk can show you.",
 			],
@@ -78,8 +78,8 @@ static func days() -> Array[Dictionary]:
 				"Odin wants 2 souls for Valhalla.",
 				"The clock: {clock}.",
 				(
-					"NEW L5: Those who fell defending hearth and kin go to Fólkvangr, whatever"
-					+ " L1, L3 and L4 say."
+					"NEW V: Those who fell defending hearth and kin go to Fólkvangr, whatever"
+					+ " I, III and IV say."
 				),
 				"NEW door: Fólkvangr opens.",
 				(
@@ -147,9 +147,8 @@ static func desk_text() -> DeskTextData:
 	var text := DeskTextData.new()
 	# A named id, like the generator's facts and seams, so a rebuild never renames it.
 	text.resource_scene_unique_id = "desk_text"
-	text.thread_format = "%s against %s: %s"
-	text.no_seam_line = "No seam: those two agree."
-	text.no_seam_timed_format = "No seam: those two agree. -%d s"
+	text.no_seam_line = "No seam between those two."
+	text.no_seam_timed_format = "No seam between those two. -%d s"
 	text.huginn_select_hover = "Select a grey thread first."
 	text.huginn_extra_hover = "Extra answer: 2 feathers."
 	text.huginn_bought_format = "Huginn takes 2 feathers. %s"

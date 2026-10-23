@@ -32,8 +32,8 @@ a = "C3"
 b = "L4"
 kind = 2
 destination = &"hel"
-caption = "the saga is true. L4 sends him to Hel."
-pair_text = "'Left the fight' and L4"
+caption = "the saga is true. Decree IV sends him to Hel."
+pair_text = "'Left the fight' and decree IV"
 
 [sub_resource type="Resource" id="seam_W2_L4"]
 script = ExtResource("4_grett")
@@ -41,7 +41,7 @@ a = "W2"
 b = "L4"
 kind = 2
 destination = &"hel"
-caption = "the saga is true. L4 sends him to Hel."
+caption = "the saga is true. Decree IV sends him to Hel."
 
 [resource]
 script = ExtResource("3_xen55")

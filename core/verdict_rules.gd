@@ -74,15 +74,15 @@ static func mark_for(record: VerdictRecord, day: DayRules, rules: SliceRules) ->
 static func citation_text(
 	seam: Seam, encounter: Encounter, day: DayRules, rules: SliceRules, ignored: bool
 ) -> String:
-	var text: String = (
-		rules.citation_format % [decree_of(seam, day, rules), pair_text(seam, encounter, day)]
-	)
+	# The citation names the decree as the scroll does, by its numeral (D6).
+	var decree: String = DecreeNumeral.label(decree_of(seam, day, rules))
+	var text: String = rules.citation_format % [decree, pair_text(seam, encounter, day)]
 	if ignored:
 		text += " " + rules.threaded_line
 	return text
 
 
-## The decree a seam cites: a law thread's own decree, or the liars' decree for a lie seam.
+## The decree a seam cites, by id: a law thread's own decree, or the liars' decree for a lie seam.
 static func decree_of(seam: Seam, day: DayRules, rules: SliceRules) -> String:
 	if seam.kind != Seam.Kind.LAW:
 		return rules.liar_decree_id
@@ -90,7 +90,7 @@ static func decree_of(seam: Seam, day: DayRules, rules: SliceRules) -> String:
 
 
 ## The pair as a citation names it (A3): the authored text, or one built from the two items in the
-## same voice: "Wet to the knee, and 'Dry when I fell'", "'Left the fight' and L4".
+## same voice: "Wet to the knee, and 'Dry when I fell'", "'Left the fight' and decree IV".
 static func pair_text(seam: Seam, encounter: Encounter, day: DayRules) -> String:
 	if seam.pair_text != "":
 		return seam.pair_text
@@ -131,7 +131,7 @@ static func mentor_line(
 static func _shown(item_id: String, encounter: Encounter, day: DayRules) -> String:
 	var item: EvidenceItem = encounter.item(item_id)
 	if item == null:
-		return item_id if day.decree(item_id) != null else ""
+		return DecreeNumeral.label(item_id) if day.decree(item_id) != null else ""
 	if item.group == EvidenceItem.Group.BODY:
 		return item.text
 	return "'%s'" % item.text.trim_suffix(".")

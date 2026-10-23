@@ -90,7 +90,7 @@ static func ulf() -> Encounter:
 		["B1|wound, front|front", "B2|no wound, back|back", "B3|sword, gripped|front"],
 		["Axed, in battle.", "Took it in the chest.", "Sword up to the end."],
 		[],
-		[Seam.make("C1", "L1", LAW, NONE, Realm.VALHALLA, "the saga is true. L1: Valhalla.")]
+		[Seam.make("C1", "L1", LAW, NONE, Realm.VALHALLA, "the saga is true. Decree I: Valhalla.")]
 	)
 
 
@@ -106,7 +106,7 @@ static func kolbeinn() -> Encounter:
 		[
 			Seam.make("B1", "C1", RED, CLAIM, &"", LIE),
 			Seam.make("B4", "C2", RED, CLAIM, &"", LIE),
-			Seam.make("B3", "L3", LAW, NONE, Realm.HEL, "L3 sends him to Hel."),
+			Seam.make("B3", "L3", LAW, NONE, Realm.HEL, "Decree III sends him to Hel."),
 		]
 	)
 
@@ -120,7 +120,7 @@ static func asa() -> Encounter:
 		["B1|wound, front|front", "B3|nothing in hand|front"],
 		["Danes on the beach.", "Spear in my two hands.", "It snapped. I kept on."],
 		[],
-		[Seam.make("B3", "L3", LAW, NONE, Realm.HEL, "the saga is true. L3: Hel.")]
+		[Seam.make("B3", "L3", LAW, NONE, Realm.HEL, "the saga is true. Decree III: Hel.")]
 	)
 	result.pronoun = "her"
 	return result
@@ -135,7 +135,7 @@ static func sigvaldi() -> Encounter:
 		["B2|wound, back|back", "B3|sword, gripped|front"],
 		["Fell in battle. Ness.", "Sword broke on a helm."],
 		["The wall broke behind."],
-		[Seam.make("C1", "L1", LAW, NONE, Realm.VALHALLA, "the saga is true. L1: Valhalla.")]
+		[Seam.make("C1", "L1", LAW, NONE, Realm.VALHALLA, "the saga is true. Decree I: Valhalla.")]
 	)
 
 
@@ -149,8 +149,8 @@ static func hakon() -> Encounter:
 		["Ivar owed me a knife.", "He fell. I lifted him.", "Left the fight."],
 		["Carried me out of it."],
 		[
-			Seam.make("C3", "L4", LAW, NONE, Realm.HEL, "the saga is true. L4: Hel."),
-			Seam.make("W1", "L4", LAW, NONE, Realm.HEL, "the saga is true. L4: Hel."),
+			Seam.make("C3", "L4", LAW, NONE, Realm.HEL, "the saga is true. Decree IV: Hel."),
+			Seam.make("W1", "L4", LAW, NONE, Realm.HEL, "the saga is true. Decree IV: Hel."),
 		]
 	)
 	result.return_eligible = true
@@ -182,7 +182,7 @@ static func freydis() -> Encounter:
 		["B2|wound, back|back", "B3|sword, gripped|front"],
 		["Slain in a sea-battle."],
 		["She went over first."],
-		[Seam.make("C1", "L1", LAW, NONE, Realm.VALHALLA, "the saga is true. L1: Valhalla.")]
+		[Seam.make("C1", "L1", LAW, NONE, Realm.VALHALLA, "the saga is true. Decree I: Valhalla.")]
 	)
 	result.pronoun = "her"
 	return result
@@ -216,7 +216,7 @@ static func egil() -> Encounter:
 		["Nice shirt, though."],
 		[
 			Seam.make("B4", "C3", RED, CLAIM, &"", LIE),
-			Seam.make("C2", "L5", LAW, NONE, Realm.FOLKVANGR, "L5 sends him to Fólkvangr."),
+			Seam.make("C2", "L5", LAW, NONE, Realm.FOLKVANGR, "Decree V sends him to Fólkvangr."),
 		]
 	)
 
@@ -230,7 +230,11 @@ static func ragna() -> Encounter:
 		["B1|no wound, front|front", "B5|night-shirt|front"],
 		["They came at night.", "I held the door."],
 		["She held that door."],
-		[Seam.make("C2", "L5", LAW, NONE, Realm.FOLKVANGR, "the saga is true. L5: Fólkvangr.")]
+		[
+			Seam.make(
+				"C2", "L5", LAW, NONE, Realm.FOLKVANGR, "the saga is true. Decree V: Fólkvangr."
+			)
+		]
 	)
 	result.hel_marked = true
 	result.plate_label = "Hel asked for her"

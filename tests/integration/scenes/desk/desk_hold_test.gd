@@ -13,6 +13,7 @@ var _system: DeskSystem = null
 func before_each() -> void:
 	_desk = DESK_SCENE.instantiate() as Desk
 	_desk.use_commands(Fixture.commands())
+	_desk.use_options(Fixture.instant())
 	add_child_autofree(_desk)
 	_system = _desk.system()
 	_system.phase_card.next_button().pressed.emit()
@@ -26,7 +27,7 @@ func test_while_a_cited_soul_waits_only_next_soul_acts() -> void:
 	assert_eq(_soul(), "Asgaut")
 
 	_door(&"hel").press()
-	assert_false(_system.stamp_flow.stamp_prompt.visible, "a door press is refused")
+	assert_false(_system.stamp_flow.stamp_prompt.is_asking(), "a door press is refused")
 
 	var before: float = _desk.commands().time_left()
 	_system._process(5.0)
@@ -42,7 +43,9 @@ func test_while_a_cited_soul_waits_only_next_soul_acts() -> void:
 	_system.claim_panel.area("C3").press()
 	assert_false(_system.claim_panel.area("C3").selected, "no new pin starts")
 
-	_system.stamp_flow.next_soul_button.pressed.emit()
+	# Send it on (D15) is refused inside the slam window (D27).
+	await wait_seconds(StampFlow.SLAM_SECONDS + 0.1)
+	_system.stamp_flow.stamp_prompt.send_on()
 	assert_eq(_soul(), "Second", "Next soul seats the next one")
 	_system._process(5.0)
 	assert_lt(_desk.commands().time_left(), before, "and the clock runs again")
@@ -106,7 +109,7 @@ func test_a_restart_from_a_soul_at_the_desk_clears_the_whole_desk() -> void:
 	assert_eq(_system.huginn_thread, 0, "a grey knot is selected for Huginn")
 	assert_eq(_system._lit, ["C1", "W1"] as Array[String], "the threaded pair is lit")
 	assert_ne(_system.caption_strip.shown_text(), "", "a caption shows")
-	assert_true(_system.stamp_flow.stamp_prompt.visible, "a stamp preview is open")
+	assert_true(_system.stamp_flow.stamp_prompt.is_asking(), "a stamp preview is open")
 	_restart()
 	_assert_empty_dawn()
 	assert_eq(_system._lit, [] as Array[String], "nothing lit")
@@ -134,7 +137,7 @@ func _assert_empty_dawn() -> void:
 	assert_false(_system.claim_panel.has_item("C1"), "no claim")
 	assert_false(_system.witness_panel.visible, "no witness")
 	assert_eq(_system.caption_strip.shown_text(), "", "no caption")
-	assert_false(_system.stamp_flow.stamp_prompt.visible, "no stamp preview")
+	assert_false(_system.stamp_flow.stamp_prompt.is_asking(), "no stamp preview")
 	for door: Door in _system.doors:
 		assert_false(door.selected, "the %s door is not selected" % door.realm)
 	assert_eq(_threads().size(), 0, "no threads")

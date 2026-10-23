@@ -1,7 +1,25 @@
 # Audio credits
 
-Two placeholder sounds (D11), both **CC0 1.0** (public domain), by Kenney (www.kenney.nl).
-Credit is appreciated, not required. Downloaded on 2026-10-21 from the official site.
+## Generated sounds
+
+These are synthesized by `tools/audio/synth_sounds.py` (D25, D50): Python's standard library only,
+with a fixed seed, so running the script again writes the same bytes. They are part of the project,
+under its own licence; nothing was downloaded or recorded. Every file is 16-bit, 22050 Hz, mono.
+To change one, edit the script and run it again (`py -3 tools/audio/synth_sounds.py`). The script
+then reads every file back and checks its length and peak level.
+
+| File | What it is | Length | Peak |
+|---|---|---|---|
+| `blip.wav` | the voice blip of the dead; the game pitches it per soul (D41) | 40 ms | -14 dBFS |
+| `pin_tack.wav` | a pin pushed into parchment | 30 ms | -6 dBFS |
+| `thread_pull.wav` | a thread drawn taut | 120 ms | -6 dBFS |
+| `no_seam_tick.wav` | a pin with no seam | 60 ms | -6 dBFS |
+| `horn.wav` | the horn at the end of the day | 1.2 s | -6 dBFS |
+
+## Kenney's sounds
+
+Two sounds are **CC0 1.0** (public domain), by Kenney (www.kenney.nl). Credit is appreciated, not
+required. Downloaded on 2026-10-21 from the official site.
 
 | File | Source pack | Original file | Pack page |
 |---|---|---|---|
@@ -13,4 +31,4 @@ http://creativecommons.org/publicdomain/zero/1.0/ — This content is free to us
 educational and commercial projects." Both licence files are reproduced in `kenney-LICENSE.txt`; the CC0 legal code is in
 `../fonts/m5x7-LICENSE.txt`.
 
-No other audio ships with the slice (D11).
+No other audio ships with the game.

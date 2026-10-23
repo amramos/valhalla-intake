@@ -30,7 +30,8 @@ func test_mercy_on_day_one_is_named_kind_with_the_warning() -> void:
 	desk.debug_jump(1, 3)
 	var result: StampResult = desk.stamp(Realm.VALHALLA)
 	assert_eq(
-		result.mentor_line, "Kind. Nothing in hand, and L3. From tomorrow, that costs feathers."
+		result.mentor_line,
+		"Kind. Nothing in hand, and decree III. From tomorrow, that costs feathers."
 	)
 
 
@@ -48,7 +49,7 @@ func test_mercy_after_citations_begin_names_its_cost() -> void:
 	var desk: DeskCommands = Fixture.desk()
 	desk.debug_jump(2, 2)
 	var result: StampResult = desk.stamp(Realm.VALHALLA)
-	assert_eq(result.mentor_line, "Kind. 'Left the fight' and L4. That cost you two.")
+	assert_eq(result.mentor_line, "Kind. 'Left the fight' and decree IV. That cost you two.")
 
 
 func test_from_day_two_an_illegal_stamp_says_whether_the_soul_lied() -> void:
@@ -61,14 +62,14 @@ func test_from_day_two_an_illegal_stamp_says_whether_the_soul_lied() -> void:
 	desk.debug_jump(2, 1)
 	assert_eq(
 		desk.stamp(Realm.HEL).mentor_line,
-		"'Fell in battle. Ness' and L1. Nothing in that saga was a lie."
+		"'Fell in battle. Ness' and decree I. Nothing in that saga was a lie."
 	)
 
 
 func test_keeping_hels_promise_has_its_own_comment() -> void:
 	var desk: DeskCommands = Fixture.desk()
 	desk.debug_jump(3, 3)
-	assert_eq(desk.stamp(Realm.HEL).mentor_line, "'I held the door' and L5. Hel pays well.")
+	assert_eq(desk.stamp(Realm.HEL).mentor_line, "'I held the door' and decree V. Hel pays well.")
 
 
 func test_no_comment_on_a_legal_stamp_or_uncertainty() -> void:

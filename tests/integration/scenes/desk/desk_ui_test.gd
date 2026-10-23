@@ -17,6 +17,7 @@ var _system: DeskSystem = null
 func _open(commands: DeskCommands) -> void:
 	_desk = DESK_SCENE.instantiate() as Desk
 	_desk.use_commands(commands)
+	_desk.use_options(Fixture.instant())
 	add_child_autofree(_desk)
 	_system = _desk.system()
 	_system.phase_card.next_button().pressed.emit()
@@ -29,7 +30,9 @@ func test_hels_tide_shows_its_figures_and_empty_slots_up_to_the_threshold() -> v
 	assert_eq(hel.tide, Vector2i(0, threshold), "empty slots up to the threshold (D21)")
 	assert_eq(_door(&"valhalla").tide, Vector2i.ZERO, "only Hel's door has a tide")
 	_stamp(&"hel")
-	_system.stamp_flow.next_soul_button.pressed.emit()
+	# Send it on (D15) is refused inside the slam window (D27).
+	await wait_seconds(StampFlow.SLAM_SECONDS + 0.1)
+	_system.stamp_flow.stamp_prompt.send_on()
 	_stamp(&"hel")
 	assert_eq(_desk.commands().hel_tide(), 1, "the returned soul was worthy of Valhalla")
 	assert_eq(hel.tide, Vector2i(1, threshold), "one figure drawn")
@@ -39,7 +42,9 @@ func test_hels_tide_shows_its_figures_and_empty_slots_up_to_the_threshold() -> v
 func test_new_marks_show_until_the_days_first_stamp() -> void:
 	_open(Fixture.commands())
 	assert_true(_system.law_panel.is_new("L5"), "the new decree is marked (D34)")
-	assert_string_contains(_system.law_panel.heading_text(), "NEW: L5")
+	assert_string_contains(
+		_system.law_panel.heading_text(), "NEW: V", "D6: the numeral, never the id"
+	)
 	assert_false(_system.law_panel.is_new("L4"))
 	assert_true(_door(&"folkvangr").is_new, "the newly opened door is marked")
 	_stamp(&"hel")
@@ -139,7 +144,9 @@ func test_a_click_on_a_threads_bead_shows_its_caption_again() -> void:
 	_system.caption_strip.take_over("something else")
 	_knot(0).press()
 	assert_eq(
-		_system.caption_strip.shown_text(), "C2 against L5: L5 sends him to Fólkvangr.", "D33, A1"
+		_system.caption_strip.shown_text(),
+		'"Held my own..." against decree V: Decree V sends him to Fólkvangr.',
+		"D33, D6"
 	)
 
 
@@ -149,8 +156,14 @@ func test_a_seam_plays_its_sound_and_a_stamp_its_thud_flare_and_walk() -> void:
 	_pin("C2", "L5")
 	assert_true(seam.playing, "seam found")
 	_stamp(&"folkvangr")
+	# The thud comes after the slam's 70 ms hold, the flare 0.1 s after it (D14).
+	await wait_seconds(StampFlow.HOLD_SECONDS + StampFlow.IMPACT_SECONDS + 0.05)
 	assert_true(_system.stamp_flow.thud_player.playing, "the stamp's thud")
 	assert_true(_door(&"folkvangr").is_flaring(), "the door flares")
+	if _desk.commands().awaiting_next():
+		# A held soul walks only when it is sent on (D15).
+		await wait_seconds(StampFlow.SLAM_SECONDS)
+		_system.stamp_flow.stamp_prompt.send_on()
 	assert_eq(_system.stamp_flow.walk_layer.get_child_count(), 1, "the soul walks through")
 
 
@@ -159,10 +172,10 @@ func test_dragging_the_soul_onto_an_open_door_previews_then_commits() -> void:
 	var payload: Dictionary = _system.soul.figure().payload()
 	var hel: Door = _door(&"hel")
 	assert_true(hel._can_drop_data(Vector2.ZERO, payload))
-	assert_eq(_system.stamp_flow.stamp_prompt.question(), "Stamp Asgaut to Hel?", "the preview")
+	assert_eq(_system.stamp_flow.stamp_prompt.question(), "Hel?", "the preview")
 	assert_eq(_soul(), "Asgaut", "hovering commits nothing")
 	_system.stamp_flow._notification(Node.NOTIFICATION_DRAG_END)
-	assert_false(_system.stamp_flow.stamp_prompt.visible, "released elsewhere: cancelled")
+	assert_false(_system.stamp_flow.stamp_prompt.is_asking(), "released elsewhere: cancelled")
 	hel._can_drop_data(Vector2.ZERO, payload)
 	hel._drop_data(Vector2.ZERO, payload)
 	assert_eq(_soul(), "Second", "dropped on the door: stamped")
@@ -184,7 +197,9 @@ func test_a_held_soul_cannot_be_dragged() -> void:
 func test_plates_show_hels_mark_or_frost_with_their_hover_label() -> void:
 	_open(Fixture.commands())
 	_stamp(&"hel")
-	_system.stamp_flow.next_soul_button.pressed.emit()
+	# Send it on (D15) is refused inside the slam window (D27).
+	await wait_seconds(StampFlow.SLAM_SECONDS + 0.1)
+	_system.stamp_flow.stamp_prompt.send_on()
 	assert_eq(_soul(), "Second")
 	assert_eq(_system.soul.plate_texture().resource_path, "res://assets/art/ui/nameplate-frost.png")
 	watch_signals(_system.soul)

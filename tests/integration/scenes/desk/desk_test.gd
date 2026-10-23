@@ -4,6 +4,7 @@ extends GutTest
 ## that never cross text (D21).
 
 const DESK_SCENE := preload("res://scenes/desk/desk.tscn")
+const Fixture := preload("res://tests/integration/scenes/desk/desk_fixture.gd")
 
 var _desk: Desk = null
 var _system: DeskSystem = null
@@ -12,6 +13,8 @@ var _system: DeskSystem = null
 func before_each() -> void:
 	_desk = DESK_SCENE.instantiate() as Desk
 	_desk.use_commands(SliceLoader.load_slice())
+	# The tale shows at once, so lines can be pressed right after the dawn card (D37).
+	_desk.use_options(Fixture.instant())
 	add_child_autofree(_desk)
 	_system = _desk.system()
 
@@ -38,7 +41,8 @@ func test_one_pin_through_the_desk_draws_a_thread_and_its_caption() -> void:
 	assert_eq(_threads()[0].kind, Seam.Kind.LAW)
 	assert_eq(
 		_system.caption_strip.shown_text(),
-		"C1 against L1: the saga is true. L1 sends him to Valhalla."
+		'"Speared, in..." against decree I: the saga is true. Decree I sends him to Valhalla.',
+		"D6: the pair by its words, never its ids"
 	)
 
 
@@ -59,20 +63,23 @@ func test_a_no_seam_pin_says_so_and_draws_nothing() -> void:
 	_system.claim_panel.area("C4").press()
 	_system.law_panel.area("L3").press()
 	assert_eq(_threads().size(), 0)
-	assert_eq(_system.caption_strip.shown_text(), "No seam: those two agree.")
+	assert_eq(_system.caption_strip.shown_text(), "No seam between those two.")
 
 
 func test_one_stamp_goes_through_the_door_and_the_separate_confirm() -> void:
 	_begin()
 	_door(&"valhalla").press()
-	assert_eq(_system.stamp_flow.stamp_prompt.question(), "Stamp Ulf to Valhalla?")
+	assert_eq(_system.stamp_flow.stamp_prompt.question(), "Valhalla?")
 	assert_eq(_system.soul.soul_name(), "Ulf", "a door click alone never stamps (D9)")
 	var confirm: GuardedButton = _system.stamp_flow.stamp_prompt.confirm_button()
 	confirm.arm_now()
 	confirm.pressed.emit()
 	assert_eq(_system.soul.soul_name(), "Kolbeinn", "the confirm stamped Ulf; the next soul sits")
 	assert_eq(_desk.commands().quota_progress(), Vector2i(1, 1))
-	assert_false(_system.stamp_flow.stamp_prompt.visible)
+	assert_false(_system.stamp_flow.stamp_prompt.is_asking())
+	assert_eq(
+		_system.stamp_flow.stamp_prompt.soul_name(), "Ulf", "the stamped writ keeps Ulf (D14)"
+	)
 
 
 func test_the_confirm_ignores_presses_before_it_is_armed() -> void:
@@ -83,22 +90,24 @@ func test_the_confirm_ignores_presses_before_it_is_armed() -> void:
 	assert_true(confirm.blocks(_mouse(MOUSE_BUTTON_LEFT, false)))
 
 
-func test_a_cited_soul_stays_with_its_pair_lit_until_next_soul() -> void:
+func test_a_cited_soul_stays_with_its_pair_lit_until_its_writ_is_sent_on() -> void:
 	_begin()
 	_stamp(&"hel")
+	await wait_seconds(StampFlow.SLAM_SECONDS + 0.2)
+	var prompt: StampPrompt = _system.stamp_flow.stamp_prompt
 	assert_true(_desk.commands().awaiting_next(), "the day-1 warning holds the soul (D48)")
 	assert_eq(_system.soul.soul_name(), "Ulf", "the stamped soul stays on the desk")
 	assert_true(_system.feather.visible, "the black feather is on the desk")
-	assert_true(_system.stamp_flow.next_soul_button.visible)
+	assert_true(prompt.is_held(), "its inked writ is held (D15)")
 	assert_true(_system.claim_panel.area("C1").lit, "the cited pair is lit")
 	assert_true(_system.law_panel.area("L1").lit)
 	assert_ne(_system.caption_strip.shown_text(), "", "the warning is in the strip")
 	_system.claim_panel.area("C2").press()
 	assert_false(_system.claim_panel.area("C2").selected, "no new pins while the soul waits")
-	_system.stamp_flow.next_soul_button.pressed.emit()
+	prompt.send_on()
 	assert_eq(_system.soul.soul_name(), "Kolbeinn")
 	assert_false(_system.feather.visible, "the feather leaves with the soul")
-	assert_false(_system.stamp_flow.next_soul_button.visible)
+	assert_false(prompt.is_held())
 
 
 func test_a_closed_door_offers_no_stamp() -> void:
@@ -106,7 +115,7 @@ func test_a_closed_door_offers_no_stamp() -> void:
 	var folkvangr: Door = _door(&"folkvangr")
 	assert_false(folkvangr.is_open, "Fólkvangr is barred on day 1")
 	folkvangr.press()
-	assert_false(_system.stamp_flow.stamp_prompt.visible)
+	assert_false(_system.stamp_flow.stamp_prompt.is_asking())
 	assert_string_contains(folkvangr.hover_text(), "Closed")
 
 
@@ -114,7 +123,7 @@ func test_cancelling_the_prompt_stamps_nothing() -> void:
 	_begin()
 	_door(&"hel").press()
 	_system.stamp_flow.stamp_prompt.withdraw()
-	assert_false(_system.stamp_flow.stamp_prompt.visible)
+	assert_false(_system.stamp_flow.stamp_prompt.is_asking())
 	assert_eq(_system.soul.soul_name(), "Ulf")
 
 

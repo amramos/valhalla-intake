@@ -3,7 +3,8 @@ extends Control
 ## The soul waiting at the gate, with its name plate (D4, D21). The figure is identity only: its
 ## layers are the chart's front view cropped (BodyStacks), so it shows nothing the chart doesn't.
 ## It can be dragged onto a door (D9). The plate is plain, frost-burned for a returned soul, or
-## carries Hel's mark; it hovers the encounter's plate label.
+## carries Hel's mark; it hovers the encounter's plate label. A soul shown after `prepare_arrival`
+## waits off-screen to the left, its name off the plate, until `arrive` walks it in (D15).
 
 signal plate_hover_started(text: String, area: Rect2)
 signal plate_hover_ended
@@ -12,6 +13,9 @@ const PLATE_HEIGHT := 10
 ## The figure's top-left inside this node; the node sits at (2, 0), so the figure is at (6, -2).
 const FIGURE_AT := Vector2(4, -2)
 const FIGURE_SIZE := Vector2(48, 96)
+## Where an arriving figure waits, off the left edge of the screen, and its walk in.
+const ARRIVE_FROM_X := -60.0
+const ARRIVE_SECONDS := 0.3
 
 @export var stacks: BodyStacks = null
 @export var plate_plain: Texture2D = null
@@ -20,11 +24,15 @@ const FIGURE_SIZE := Vector2(48, 96)
 ## Shown when an encounter has no stack (a development stand-in).
 @export var placeholder_path: String = "res://docs/art/frames/soul.png"
 
+## Set by `prepare_arrival`: the next soul shown waits off-screen until `arrive`.
+var arrive_pending: bool = false
+
 var _figure: DragSource = null
 var _plate: Control = null
 var _name: Label = null
 var _plate_label: String = ""
 var _plate_texture: Texture2D = null
+var _arrival: Tween = null
 
 
 func _ready() -> void:
@@ -54,10 +62,15 @@ func _ready() -> void:
 
 ## Shows the soul at the desk; null empties the gate.
 func show_soul(encounter: Encounter) -> void:
+	_stop_arrival()
 	visible = encounter != null
 	if encounter == null:
+		arrive_pending = false
 		_figure.layers = []
+		_figure.position = FIGURE_AT
 		return
+	_figure.position = Vector2(ARRIVE_FROM_X, FIGURE_AT.y) if arrive_pending else FIGURE_AT
+	_name.visible = not arrive_pending
 	_name.text = encounter.soul_name
 	_plate_label = encounter.plate_label
 	var layers: Array[Texture2D] = []
@@ -89,6 +102,39 @@ func plate_texture() -> Texture2D:
 	return _plate_texture
 
 
+## The next soul shown waits off-screen for `arrive` (the walk-in after a stamp, D15).
+func prepare_arrival() -> void:
+	arrive_pending = true
+
+
+## Walks the waiting figure in from the left over `seconds` (0 places it at once) and puts its
+## name on the plate. Returns the walk's tween, or null when there was nothing to walk or no time.
+func arrive(seconds: float = ARRIVE_SECONDS) -> Tween:
+	if not arrive_pending:
+		return null
+	arrive_pending = false
+	_name.visible = true
+	_stop_arrival()
+	if seconds <= 0.0 or not is_inside_tree():
+		_figure.position = FIGURE_AT
+		return null
+	_arrival = create_tween()
+	_arrival.tween_property(_figure, "position", FIGURE_AT, seconds)
+	return _arrival
+
+
+func is_arriving() -> bool:
+	return arrive_pending or (_arrival != null and _arrival.is_valid())
+
+
+## The walk-in skipped: the figure stands in its place at once.
+func finish_arrival() -> void:
+	arrive_pending = false
+	_name.visible = true
+	_stop_arrival()
+	_figure.position = FIGURE_AT
+
+
 ## Whether the figure can be picked up (not while a stamped soul waits, D48).
 func set_draggable(on: bool) -> void:
 	_figure.enabled = on
@@ -105,3 +151,9 @@ func _draw_plate() -> void:
 
 func _on_plate_entered() -> void:
 	plate_hover_started.emit(_plate_label, _plate.get_global_rect())
+
+
+func _stop_arrival() -> void:
+	if _arrival != null and _arrival.is_valid():
+		_arrival.kill()
+	_arrival = null

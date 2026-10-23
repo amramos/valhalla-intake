@@ -40,7 +40,7 @@ highlight = Array[String](["B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4"])
 
 [sub_resource type="Resource" id="mentor_2"]
 script = ExtResource("2_0oklw")
-text = "His chest. His C1."
+text = "His chest. His first line."
 highlight = Array[String](["B1", "C1"])
 
 [sub_resource type="Resource" id="mentor_3"]
@@ -51,7 +51,7 @@ until = 1
 
 [sub_resource type="Resource" id="mentor_4"]
 script = ExtResource("2_0oklw")
-text = "Bodies don't lie. L2 takes liars."
+text = "Bodies don't lie. Decree II takes liars."
 door = &"hel"
 until = 2
 
@@ -83,7 +83,7 @@ a = "B3"
 b = "L3"
 kind = 2
 destination = &"hel"
-caption = "L3 sends him to Hel."
+caption = "Decree III sends him to Hel."
 
 [resource]
 script = ExtResource("3_pse3c")

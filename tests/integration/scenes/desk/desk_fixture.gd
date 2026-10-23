@@ -3,7 +3,9 @@ extends RefCounted
 ## thread (three grey seams between claim and witness, a red seam from the body to the witness,
 ## law threads from the body and from the claim), Huginn on the desk, citations on, L5 and
 ## Fólkvangr marked NEW, and a returned soul behind it. `two_days()` is the same souls over a day 2
-## with Fólkvangr barred, then a day 3 that opens it.
+## with Fólkvangr barred, then a day 3 that opens it. `instant()` and `normal()` are the text speeds
+## a test hands the desk (`Desk.use_options`): at "instant" the tale shows at once (D37), so a test
+## can press a line right after the dawn card; at "normal" it is told at 40 cps (D4).
 
 const DECREES: Array[String] = [
 	(
@@ -13,7 +15,7 @@ const DECREES: Array[String] = [
 	"Whoever lies to the Gate goes to Hel, whatever else the Law says.",
 	"Even so, a warrior without a weapon in hand goes to Hel.",
 	"Even so, those who fled the battle go to Hel.",
-	"Those who fell defending hearth and kin go to Fólkvangr, whatever L1, L3 and L4 say.",
+	"Those who fell defending hearth and kin go to Fólkvangr, whatever I, III and IV say.",
 ]
 const CLOCK_SECONDS := 300.0
 
@@ -23,6 +25,16 @@ static func commands() -> DeskCommands:
 	var days: Array[DayRules] = [_day(3)]
 	result.start_run(days, [[_first(), _second()]], SliceRules.new(), {})
 	return result
+
+
+static func instant() -> Options:
+	var options := Options.new()
+	options.text_speed = Options.INSTANT
+	return options
+
+
+static func normal() -> Options:
+	return Options.new()
 
 
 static func two_days() -> DeskCommands:
@@ -78,9 +90,16 @@ static func _first() -> Encounter:
 		Seam.make("C3", "W3", Seam.Kind.GREY, Seam.Liar.CLAIM, &"", "one of them lies."),
 		Seam.make("C3", "W2", Seam.Kind.GREY, Seam.Liar.CLAIM, &"", "one of them lies."),
 		Seam.make("B1", "W2", Seam.Kind.RED, Seam.Liar.WITNESS, &"", "the body gives the lie."),
-		Seam.make("B3", "L3", Seam.Kind.LAW, Seam.Liar.NONE, Realm.HEL, "L3 sends him to Hel."),
 		Seam.make(
-			"C2", "L5", Seam.Kind.LAW, Seam.Liar.NONE, Realm.FOLKVANGR, "L5 sends him to Fólkvangr."
+			"B3", "L3", Seam.Kind.LAW, Seam.Liar.NONE, Realm.HEL, "Decree III sends him to Hel."
+		),
+		Seam.make(
+			"C2",
+			"L5",
+			Seam.Kind.LAW,
+			Seam.Liar.NONE,
+			Realm.FOLKVANGR,
+			"Decree V sends him to Fólkvangr."
 		),
 	]
 	return first

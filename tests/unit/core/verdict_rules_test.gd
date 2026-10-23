@@ -30,7 +30,9 @@ func test_a_missed_red_seam_still_cites() -> void:
 	var result: StampResult = VerdictRules.judge(record, Realm.VALHALLA, _day(2), _rules)
 	assert_true(result.citation, "the red seam was visible")
 	assert_false(result.ignored, "never pinned: missed")
-	assert_eq(result.citation_text, "Citation: L2. Wet to the knee, and 'Never left the hill'.")
+	assert_eq(
+		result.citation_text, "Citation: decree II. Wet to the knee, and 'Never left the hill'."
+	)
 	assert_eq([result.citation_a, result.citation_b], ["B4", "C1"])
 
 
@@ -41,7 +43,7 @@ func test_a_pinned_seam_makes_the_stamp_ignored() -> void:
 	assert_true(result.citation)
 	assert_true(result.ignored)
 	assert_eq([result.citation_a, result.citation_b], ["W1", "L4"], "the pinned pair is named")
-	assert_true(result.citation_text.begins_with("Citation: L4."))
+	assert_true(result.citation_text.begins_with("Citation: decree IV."))
 	assert_true(result.citation_text.ends_with(_rules.threaded_line))
 
 

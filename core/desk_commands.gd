@@ -201,8 +201,10 @@ func stamp(realm: StringName) -> StampResult:
 	MentorGuide.finish(record, MentorStep.Until.STAMP)
 	var tide_before: int = _state.hel_tide()
 	_state.settle_stamp(record, result)
+	result.departing_id = record.encounter.id
+	result.tide_delta = _state.hel_tide() - tide_before
 	result.mentor_line = VerdictRules.mentor_line(record, result, day, _state.rules)
-	if tide_before == 0 and _state.hel_tide() == 1:
+	if tide_before == 0 and result.tide_delta == 1:
 		# Hel's tide is explained the first time it grows (D53).
 		if result.mentor_line == "" and result.correct:
 			result.mentor_line = _state.rules.mentor_tide_line

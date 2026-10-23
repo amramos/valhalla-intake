@@ -6,6 +6,7 @@ extends GutTest
 
 const DESK_SCENE := preload("res://scenes/desk/desk.tscn")
 const TITLE_SCENE := preload("res://scenes/title/title.tscn")
+const Fixture := preload("res://tests/integration/scenes/desk/desk_fixture.gd")
 
 var _viewport: SubViewport = null
 var _desk: Desk = null
@@ -18,6 +19,7 @@ func before_each() -> void:
 	add_child_autofree(_viewport)
 	_desk = DESK_SCENE.instantiate() as Desk
 	_desk.quit_closes_game = false
+	_desk.use_options(Fixture.instant())
 	_viewport.add_child(_desk)
 	_system = _desk.system()
 
@@ -160,7 +162,7 @@ func test_the_witness_heading_shows_the_name_and_hovers_the_description() -> voi
 	_commands().debug_jump(3, 1)
 	var witness: String = _commands().current_encounter().witness_name
 	assert_eq(witness, "Bersi, a crewman", "Freydis's witness")
-	assert_eq(_system.witness_panel.heading_text(), "WITNESS Bersi", "D52: the name only")
+	assert_eq(_system.witness_panel.heading_text(), "Bersi", "D52, D6: the name only")
 	_system.witness_panel.heading_hover_area().mouse_entered.emit()
 	assert_eq(_system.hover_label.shown_text(), witness, "D52: the full description on hover")
 

@@ -28,7 +28,13 @@ func test_a_session_plays_ulf_through_the_commands() -> void:
 	harness.act("begin")
 	var pinned: String = harness.act("pin C1 L1")
 	assert_true(harness.last_ok)
-	assert_eq(pinned, "A law thread. C1 against L1: the saga is true. L1 sends him to Valhalla.")
+	assert_eq(
+		pinned,
+		(
+			'A law thread. "Speared, in..." against decree I: the saga is true. Decree I sends him'
+			+ " to Valhalla."
+		)
+	)
 	assert_string_contains(harness.describe(), "1. C1-L1 law thread")
 	var stamped: String = harness.act("stamp valhalla")
 	assert_string_contains(stamped, "Ulf goes through to Valhalla.")
@@ -46,7 +52,7 @@ func test_a_stamp_costs_simulated_reading_time_and_the_horn_is_reported() -> voi
 	assert_eq(harness.desk.time_left(), 300.0 - Harness.STAMP_SECONDS)
 	harness.act("wait 275")
 	var result: String = harness.act("pin B1 C2")
-	assert_string_contains(result, "No seam: those two agree. -10 s")
+	assert_string_contains(result, "No seam between those two. -10 s")
 	assert_string_contains(result, "The horn sounds.")
 	assert_string_contains(harness.describe(), "== Dusk, day 2. Card 1 of")
 
@@ -55,7 +61,7 @@ func test_a_citation_drops_a_black_feather_on_the_desk() -> void:
 	var harness := Harness.new(Fixture.desk())
 	harness.act("jump 2 3")
 	var result: String = harness.act("stamp valhalla")
-	assert_string_contains(result, "A black feather drops (-2): Citation: L2.")
+	assert_string_contains(result, "A black feather drops (-2): Citation: decree II.")
 
 
 func test_huginns_answer_is_printed_once_without_a_doubled_prefix() -> void:
@@ -99,13 +105,13 @@ func test_the_black_feather_shows_the_capped_citation_loss_not_the_net_change() 
 	var harness := Harness.new(Fixture.desk())
 	harness.act("jump 3 3")
 	var result: String = harness.act("stamp hel")
-	assert_string_contains(result, "A black feather drops (-2): Citation: L5.")
+	assert_string_contains(result, "A black feather drops (-2): Citation: decree V.")
 
 
 func test_an_untimed_no_seam_pin_reads_as_on_the_desk() -> void:
 	var harness := Harness.new(Fixture.desk())
 	harness.act("begin")
-	assert_eq(harness.act("pin B1 C2"), "No seam: those two agree.")
+	assert_eq(harness.act("pin B1 C2"), "No seam between those two.")
 
 
 func test_hels_tide_shows_at_her_door() -> void:

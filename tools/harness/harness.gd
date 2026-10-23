@@ -5,9 +5,16 @@ extends RefCounted
 const DeskView := preload("res://tools/harness/desk_view.gd")
 ## Simulated reading time per stamp; thinking time is not simulated, only action costs.
 const STAMP_SECONDS := 20.0
+## The clerk's note as the desk draws it (D44): its font, size and line width, so a thread's
+## caption is cut and extended exactly as on the desk.
+const NOTE_FONT := "res://assets/fonts/m5x7.ttf"
+const NOTE_FONT_SIZE := 16
+const NOTE_WIDTH := CaptionFormatter.NOTE_LINE_PX
 
 var desk: DeskCommands
 var view: DeskView
+## Writes thread captions in the desk's words (D6, D44).
+var captions: CaptionFormatter
 ## Whether the last act() was a command the desk accepted.
 var last_ok: bool = false
 
@@ -21,6 +28,9 @@ var _warning: bool = false
 func _init(p_desk: DeskCommands, at_title: bool = false) -> void:
 	desk = p_desk
 	view = DeskView.new(desk)
+	var font: Font = load(NOTE_FONT) as Font
+	PixelFont.configure(font)
+	captions = CaptionFormatter.new(font, NOTE_FONT_SIZE, NOTE_WIDTH)
 	if at_title:
 		view.screen = DeskView.TITLE
 	desk.set_stamp_seconds(STAMP_SECONDS)
@@ -235,7 +245,7 @@ func _pin(a: String, b: String) -> String:
 	var result: PinResult = desk.pin(a, b)
 	match result.kind:
 		PinResult.Kind.THREAD, PinResult.Kind.ALREADY:
-			view.caption = _text().thread_format % [a, b, result.seam.caption]
+			view.caption = _thread_caption(result.seam)
 			var kind: String = DeskView.KIND_NAMES[result.seam.kind]
 			var line: String = "A %s thread. %s" % [kind, view.caption]
 			if result.mentor_line != "":
@@ -246,6 +256,14 @@ func _pin(a: String, b: String) -> String:
 				return _text().no_seam_timed_format % roundi(result.seconds_lost)
 			return _text().no_seam_line
 	return _refuse("Those can't be pinned: %s and %s." % [a, b])
+
+
+## The caption the desk's note writes for a thread: the pair by its words, never its ids.
+func _thread_caption(seam: Seam) -> String:
+	var soul: Encounter = desk.current_encounter()
+	return captions.thread_caption(
+		seam, desk.visible_items(), soul.soul_name, soul.witness_heading_name()
+	)
 
 
 func _ask(number: int) -> String:

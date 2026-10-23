@@ -4,11 +4,11 @@ extends RefCounted
 ## control, the dusk cards and the slice ending. The UI and the harness format these; core's own
 ## lines (citations, recaps, the ledger) live in SliceRules. Defaults are the matrix's text.
 
-## A1. Format: the two pinned ids, then the thread's caption.
-var thread_format: String = "%s against %s: %s"
-var no_seam_line: String = "No seam: those two agree."
+## A1. A thread's caption is built by CaptionFormatter, which names the pair by its words.
+## Only what the pin showed, never "agree" (D36).
+var no_seam_line: String = "No seam between those two."
 ## Format: the seconds lost.
-var no_seam_timed_format: String = "No seam: those two agree. -%d s"
+var no_seam_timed_format: String = "No seam between those two. -%d s"
 ## A4.
 var huginn_select_hover: String = "Select a grey thread first."
 var huginn_extra_hover: String = "Extra answer: 2 feathers."

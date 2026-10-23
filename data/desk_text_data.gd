@@ -3,7 +3,6 @@ extends Resource
 ## The authored desk text of matrix section A that no rule composes (see core/desk_text.gd).
 
 @export_group("Pin results (A1)")
-@export var thread_format: String = ""
 @export var no_seam_line: String = ""
 @export var no_seam_timed_format: String = ""
 @export_group("Huginn (A4)")

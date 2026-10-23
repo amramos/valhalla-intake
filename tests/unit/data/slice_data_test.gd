@@ -10,7 +10,7 @@ const L1 := (
 const L2 := "Whoever lies to the Gate goes to Hel, whatever else the Law says."
 const L3 := "Even so, a warrior without a weapon in hand goes to Hel."
 const L4 := "Even so, those who fled the battle go to Hel."
-const L5 := "Those who fell defending hearth and kin go to Fólkvangr, whatever L1, L3 and L4 say."
+const L5 := "Those who fell defending hearth and kin go to Fólkvangr, whatever I, III and IV say."
 
 var _slice: SliceData = load("res://data/slice.tres") as SliceData
 
@@ -111,7 +111,7 @@ func test_ulf_and_kolbeinn_read_as_the_matrix_writes_them() -> void:
 	assert_eq(ulf.item("C1").text, "Speared, in battle.")
 	assert_eq(ulf.item("C4").text, "Sif gets the goat.")
 	assert_eq(ulf.item("B1").text, "spear wound, chest")
-	assert_eq(ulf.seams[0].caption, "the saga is true. L1 sends him to Valhalla.")
+	assert_eq(ulf.seams[0].caption, "the saga is true. Decree I sends him to Valhalla.")
 	var kolbeinn: Encounter = _soul(&"kolbeinn")
 	assert_eq(kolbeinn.item("C1").text, "Danes axed my chest.")
 	assert_eq(kolbeinn.item("B4").text, "night-shirt only, bare feet")
@@ -152,7 +152,7 @@ func test_the_shared_text_is_section_a() -> void:
 	var rules: SliceRules = _slice.rules_to_core()
 	assert_eq(rules.citation_format, "Citation: %s. %s.")
 	assert_eq(rules.huginn_claim_answer, "Huginn: the claim lies.")
-	assert_eq(rules.text.no_seam_timed_format % 10, "No seam: those two agree. -10 s")
+	assert_eq(rules.text.no_seam_timed_format % 10, "No seam between those two. -10 s")
 	assert_eq(rules.text.hall_title, "The Hall holds")
 	assert_string_contains(rules.hel_offer_format % "Ragna", "Tomorrow Ragna comes to your desk.")
 	assert_eq(rules.ledger_open_format % ["Ragna", 4], "Hel: send Ragna to Hel. 4 feathers.")
@@ -247,3 +247,34 @@ func test_the_dawn_cards_explain_the_tide_and_what_a_citation_needs() -> void:
 		)
 	)
 	assert_eq(_slice.rules_to_core().mentor_tide_line, "The Law is kept. Hel's tide grows by one.")
+
+
+## D6: the player never reads an id. Every authored text the desk, the dawn card or the dusk
+## shows names decrees by their numerals and lines by their words; only ids and commands keep them.
+func test_no_displayed_text_names_an_id() -> void:
+	var ids := RegEx.create_from_string("\b[BCWL][0-9]+\b")
+	var texts: Array[String] = []
+	var souls: Array[EncounterData] = [
+		_slice.returned_ignored, _slice.returned_missed, _slice.fallback
+	]
+	for day: DayData in _slice.days:
+		texts.append_array(day.dawn_lines)
+		texts.append(day.dusk_story)
+		for decree: DecreeData in day.decrees:
+			texts.append(decree.text)
+		souls.append_array(day.encounters)
+	for data: EncounterData in souls:
+		var soul: Encounter = data.to_core()
+		texts.append_array([soul.plate_label, soul.witness_note, soul.truth])
+		for seam: Seam in soul.seams:
+			texts.append_array([seam.caption, seam.pair_text])
+		for step: MentorStep in soul.mentor_steps:
+			texts.append(step.text)
+		for item: EvidenceItem in soul.items:
+			texts.append(item.text)
+	var leaks: Array[String] = []
+	for text: String in texts:
+		if ids.search(text) != null:
+			leaks.append(text)
+	assert_gt(texts.size(), 200)
+	assert_eq(leaks, [] as Array[String])

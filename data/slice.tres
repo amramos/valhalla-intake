@@ -12,9 +12,8 @@
 
 [sub_resource type="Resource" id="desk_text"]
 script = ExtResource("5_s6ag8")
-thread_format = "%s against %s: %s"
-no_seam_line = "No seam: those two agree."
-no_seam_timed_format = "No seam: those two agree. -%d s"
+no_seam_line = "No seam between those two."
+no_seam_timed_format = "No seam between those two. -%d s"
 huginn_select_hover = "Select a grey thread first."
 huginn_extra_hover = "Extra answer: 2 feathers."
 huginn_bought_format = "Huginn takes 2 feathers. %s"
