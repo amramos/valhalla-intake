@@ -12,9 +12,9 @@ const LINE_CAP_PX := 132
 ## D33: a caption-strip text fits two strip lines (matrix A: 688 px).
 const STRIP_CAP_PX := 688
 const SAGA_TRUE := "the saga is true. "
-## The mentor's bubble (entities/mentor/mentor_bubble.gd, 60x64): its label is 52 px wide from the
-## top; a READ step's "Next" button starts 48 px down, other steps have 61 px.
-const BUBBLE_TEXT_WIDTH := 52
+## The mentor's bubble (D18; MentorBubble in scenes/desk/desk.tscn, 94x40): its text width and
+## the lines above its arrow come from MentorBubble, for every kind of step.
+const BUBBLE_SIZE := Vector2i(94, 40)
 ## The evidence panels (entities/evidence_panel/evidence_panel.gd: PADDING) and the witness
 ## heading's prefix (systems/desk/desk_system.gd).
 const DESK_SCENE := "res://scenes/desk/desk.tscn"
@@ -27,8 +27,6 @@ const CARD_LINE_PITCH := 10
 const CARD_GAP := 4
 const CARD_BUTTON := 14
 const CARD_MAX_HEIGHT := 266
-const BUBBLE_TEXT_HEIGHT_READ := 48
-const BUBBLE_TEXT_HEIGHT := 61
 const THEME_PATH := "res://scenes/desk/desk_theme.tres"
 ## R1 (matrix §0, "What makes a law thread"): the evidence that shows each decree's condition.
 ## Whether a line states a death in battle is the author's reading, not something a check can
@@ -57,7 +55,6 @@ const CONDITION_TEXTS: Dictionary = {
 
 var _font: Font = null
 var _font_size: int = 16
-var _line_spacing: int = 0
 
 
 func _init() -> void:
@@ -65,7 +62,6 @@ func _init() -> void:
 	if theme != null and theme.default_font != null:
 		_font = theme.default_font
 		_font_size = theme.default_font_size
-		_line_spacing = theme.get_constant(&"line_spacing", &"Label")
 		PixelFont.configure(_font)
 
 
@@ -109,19 +105,14 @@ func check_encounter(
 func bubble_lines(text: String) -> int:
 	var paragraph := TextParagraph.new()
 	paragraph.add_string(text, _font, _font_size)
-	paragraph.width = BUBBLE_TEXT_WIDTH
+	paragraph.width = MentorBubble.text_width_for(BUBBLE_SIZE.x)
 	paragraph.break_flags = TextServer.BREAK_MANDATORY | TextServer.BREAK_WORD_BOUND
 	return paragraph.get_line_count()
 
 
-## The lines that fit the bubble for a step: under the "Next" button on a READ step.
-func bubble_room(step: MentorStep) -> int:
-	var height: int = BUBBLE_TEXT_HEIGHT
-	if step.until == MentorStep.Until.READ:
-		height = BUBBLE_TEXT_HEIGHT_READ
-	var line: int = int(_font.get_height(_font_size)) + _line_spacing
-	# n lines take n * (font height + spacing) - spacing.
-	return int((height + _line_spacing) / float(line))
+## The lines that fit the bubble for a step: the same above the arrow for every step (D18).
+func bubble_room(_step: MentorStep) -> int:
+	return MentorBubble.lines_for(BUBBLE_SIZE.y)
 
 
 ## Every guided step fits the mentor's bubble, and lights only items on the desk.

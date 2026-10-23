@@ -36,8 +36,8 @@ func test_while_a_cited_soul_waits_only_next_soul_acts() -> void:
 	_knot(0).press()
 	assert_eq(_system.huginn_thread, -1, "a knot click does nothing")
 	var caption: String = _system.caption_strip.shown_text()
-	_system.ask_huginn.pressed.emit()
-	assert_eq(_desk.commands().huginn_left(), 2, "Ask Huginn spends nothing")
+	_system.raven.press()
+	assert_eq(_desk.commands().huginn_left(), 2, "the raven spends nothing")
 	assert_eq(_system.caption_strip.shown_text(), caption, "and says nothing")
 
 	_system.claim_panel.area("C3").press()

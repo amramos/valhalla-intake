@@ -1,7 +1,8 @@
 extends GutTest
 ## The slam as the player sees it (D14, D15, D54-D56): the desk dims while the stamp is raised; at
-## the impact the stamp squashes, the veil deepens, ink bursts from the block and, as the stamp
-## lifts, a shockwave leaves the ink box; all timed, the same for a hero and a liar. The stamped
+## the impact the stamp squashes, the writ and the stamp flash and the writ dents, the veil deepens,
+## ink bursts outward from the block and, as the stamp lifts, a shockwave leaves the ink; all timed,
+## the same for a hero and a liar. The stamped
 ## soul's sheets, slab, thread and note stay on the desk through the slam, and the next soul's come
 ## in when it releases, the sheets sliding up into place with the walk-in.
 
@@ -17,14 +18,16 @@ var _desk: Desk = null
 var _system: DeskSystem = null
 
 
-## Timed, never counted in frames: stepped by elapsed seconds from the impact, the burst is near
-## (Parchment 2) to 0.04 s and far (Fog 2) to 0.08 s, the squash holds 0.06 s, the veil is 0.55
-## until the lift at 0.15 s, and the shockwave is 21x21 (ink) to 0.20 s and 27x27 (Fog 2) to 0.25 s
-## (D56).
+## Timed, never counted in frames: stepped by elapsed seconds from the impact, the writ and the
+## stamp flash over the choice's 0.25 veil to 0.03 s, then the veil is 0.55 until the lift at
+## 0.15 s; the burst is 3 px out (Parchment 2) to 0.03 s, 6 px (Fog 2) to 0.06 s and 9 px (Fog 1)
+## to 0.09 s; the squash and the writ's 1 px dent hold 0.06 s; and the shockwave is 21x21 (ink) to
+## 0.20 s and 27x27 (Fog 2) to 0.25 s (D56 and the critic's stamp polish on #22).
 func test_the_impact_marks_last_their_time_not_their_frames() -> void:
 	_open(Fixture.instant())
 	var prompt: StampPrompt = _system.stamp_flow.stamp_prompt
 	var face: StampFace = prompt.get_node("Face") as StampFace
+	var writ: Writ = prompt.writ()
 	var marks: ImpactMarks = prompt.marks()
 	prompt.ask("Asgaut", &"hel")
 	prompt.stamp_down(&"hel")
@@ -32,7 +35,7 @@ func test_the_impact_marks_last_their_time_not_their_frames() -> void:
 	slam.pause()
 	var seen: Array = []
 	var last: float = 0.0
-	for at: float in [0.0, 0.03, 0.05, 0.07, 0.09, 0.14, 0.16, 0.21, 0.26]:
+	for at: float in [0.0, 0.02, 0.04, 0.07, 0.1, 0.14, 0.16, 0.21, 0.26]:
 		slam.custom_step(at - last)
 		last = at
 		seen.append(
@@ -42,27 +45,61 @@ func test_the_impact_marks_last_their_time_not_their_frames() -> void:
 				face.visible,
 				marks.veil_alpha(),
 				marks.burst_stage(),
-				marks.ring_stage()
+				marks.ring_stage(),
+				face.is_flashing(),
+				writ.is_flashing(),
+				writ.position.y
 			]
 		)
 	var expected: Array = [
-		[0.0, 22, true, 0.55, 1, 0],
-		[0.03, 22, true, 0.55, 1, 0],
-		[0.05, 22, true, 0.55, 2, 0],
-		[0.07, 24, true, 0.55, 2, 0],
-		[0.09, 24, true, 0.55, 0, 0],
-		[0.14, 24, true, 0.55, 0, 0],
-		[0.16, 24, false, 0.0, 0, 1],
-		[0.21, 24, false, 0.0, 0, 2],
-		[0.26, 24, false, 0.0, 0, 0],
+		[0.0, 26, true, 0.25, 1, 0, true, true, 1.0],
+		[0.02, 26, true, 0.25, 1, 0, true, true, 1.0],
+		[0.04, 26, true, 0.55, 2, 0, false, false, 1.0],
+		[0.07, 28, true, 0.55, 3, 0, false, false, 0.0],
+		[0.1, 28, true, 0.55, 0, 0, false, false, 0.0],
+		[0.14, 28, true, 0.55, 0, 0, false, false, 0.0],
+		[0.16, 28, false, 0.0, 0, 1, false, false, 0.0],
+		[0.21, 28, false, 0.0, 0, 2, false, false, 0.0],
+		[0.26, 28, false, 0.0, 0, 0, false, false, 0.0],
 	]
-	assert_eq(seen, expected, "burst, squash, veil and shockwave on their times")
+	assert_eq(seen, expected, "flash, dent, burst, squash, veil and shockwave on their times")
 	assert_true(prompt.is_inked(), "the ink stays")
 
 
+## The critic's stamp polish (#22): the hit is the brightest instant, not the lift. At the impact
+## the writ is Parchment 2 and every tone of the stamp a band lighter, over the choice's veil, with
+## the doors yielding; at the lift's shockwave the writ is its own Parchment 1 again.
+func test_the_hit_is_brighter_than_the_lift() -> void:
+	_open(Fixture.instant())
+	var prompt: StampPrompt = _system.stamp_flow.stamp_prompt
+	var face: StampFace = prompt.get_node("Face") as StampFace
+	var writ: Writ = prompt.writ()
+	prompt.ask("Asgaut", &"hel")
+	await wait_process_frames(2)
+	var resting: float = _brightness(face.drawn_colors())
+	prompt.stamp_down(&"hel")
+	var slam: Tween = prompt.slam(&"hel")
+	slam.pause()
+	await wait_process_frames(2)
+	var hit: Array[Color] = face.drawn_colors()
+	assert_eq(Palette.strays(hit), [] as Array[String], "the flash is palette colours")
+	assert_gt(_brightness(hit), resting, "the stamp flashes brighter than it stands")
+	var light: Color = THEME.get_color(&"pin_highlight", &"DeskPalette")
+	assert_eq(writ.sheet_color(), light, "the writ flashes Parchment 2")
+	var flash: float = writ.sheet_color().get_luminance()
+	assert_eq(_door(&"hel").z_index, 0, "the doors yield at the hit")
+	slam.custom_step(StampPrompt.LIFT_SECONDS + 0.001)
+	assert_true(prompt.is_ringing(), "the lift's shockwave frame")
+	assert_false(writ.is_flashing(), "the flash is over by then")
+	assert_lt(
+		writ.sheet_color().get_luminance(), flash, "the writ is dimmer at the lift than at the hit"
+	)
+
+
 ## D56: the choice dims the desk to 0.25 under the writ, the stamp, its label and the doors; the
-## veil goes with the stamp, steps back under the pause, and never shows under reduce motion,
-## where only the impact's veil stays, for one frame.
+## veil goes with the stamp, steps back under the pause, and never shows under reduce motion, nor
+## does the impact's flash, while the stamp's shadow, the squash, the dent, the burst and the
+## shockwave stay as cues.
 func test_the_raised_stamp_dims_the_desk_but_the_doors_the_writ_and_the_stamp() -> void:
 	_open(Fixture.instant())
 	_system.finish_tellings()
@@ -93,61 +130,116 @@ func test_the_raised_stamp_dims_the_desk_but_the_doors_the_writ_and_the_stamp() 
 	prompt.reduce_motion = true
 	prompt.ask("Asgaut", &"hel")
 	assert_false(prompt.is_dimming(), "reduce motion: the raised stamp is the cue (D37)")
+	assert_true(prompt.writ().shadow().has_area(), "with its shadow on the writ")
 	prompt.stamp_down(&"hel")
 	var slam: Tween = prompt.slam(&"hel")
 	slam.pause()
 	assert_false(prompt.is_dimming(), "nor at the impact (D55)")
 	assert_eq(_door(&"hel").z_index, 0, "the doors stay in their place")
+	assert_false(prompt.writ().is_flashing(), "no flash on the writ")
+	assert_false((prompt.get_node("Face") as StampFace).is_flashing(), "nor on the stamp")
+	assert_eq(prompt.writ().position.y, 1.0, "the dent stays, a state cue")
 	assert_eq(marks.burst_stage(), 1, "the burst stays, a state cue")
-	assert_eq((prompt.get_node("Face") as StampFace).block_height(), 22, "and the squash")
+	assert_eq(
+		(prompt.get_node("Face") as StampFace).block_height(),
+		StampFace.SQUASH_HEIGHT,
+		"and the squash"
+	)
 	slam.custom_step(StampPrompt.LIFT_SECONDS + 0.001)
 	assert_eq(marks.ring_stage(), 1, "and the shockwave")
 
 
-## D55, D56: the impression is the stamp's own face (its glyph at 2x in a 17x17 ink box on a 90x18
-## writ whose name still reads); the burst radiates 3 px then 6 px from the block, in palette
-## colours and below every door's glyph; the shockwave is centred on the ink box.
+## D55, D56: the impression is the stamp's own face (its bold 15x15 glyph in a 19x19 ink box on a
+## 90x20 writ whose name still reads); the burst flies out 3 px, 6 px then 9 px from the block, each
+## stage wholly beyond the last, in palette colours and below every door's glyph; the shockwave
+## is centred on the ink box.
 func test_the_impression_the_burst_and_the_shockwave_in_place() -> void:
 	_open(Fixture.instant())
 	var prompt: StampPrompt = _system.stamp_flow.stamp_prompt
 	var marks: ImpactMarks = prompt.marks()
 	var writ: Writ = prompt.writ()
-	assert_eq(writ.get_global_rect(), Rect2(187, 78, 90, 18), "the writ under the doors")
-	assert_eq(PixelGlyph.SIZE * StampFace.GLYPH_SCALE, 14, "the stamp's glyph is 14x14")
+	assert_eq(writ.get_global_rect(), Rect2(187, 80, 90, 20), "the writ under the doors")
+	assert_eq(
+		StampFace.THICK_SPAN, PixelGlyph.SIZE * StampFace.GLYPH_SCALE + 1, "the bold glyph is 15x15"
+	)
 	var name_end: int = int(Writ.NAME_AT.x) + Writ.NAME_MAX_WIDTH
 	assert_lt(name_end, Writ.INK_BOX.position.x, "names clear the box")
-	var box := Rect2(writ.global_position + Vector2(Writ.INK_BOX.position), Vector2(17, 17))
+	var box := Rect2(writ.global_position + Vector2(Writ.INK_BOX.position), Vector2(19, 19))
 	prompt.ask("Asgaut", &"hel")
 	prompt.stamp_down(&"hel")
 	var slam: Tween = prompt.slam(&"hel")
 	slam.pause()
-	var block := Rect2((prompt.get_node("Face") as Control).global_position, Vector2(24, 32))
-	block = Rect2(block.position + Vector2(0, StampFace.HANDLE_HEIGHT), Vector2(24, 24))
+	var block := Rect2(
+		(prompt.get_node("Face") as Control).global_position, Vector2(StampFace.SIZE)
+	)
+	block = Rect2(
+		block.position + Vector2(0, StampFace.HANDLE_HEIGHT),
+		Vector2(StampFace.SIZE.x, StampFace.BLOCK_HEIGHT)
+	)
 	var colours: Array[Color] = []
-	for stage: int in [1, 2]:
-		if stage == 2:
-			slam.custom_step(StampPrompt.BURST_FAR_SECONDS + 0.001)
+	var stage_at: Array[float] = [
+		0.0, 0.0, StampPrompt.BURST_MID_SECONDS + 0.001, StampPrompt.BURST_FAR_SECONDS + 0.001
+	]
+	var elapsed: float = 0.0
+	var farthest: int = 0
+	for stage: int in [1, 2, 3]:
+		slam.custom_step(stage_at[stage] - elapsed)
+		elapsed = stage_at[stage]
+		assert_eq(marks.burst_stage(), stage, "stage %d on its time" % stage)
 		var pixels: Array[Rect2] = marks.burst_pixels()
 		assert_eq(pixels.size(), 16, "eight streaks of two pixels")
 		var reach: int = ImpactMarks.BURST_REACH[stage]
+		var nearest: int = reach
 		for pixel: Rect2 in pixels:
 			assert_false(block.intersects(pixel), "outside the block")
 			assert_true(block.grow(reach).encloses(pixel), "within %d px of it" % reach)
 			assert_gte(pixel.position.y, 60.0, "below every door's glyph")
+			nearest = mini(nearest, _distance(block, pixel.position))
+		assert_gt(nearest, farthest, "stage %d lies wholly beyond the one before" % stage)
+		farthest = reach
 		colours.append(marks.burst_color())
-	slam.custom_step(StampPrompt.LIFT_SECONDS)
-	assert_eq(marks.ring_rect(), box.grow(2), "the shockwave starts 21x21 round the box")
+	slam.custom_step(StampPrompt.LIFT_SECONDS + 0.001 - elapsed)
+	assert_eq(marks.ring_rect(), box.grow(2), "the shockwave starts 23x23 round the box")
 	colours.append(marks.ring_color())
 	slam.custom_step(StampPrompt.WAVE_WIDE_SECONDS - StampPrompt.LIFT_SECONDS)
-	assert_eq(marks.ring_rect(), box.grow(5), "and widens to 27x27")
+	assert_eq(marks.ring_rect(), box.grow(5), "and widens to 29x29")
 	colours.append(marks.ring_color())
 	assert_eq(Palette.strays(colours), [] as Array[String], "palette colours only")
-	var night: Color = THEME.get_color(&"ink", &"DeskPalette")
 	var light: Color = THEME.get_color(&"pin_highlight", &"DeskPalette")
 	var fog: Color = THEME.get_color(&"text_muted", &"DeskPalette")
+	var faint: Color = THEME.get_color(&"glyph_dim", &"DeskPalette")
 	assert_eq(
-		colours, [light, fog, night, fog], "burst Parchment 2 then Fog 2; wave Ink then Fog 2"
+		colours,
+		[light, fog, faint, fog, faint],
+		"burst Parchment 2, Fog 2, Fog 1; wave Fog 2 then Fog 1, never Ink"
 	)
+
+
+## The critic's stamp polish (#22): the stamp travels visibly. Raised, it stands 8 px over the
+## paper and its 1 px Night 1 shadow lies on the writ just above the row its face will land on
+## (clear of the paper's own edge shadow); at the impact its face is down and the shadow is gone.
+func test_the_raised_stamp_stands_over_its_shadow() -> void:
+	_open(Fixture.instant())
+	_system.finish_tellings()
+	var prompt: StampPrompt = _system.stamp_flow.stamp_prompt
+	var face: StampFace = prompt.get_node("Face") as StampFace
+	var writ: Writ = prompt.writ()
+	assert_gte(StampPrompt.CONTACT_Y - StampPrompt.RAISED_Y, 8.0, "8 px of travel at least")
+	_door(&"hel").press()
+	await wait_seconds(StampPrompt.RISE_SECONDS + SLACK)
+	assert_eq(face.position.y, StampPrompt.RAISED_Y, "raised")
+	var shadow := Rect2(writ.global_position + Vector2(writ.shadow().position), writ.shadow().size)
+	assert_eq(shadow.size, Vector2(24, 1), "a 1 px shadow, 2 px narrower than the block each side")
+	var raised_face: float = face.get_global_rect().end.y - 1
+	assert_eq(shadow.position.y - raised_face, 7.0, "7 px under the raised stamp's face")
+	await wait_process_frames(2)
+	var night: Color = THEME.get_color(&"night", &"DeskPalette")
+	assert_eq(writ.drawn_ink().get(Vector2i(writ.shadow().position)), night, "in Night 1")
+	_system.stamp_flow.stamp_prompt.confirm_button().arm_now()
+	_system.stamp_flow.stamp_prompt.confirm_button().pressed.emit()
+	assert_false(writ.shadow().has_area(), "the stamp on the paper covers its shadow")
+	var contact_face: float = face.get_global_rect().end.y - 1
+	assert_eq(contact_face, shadow.position.y + 1, "its face lands on the row under the shadow")
 
 
 ## D55: the thud starts on the impact's frame, with the squash, never before it.
@@ -172,10 +264,11 @@ func test_the_impact_squashes_the_stamp_and_the_lift_rings_the_ink_box() -> void
 	var face: StampFace = prompt.get_node("Face") as StampFace
 	_stamp(&"hel")
 	var timeline: Dictionary = await _slam_timeline()
-	assert_eq(timeline["height"], [22, 24], "squashed once")
-	assert_eq(timeline["burst"], [1, 2, 0], "burst near, then far, then gone")
+	assert_eq(timeline["height"], [26, 28], "squashed once")
+	assert_eq(timeline["dent"], [1.0, 0.0], "the writ dented once and sprang back")
+	assert_true(_in_order(timeline["burst"], [1, 2, 3, 0]), "burst out stage by stage, then gone")
 	assert_eq(timeline["ring"], [1, 2, 0], "the shockwave, once, gone by the walk")
-	assert_eq(timeline["veil"], [0.55, 0.0], "the veil deepened at the impact and lifted")
+	assert_eq(timeline["veil"], [0.55, 0.0], "the veil deepened after the flash and lifted")
 	assert_false(face.visible, "the stamp has lifted")
 	assert_true(prompt.is_inked(), "the ink stays")
 
@@ -191,8 +284,9 @@ func test_the_slam_is_the_same_for_a_liar_and_a_hero() -> void:
 		_desk.queue_free()
 		await wait_process_frames(1)
 	assert_eq(timelines[0], timelines[1], "the liar's slam and the hero's are one slam")
-	assert_eq(timelines[0]["height"], [22, 24], "both squash, once")
-	assert_eq(timelines[0]["burst"], [1, 2, 0], "both burst")
+	assert_eq(timelines[0]["height"], [26, 28], "both squash, once")
+	assert_eq(timelines[0]["dent"], [1.0, 0.0], "both dent the writ")
+	assert_true(_in_order(timelines[0]["burst"], [1, 2, 3, 0]), "both burst")
 	assert_eq(timelines[0]["ring"], [1, 2, 0], "both send the shockwave")
 	assert_eq(timelines[0]["veil"], [0.55, 0.0], "and both deepen the veil")
 
@@ -320,17 +414,47 @@ func _slam_timeline() -> Dictionary:
 	var face: StampFace = prompt.get_node("Face") as StampFace
 	var marks: ImpactMarks = prompt.marks()
 	var parts: Dictionary = {
-		"height": [], "burst": [], "ring": [], "veil": [], "ink": [], "window": []
+		"height": [], "dent": [], "burst": [], "ring": [], "veil": [], "ink": [], "window": []
 	}
 	while _desk.gate().is_slamming():
 		await get_tree().process_frame
 		_note(parts["height"], face.block_height(), StampFace.BLOCK_HEIGHT)
+		_note(parts["dent"], prompt.writ().position.y, 0.0)
 		_note(parts["burst"], marks.burst_stage(), 0)
 		_note(parts["ring"], marks.ring_stage(), 0)
 		_note(parts["veil"], marks.veil_alpha(), StampPrompt.CHOICE_DIM)
 		_note(parts["ink"], prompt.writ().inked_glyph(), &"")
 		_note(parts["window"], _desk.gate().is_slamming(), true)
 	return parts
+
+
+## How many pixels `pixel` lies outside `block` (0 inside), counting diagonals as one step.
+func _distance(block: Rect2, pixel: Vector2) -> int:
+	var dx: float = maxf(block.position.x - pixel.x, pixel.x - (block.end.x - 1))
+	var dy: float = maxf(block.position.y - pixel.y, pixel.y - (block.end.y - 1))
+	return maxi(0, int(maxf(dx, dy)))
+
+
+## True when `seen` starts and ends as `full` does and skips none of its order: a stage a slow frame
+## missed may be absent, but none comes early or twice.
+func _in_order(seen: Array, full: Array) -> bool:
+	if seen.is_empty() or seen.front() != full.front() or seen.back() != full.back():
+		return false
+	var at: int = 0
+	for value: Variant in seen:
+		at = full.find(value, at)
+		if at < 0:
+			return false
+		at += 1
+	return true
+
+
+## The mean luminance of `colours`.
+func _brightness(colours: Array[Color]) -> float:
+	var total: float = 0.0
+	for colour: Color in colours:
+		total += colour.get_luminance()
+	return total / maxf(1.0, float(colours.size()))
 
 
 func _note(changes: Array, value: Variant, resting: Variant) -> void:

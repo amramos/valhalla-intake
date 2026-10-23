@@ -128,6 +128,71 @@ func test_the_marks_use_palette_colours() -> void:
 	assert_true(Palette.bounds(canvas.rects).size <= Vector2(7, 7), "7x7 at most")
 
 
+## The WP2 critic's case: a blank note read as an empty message panel. Blank, it is a page waiting
+## for the quill: one faint ruled line and the quill mark, nothing else.
+func test_a_blank_note_shows_a_ruled_line_and_the_quill_only() -> void:
+	var strip: CaptionStrip = _strip()
+	await wait_process_frames(2)
+	assert_true(strip.is_blank())
+	var rule: Color = THEME.get_color(&"rule", &"DeskPalette")
+	var lines: Array[Rect2] = []
+	var marks: Array[Rect2] = []
+	for index: int in range(strip.drawn_rects().size()):
+		var rect: Rect2 = strip.drawn_rects()[index]
+		(lines if strip.drawn_colors()[index] == rule else marks).append(rect)
+	var width: float = strip.size.x - CaptionStrip.TEXT_LEFT - CaptionStrip.TEXT_RIGHT
+	assert_eq(
+		lines,
+		[Rect2(CaptionStrip.TEXT_LEFT, CaptionStrip.BLANK_RULE_Y, width, 1)] as Array[Rect2],
+		"one ruled line where the text will go, no margin rule"
+	)
+	var column := Rect2(0, 0, CaptionStrip.RULE_X, strip.size.y)
+	assert_gt(marks.size(), 8, "the quill")
+	for rect: Rect2 in marks:
+		assert_true(column.encloses(rect), "the quill stays in the mark column")
+	assert_eq(Palette.strays(strip.drawn_colors()), [] as Array[String])
+	strip.post("Huginn has nothing to say.", CaptionStrip.Priority.THREAD)
+	await wait_process_frames(2)
+	assert_false(strip.is_blank())
+	assert_false(
+		strip.drawn_rects().has(lines[0]), "a caption is written on the page, not on a ruled line"
+	)
+	assert_true(
+		strip.drawn_rects().has(Rect2(CaptionStrip.RULE_X, CaptionStrip.TEXT_TOP, 1, 18)),
+		"the margin rule beside a caption"
+	)
+	strip.clear()
+	await wait_process_frames(2)
+	assert_true(strip.drawn_rects().has(lines[0]), "blank again")
+
+
+## The critic's case: the note ran off the screen's bottom edge and read as cut off. Its page ends
+## inside its rect: a deckled bottom edge, then a 1 px shadow, under rows the text never needs.
+func test_the_page_ends_in_a_torn_foot_inside_the_note() -> void:
+	var strip: CaptionStrip = _strip()
+	await wait_process_frames(2)
+	var page: ParchmentFrame = strip.get_node(^"Page") as ParchmentFrame
+	assert_eq(page.size, strip.size, "the page stays inside the note's rect")
+	var height: int = int(strip.size.y)
+	var shadow: Color = THEME.get_color(&"parchment_shadow", &"DeskPalette")
+	var ground: Color = THEME.get_color(&"parchment", &"DeskPalette")
+	var foot: Array[Color] = []
+	var last: Array[Color] = []
+	for x: int in range(20, 300):
+		foot.append(
+			Palette.color_at(page.drawn_rects(), page.drawn_colors(), Vector2i(x, height - 2))
+		)
+		last.append(
+			Palette.color_at(page.drawn_rects(), page.drawn_colors(), Vector2i(x, height - 1))
+		)
+	assert_false(foot.has(ground), "the edge row: deckle or a bite, never plain ground")
+	assert_true(last.has(shadow), "a Wood 1 shadow under the edge")
+	assert_true(last.count(shadow) + last.count(Color(0, 0, 0, 0)) == last.size(), "only shadow")
+	var inner: Rect2 = page.inner
+	assert_eq(inner.position.y, float(CaptionStrip.TEXT_TOP), "the text rows have not moved")
+	assert_eq(inner.end.y, float(height - CaptionStrip.PAGE_FOOT))
+
+
 func _mentor() -> Caption:
 	return Caption.make(MENTOR_LINE, CaptionStrip.Priority.MENTOR, &"mentor", [], true)
 

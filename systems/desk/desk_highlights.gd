@@ -5,11 +5,17 @@ extends RefCounted
 ## until it is sent on, whatever the note shows) and, when nothing else is lit, the highlight of
 ## the mentor's guided step. DeskSystem owns it and calls `apply()` after every change.
 
+## An item became selected (the pin is half made) or the selection ended: the cursor carries a pin
+## while `has` is true (D13).
+signal selection_changed(has: bool)
+
 var selection := PinSelection.new()
 ## The pair lit by the note's caption, a thread already made or the feather.
 var lit: Array[String] = []
 ## The cited pair of a held soul: lit until it is sent on, whatever the note shows (D28, D48).
 var held_pair: Array[String] = []
+## Whether the last `selection_changed` said an item was selected.
+var _had_selection: bool = false
 
 var _commands: DeskCommands
 var _chart: BodyChart
@@ -42,6 +48,7 @@ func apply() -> void:
 	for panel: EvidencePanel in _panels:
 		panel.set_selected(chosen)
 		panel.set_lit(shown)
+	_announce_selection()
 
 
 ## Lights a pair (a caption's, a held citation's, the feather's) in place of the last one.
@@ -80,3 +87,11 @@ func forget() -> void:
 	selection.cancel()
 	lit.clear()
 	held_pair.clear()
+	_announce_selection()
+
+
+## Says when the selection was made or ended since the last time it was said.
+func _announce_selection() -> void:
+	if selection.has_selection() != _had_selection:
+		_had_selection = selection.has_selection()
+		selection_changed.emit(_had_selection)

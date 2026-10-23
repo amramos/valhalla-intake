@@ -216,3 +216,26 @@ The diagonal tears read as gashes, which would contradict those labels.
   sit inside the body chart's torso hit areas.
 - The composites and review sheets were redone. Lint against the repository's config, which now
   carries the WP2 canvases: 58 files, 0 errors.
+
+## Frames and plates by script (game UI overhaul, WP3), 2026-10-23
+
+No generation: every file below is made from the WP2 set by a script **in this repository**, under
+`tools/art/` (Pillow, palette colours only, no randomness). Each script's `--check` exits 1 when
+a file on disk differs from what it would write; all three pass on the files committed with them.
+
+- `tools/art/band_frames.py` made, from `scenes/gate-desk.png` and the six door sprites:
+  - `scenes/gate-desk-day2.png` and `-day3.png`, the gate band's Night and Fog one and two ramp
+    steps darker (D39);
+  - `doors/day2/` and `doors/day3/`, each door's lit, locked and dim sprite with its stones
+    darkened the same way and its light, glyph and bar unchanged;
+  - `doors/<realm>-lit-dim.png` (and the later days' copies), the glow pulse's dim frame (D19);
+  - `fog/fog-day1.png` to `-day3.png`, the corner fog's three frames per day (D19).
+- `tools/art/sprite_frames.py` rewrote `portraits/huginn.png` with a moonlit rim for the darker
+  band, and made `portraits/huginn-tilt.png`, `huginn-ruffle.png` and `mentor-blink.png`, the
+  idle frames (D17, D40).
+- `tools/art/nameplates.py` replaced the three WP2 name plates with carved wooden plates
+  (`ui/nameplate-plain.png`, `-frost.png`, `-hel.png`), placed pixel by pixel.
+- `tools/art/art_palette.py` is their shared loader of `docs/art/palette.gpl`.
+
+Lint after the set: `87 file(s) checked, 0 error(s), 0 warning(s)`; the art coverage check is
+clean. The new canvas is `fog` (480x60) in `pixelforge.toml`.

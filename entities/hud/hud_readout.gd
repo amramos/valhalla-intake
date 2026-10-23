@@ -15,5 +15,3 @@ var huginn_left: int = 0
 var promise_open: bool = false
 ## The clock is in its last stretch (D22): the clock cell turns over.
 var warning: bool = false
-## Feathers an extra answer costs once today's are spent (D29, D30); 0 hides the note.
-var extra_cost: int = 0

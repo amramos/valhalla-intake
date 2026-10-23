@@ -89,24 +89,66 @@ func test_doors_show_lit_or_locked_sprites_and_hover_their_glyph() -> void:
 	assert_eq(_system.hover_label.shown_glyph(), &"boar", "the hover shows the carved glyph")
 
 
-func test_the_mentor_bubble_shows_the_guided_step_and_its_next_finishes_it() -> void:
+func test_the_mentor_bubble_shows_the_guided_step_and_a_click_on_it_finishes_it() -> void:
+	var bubble: MentorBubble = _system.mentor_bubble
 	var step: MentorStep = _desk.commands().mentor_step()
 	assert_not_null(step, "Ulf is guided (D16)")
-	assert_eq(_system.mentor_bubble.shown_text(), step.text)
-	assert_eq(_system.mentor_bubble.next_button().visible, step.until == MentorStep.Until.READ)
+	assert_eq(bubble.shown_text(), step.text)
+	bubble.finish_reveal()
+	assert_eq(bubble.shows_arrow(), step.until == MentorStep.Until.READ, "D18: the arrow")
 	while (
 		_desk.commands().mentor_step() != null
 		and _desk.commands().mentor_step().until == MentorStep.Until.READ
 	):
-		_system.mentor_bubble.next_button().pressed.emit()
+		bubble.finish_reveal()
+		bubble.arm_now()
+		bubble.press()
 	step = _desk.commands().mentor_step()
 	assert_not_null(step)
 	assert_eq(step.until, MentorStep.Until.PIN)
-	assert_eq(_system.mentor_bubble.shown_text(), step.text, "the bubble follows the script")
-	assert_false(_system.mentor_bubble.next_button().visible, "a pin step waits for the pin")
+	assert_eq(bubble.shown_text(), step.text, "the bubble follows the script")
+	bubble.finish_reveal()
+	assert_false(bubble.shows_arrow(), "a pin step waits for the pin")
 	for item_id: String in step.highlight:
 		assert_true(_area(item_id).lit, "%s is lit for the player to pin" % item_id)
 	assert_eq(_system.caption_strip.shown_text(), "", "guided prompts never use the strip (D33)")
+
+
+## D18: the bubble is 94 px wide (so "Stamp him." never breaks), clear of the sheets, the
+## note, her portrait and the feather; its tail reaches toward her across the gap.
+func test_the_mentor_bubble_sits_on_the_desk_clear_of_the_papers() -> void:
+	var bubble: Rect2 = _system.mentor_bubble.get_global_rect()
+	assert_eq(bubble, Rect2(70, 204, 94, 40), "x 70-164, y 204-244")
+	for other: Control in [
+		_system.caption_strip,
+		_system.claim_panel,
+		_system.witness_panel,
+		_system.law_panel,
+		_system.body_chart,
+		_system.mentor_portrait,
+		_system.feather,
+	]:
+		assert_false(bubble.intersects(other.get_global_rect()), "clear of %s" % other.name)
+
+
+## D18, D27, D43: while her words are written the gate holds; a press finishes the writing and
+## nothing else, and only a later click on the bubble acknowledges.
+func test_her_writing_holds_the_gate_and_a_press_only_finishes_it() -> void:
+	_desk.use_options(Fixture.normal())
+	var bubble: MentorBubble = _system.mentor_bubble
+	_system.finish_tellings()
+	var step: MentorStep = _desk.commands().mentor_step()
+	bubble.hide_step()
+	_system.refresh()
+	assert_true(bubble.is_revealing(), "written at 60 cps")
+	assert_true(_system.gate.is_consuming(), "the gate holds while she writes")
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	assert_true(_system.gate.on_press(press), "the press is consumed")
+	assert_false(bubble.is_revealing(), "it finished her writing")
+	assert_false(_system.gate.is_consuming())
+	assert_eq(_desk.commands().mentor_step(), step, "and acknowledged nothing")
 
 
 func test_a_mentor_door_step_points_at_its_door() -> void:

@@ -14,3 +14,10 @@ Development-only scripts and harnesses, **never shipped** and never referenced b
 - `audit_kit/audit_kit.gd` — the evidence auditor's kit (D26): for every encounter, a 1:1 desk PNG and a
   text file of only what the player can read. Run in a window:
   `godot --path . --resolution 480x270 -s tools/audit_kit/audit_kit.gd -- <folder>`.
+- `art/` — palette-only art made by script (Pillow, no randomness; `--check` exits 1 when a file on
+  disk differs from what the script would write). Run with `py -3 tools/art/<script>.py`, then
+  `pixelforge lint` and `godot --headless --import`:
+  - `band_frames.py` — the gate band darkened per day (D39), the doors' sprites for later days and
+    their glow pulse's dim frames (D19), and the corner fog's frames (D19);
+  - `sprite_frames.py` — Huginn's moonlit rim, head tilt and ruffle, and the mentor's blink (D17);
+  - `nameplates.py` — the soul's name plate as a carved wooden plate, plain, frost and Hel's mark.

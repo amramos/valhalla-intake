@@ -7,7 +7,7 @@ extends Control
 ## dragged onto an open door previews the stamp, and dropping it there commits. Hel's door also
 ## carries Hel's tide: 6 px figures with empty slots up to the threshold (D21, D23). A refresh
 ## sets the tide as it is (`set_tide`, never animated); the slam that adds a figure steps it in
-## from below (`step_tide`, D38).
+## from below (`step_tide`, D38). Its light (DoorLight) follows the day and pulses (D19, D39).
 
 signal door_clicked(realm: StringName)
 signal hover_started(text: String, area: Rect2, glyph: StringName)
@@ -23,11 +23,24 @@ const TIDE_STEP := 5
 ## A new tide figure steps up into its slot from this far below (D38).
 const TIDE_RISE_PX := 2
 const TIDE_RISE_SECONDS := 0.3
+## Where each glyph is carved on its door's lit sprite (sprite pixels, measured from the art): the
+## glyph cue lights the darkest pixels inside it, which are the carving.
+const GLYPH_AREAS: Dictionary[StringName, Rect2i] = {
+	&"spear": Rect2i(26, 16, 9, 38),
+	&"serpent": Rect2i(21, 18, 19, 29),
+	&"boar": Rect2i(17, 28, 24, 14),
+}
 
 @export var realm: StringName = &""
 @export var glyph: StringName = &"spear"
 @export var lit_texture: Texture2D = null
 @export var locked_texture: Texture2D = null
+## The glow pulse's dim frame of the lit sprite (D19).
+@export var lit_dim_texture: Texture2D = null
+## The sprites of later days, day 2 first: stones a ramp value darker per day (D39).
+@export var later_lit: Array[Texture2D] = []
+@export var later_locked: Array[Texture2D] = []
+@export var later_dim: Array[Texture2D] = []
 
 var is_open: bool = true
 ## The first day the door opens, for "Closed until day N"; 0 when it never opens.
@@ -47,6 +60,13 @@ var pointed: bool = false:
 var tide := Vector2i.ZERO
 ## How many times the tide has stepped (tests: one per stamp that adds a figure, none per refresh).
 var tide_steps: int = 0
+## Reduce motion (D37): the glow holds still on the lit sprite.
+var reduce_motion: bool:
+	get:
+		return _light.reduce_motion
+	set(value):
+		_light.reduce_motion = value
+		queue_redraw()
 
 var _hovered: bool = false
 var _flare_left: float = 0.0
@@ -55,6 +75,12 @@ var _paused: bool = false
 ## How far below its slot the newest tide figure is drawn now, in whole pixels; 0 at rest.
 var _rise: int = 0
 var _step: Tween = null
+var _light := DoorLight.new()
+## The glyph cue (a law caption names this door's realm): the carving drawn lit.
+var _glyph_lit: bool = false
+## The carving, read once from the lit sprite.
+var _carving: DoorCarving = null
+var _carving_from: Texture2D = null
 
 
 func _ready() -> void:
@@ -100,6 +126,24 @@ func tide_rise() -> int:
 	return _rise
 
 
+## The glyph cue: while a law caption naming this realm shows, the carved glyph is drawn one step
+## brighter (pin_highlight), edged in its own carving colour so it reads on every door's light.
+## An open door only: a locked door's sprite carries its dimmed glyph.
+func set_glyph_lit(on: bool) -> void:
+	if _glyph_lit != on:
+		_glyph_lit = on
+		queue_redraw()
+
+
+func glyph_lit() -> bool:
+	return _glyph_lit
+
+
+## The carved glyph's pixels on the lit sprite, in this door's pixels (tests).
+func glyph_pixels() -> Array[Vector2i]:
+	return _read_carving().pixels.duplicate()
+
+
 ## The stamp's door flare (D9): the lit door brightens for a moment.
 func flare() -> void:
 	_flare_left = FLARE_SECONDS
@@ -115,9 +159,25 @@ func set_paused(paused: bool) -> void:
 	_paused = paused
 
 
-## The sprite drawn now (tests).
+## Today's lit or locked sprite (D39).
 func shown_texture() -> Texture2D:
-	return lit_texture if is_open else locked_texture
+	if is_open:
+		return _light.for_day(lit_texture, later_lit)
+	return _light.for_day(locked_texture, later_locked)
+
+
+## The sprite drawn now: today's, or its dim frame in the pulse's dim half (D19).
+func drawn_texture() -> Texture2D:
+	var dim: Texture2D = _light.for_day(lit_dim_texture, later_dim)
+	if is_open and dim != null and _light.is_dim():
+		return dim
+	return shown_texture()
+
+
+## Today is `day`: the sprites of that day show (D39).
+func set_day(day: int) -> void:
+	if _light.set_day(day):
+		queue_redraw()
 
 
 func display_name() -> String:
@@ -161,17 +221,23 @@ func _drop_data(_at: Vector2, _data: Variant) -> void:
 
 
 func _process(delta: float) -> void:
-	if _flare_left <= 0.0 or _paused:
+	if _paused:
+		return
+	if _light.advance(delta, is_open):
+		queue_redraw()
+	if _flare_left <= 0.0:
 		return
 	_flare_left = maxf(0.0, _flare_left - delta)
 	queue_redraw()
 
 
 func _draw() -> void:
-	var sprite: Texture2D = shown_texture()
+	var sprite: Texture2D = drawn_texture()
 	if sprite != null:
 		var bright: float = 1.0 + 0.6 * (_flare_left / FLARE_SECONDS)
 		draw_texture(sprite, Vector2.ZERO, Color(bright, bright, bright, 1))
+	if _glyph_lit and is_open:
+		_draw_lit_glyph()
 	if selected or pointed:
 		var frame: Color = get_theme_color(&"glyph", &"DeskPalette")
 		draw_rect(Rect2(Vector2.ZERO, size).grow(-0.5), frame, false, 1.0)
@@ -181,6 +247,23 @@ func _draw() -> void:
 		_draw_new_tag()
 	if tide.y > 0:
 		_draw_tide()
+
+
+func _draw_lit_glyph() -> void:
+	var carving: DoorCarving = _read_carving()
+	for at: Vector2i in carving.edge:
+		draw_rect(Rect2(Vector2(at), Vector2.ONE), carving.ink)
+	var light: Color = get_theme_color(&"pin_highlight", &"DeskPalette")
+	for at: Vector2i in carving.pixels:
+		draw_rect(Rect2(Vector2(at), Vector2.ONE), light)
+
+
+func _read_carving() -> DoorCarving:
+	if _carving == null or _carving_from != lit_texture:
+		_carving_from = lit_texture
+		var area: Rect2i = GLYPH_AREAS.get(glyph, Rect2i())
+		_carving = DoorCarving.read(lit_texture, area)
+	return _carving
 
 
 func _draw_new_tag() -> void:

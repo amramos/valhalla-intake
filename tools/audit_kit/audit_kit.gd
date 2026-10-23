@@ -1,12 +1,14 @@
 extends SceneTree
 ## Development only, never shipped: the evidence auditor's kit (D26). For every authored encounter
 ## (the twelve roster souls, Egil and both returned Hakons) it seats that soul alone on its day's
-## desk, with the real art and that day's Law, no threads pinned, and writes:
+## desk, with the real art and that day's Law, its tale told in full, no threads pinned, and
+## writes:
 ##
 ## - `<id>.png`: the desk at 1:1 (480×270);
 ## - `<id>.txt`: only what the player can read on that screen, taken from the rendered desk: every
 ##   body hit area with its hover label and pixel rect, the claim and witness headings and lines,
-##   the decrees, the name plate and its hover, the mentor's bubble, the doors and the HUD.
+##   the decrees, the name plate and its hover, the mentor's bubble, the raven's hover, the doors
+##   and the HUD.
 ##
 ## Nothing the player cannot see is written: no seams, destinations, truth or data ids.
 ## Run it in a window at the base resolution:
@@ -59,6 +61,10 @@ func _audit(day: DayData, data: EncounterData, rules: SliceRules) -> String:
 	desk.use_commands(commands)
 	root.add_child(desk)
 	await _frames(3)
+	# The tale is told line by line (D4); the auditor reads it whole, as a click would show it.
+	desk.system().finish_tellings()
+	# The soul stands at the gate, its walk-in done.
+	desk.system().soul.finish_arrival()
 	desk.system().hover_label.hide_label()
 	await _frames(2)
 	await RenderingServer.frame_post_draw
@@ -122,6 +128,9 @@ func _readable(desk: Desk, commands: DeskCommands) -> String:
 	lines.append("")
 	var bubble: String = system.mentor_bubble.shown_text()
 	lines.append("MENTOR BUBBLE: %s" % (bubble if bubble != "" else "(none)"))
+	# Huginn on his post is a hit area on the days he is at the desk (D40).
+	if system.raven.visible:
+		lines.append("RAVEN (hover): %s" % system.raven.hover_text())
 	return "\n".join(lines) + "\n"
 
 
@@ -140,8 +149,14 @@ func _panel_lines(panel: EvidencePanel, commands: DeskCommands) -> Array[String]
 		var area: PinSelectable = panel.area(item.id)
 		if area == null:
 			continue
-		var label: Label = area.get_child(0) as Label
-		lines.append("  %s" % label.text.replace("\n", " "))
+		# A decree's line holds its numeral beside its "Text" label, whose indent clears it.
+		var numeral: Label = area.get_node_or_null(^"Numeral") as Label
+		var lead: String = numeral.text + " " if numeral != null else ""
+		# A new decree carries the wax seal by its numeral (D9, D33).
+		if panel.seal_rect(item.id).has_area():
+			lead = "[seal] " + lead
+		var label: Label = PaperLine.text_label(area)
+		lines.append("  %s%s" % [lead, label.text.strip_edges().replace("\n", " ")])
 	return lines
 
 

@@ -188,21 +188,135 @@ func test_every_slice_soul_name_fits_left_of_the_ink_box() -> void:
 	assert_eq(too_wide, [] as Array[String], "every name clears the ink box")
 
 
+## The 28 px stamp moved its question right: every realm's question stands at least 2 px clear of
+## the block (a capture showed the V clipped), still ends inside the prompt's rect (x 334 on the
+## desk, under the doors' feet), and the click target holds it.
+func test_every_question_fits_inside_the_prompt() -> void:
+	var question: Label = _prompt.get_node("Question") as Label
+	var ends: Array[String] = []
+	for realm: StringName in [&"valhalla", &"hel", &"folkvangr"]:
+		_prompt.ask("Ulf", realm)
+		var area := Rect2(question.position, question.get_minimum_size())
+		ends.append("%s %d" % [realm, int(area.end.x)])
+		assert_lte(area.end.x, _prompt.size.x, "%s fits inside the prompt" % realm)
+		var block_end: float = _face().position.x + StampFace.SIZE.x
+		assert_gte(area.position.x - block_end, 2.0, "%s stands 2 px clear of the block" % realm)
+		assert_true(
+			_prompt.stamp_rect().encloses(question.get_global_rect()), "%s is clickable" % realm
+		)
+	gut.p("question ends (prompt width %d): %s" % [int(_prompt.size.x), ", ".join(ends)])
+
+
 func test_the_stamp_and_the_writ_draw_palette_colours_only() -> void:
 	_prompt.ask("Ulf", &"valhalla")
 	await wait_process_frames(2)
 	var face: StampFace = _face()
 	assert_eq(Palette.strays(face.drawn_colors()), [] as Array[String], "the stamp")
 	var bounds: Rect2 = Palette.bounds(face.drawn_rects())
-	assert_true(Rect2(Vector2.ZERO, Vector2(StampFace.SIZE)).encloses(bounds), "inside 24x32")
+	assert_true(Rect2(Vector2.ZERO, Vector2(StampFace.SIZE)).encloses(bounds), "inside its 28x36")
 	var paper: ParchmentFrame = _prompt.writ().get_node("Paper") as ParchmentFrame
 	assert_eq(Palette.strays(paper.drawn_colors()), [] as Array[String], "the writ's paper")
 	var ink: Array[Color] = [_prompt.writ().ink_color()]
 	assert_eq(Palette.strays(ink), [] as Array[String], "the ink is Ink, a palette colour")
 
 
+## The critic's stamp polish (#22): the mark reads as ink, not a bordered square. No frame: the
+## bold glyph (3 px strokes, 15x15) in Ink, 3-5 pixels of bleed touching its edges and 2-3 of
+## Wood 0 halo beside the ink, all inside the 19x19 box; the same mark for every stamp of a realm,
+## another for each realm.
+func test_the_impression_is_ink_with_a_bleed_and_no_frame() -> void:
+	var box := Rect2i(Writ.INK_BOX)
+	var bleeds: Array = []
+	for glyph: StringName in [&"spear", &"serpent", &"boar", &"wave"]:
+		var marks: Dictionary[Vector2i, Writ.Mark] = Writ.impression(glyph)
+		assert_eq(marks, Writ.impression(glyph), "%s: the same mark every time" % glyph)
+		var carved: Array[Vector2i] = _carved(glyph)
+		var bleed: Array[Vector2i] = []
+		var halo: int = 0
+		var on_edge: int = 0
+		for pixel: Vector2i in marks:
+			assert_true(box.has_point(pixel), "%s: inside the box" % glyph)
+			var inner: bool = (
+				Rect2i(box.position + Vector2i.ONE, box.size - Vector2i(2, 2)).has_point(pixel)
+			)
+			on_edge += 0 if inner else 1
+			if marks[pixel] == Writ.Mark.HALO:
+				halo += 1
+				assert_false(carved.has(pixel), "%s: halo beside the glyph, not on it" % glyph)
+			elif not carved.has(pixel):
+				bleed.append(pixel)
+				var touches: bool = false
+				for step: Vector2i in Writ.ORTHOGONAL:
+					touches = touches or carved.has(pixel + step)
+				assert_true(touches, "%s: the bleed touches the glyph's edge" % glyph)
+		for pixel: Vector2i in carved:
+			assert_eq(marks.get(pixel), Writ.Mark.INK, "%s: the whole glyph is inked" % glyph)
+		assert_between(bleed.size(), Writ.BLEED_MIN, Writ.BLEED_MAX, "%s: 3-5 of bleed" % glyph)
+		assert_between(halo, Writ.HALO_MIN, Writ.HALO_MAX, "%s: 2-3 of halo" % glyph)
+		assert_lte(on_edge, Writ.BLEED_MAX + Writ.HALO_MAX, "%s: no frame round the box" % glyph)
+		bleed.sort()
+		bleeds.append(bleed)
+	for index: int in range(1, bleeds.size()):
+		assert_ne(bleeds[index], bleeds[0], "each realm bleeds its own way")
+
+
+## The writ draws exactly that impression, in Ink and Wood 0, and nothing of a frame.
+func test_the_writ_draws_the_impression_in_ink_and_wood_0() -> void:
+	_prompt.ask("Ulf", &"hel")
+	_prompt.stamp_down(&"hel")
+	_prompt.slam(&"hel")
+	await wait_process_frames(2)
+	var ink: Color = THEME.get_color(&"ink", &"DeskPalette")
+	var wood_0: Color = THEME.get_color(&"ink_halo", &"DeskPalette")
+	assert_eq(
+		wood_0.to_rgba32(), Palette.by_name()["Wood 0"].to_rgba32(), "the theme's halo is Wood 0"
+	)
+	var expected: Dictionary[Vector2i, Color] = {}
+	var marks: Dictionary[Vector2i, Writ.Mark] = Writ.impression(&"serpent")
+	for pixel: Vector2i in marks:
+		expected[pixel] = ink if marks[pixel] == Writ.Mark.INK else wood_0
+	assert_eq(_prompt.writ().drawn_ink(), expected, "the impression and nothing else")
+	assert_eq(_prompt.writ().halo_color(), wood_0, "the halo is Wood 0")
+	assert_false(_prompt.writ().drawn_ink().has(Vector2i(Writ.INK_BOX.position)), "no corner frame")
+
+
+## The raised stamp's shadow lies on the writ under it while it is raised, reduce motion or not,
+## and goes when it is put down or comes down on the paper.
+func test_the_raised_stamp_casts_its_shadow_on_the_writ() -> void:
+	for still: bool in [false, true]:
+		_prompt.reset_writ()
+		_prompt.reduce_motion = still
+		_prompt.ask("Ulf", &"valhalla")
+		var shadow: Rect2i = _prompt.writ().shadow()
+		assert_eq(shadow.size.y, 1, "1 px")
+		assert_between(shadow.size.x, 20, StampFace.SIZE.x - 4, "about the block's width")
+		assert_eq(shadow.end.y, Writ.INK_BOX.end.y - 1, "just above the ink box's last row")
+		assert_true(Rect2i(Vector2i.ZERO, Writ.SIZE).encloses(shadow), "on the writ")
+		_prompt.withdraw()
+		assert_false(_prompt.writ().shadow().has_area(), "put down, no shadow")
+		_prompt.ask("Ulf", &"valhalla")
+		_prompt.stamp_down(&"valhalla")
+		assert_false(_prompt.writ().shadow().has_area(), "on the paper, no shadow")
+
+
 func _face() -> StampFace:
 	return _prompt.get_node("Face") as StampFace
+
+
+## The writ pixels the stamp's bold glyph covers: each "#" a 3x3 square at twice its place, so the
+## strokes are 3 px.
+func _carved(glyph: StringName) -> Array[Vector2i]:
+	var pixels: Array[Vector2i] = []
+	var rows: Array = PixelGlyph.GLYPHS[glyph]
+	var at: Vector2i = Writ.INK_BOX.position + Writ.GLYPH_IN_BOX
+	for y: int in range(rows.size()):
+		for x: int in range((rows[y] as String).length()):
+			if (rows[y] as String)[x] == "#":
+				for cell: int in range(9):
+					var pixel: Vector2i = at + Vector2i(x, y) * 2 + Vector2i(cell % 3, cell / 3)
+					if not pixels.has(pixel):
+						pixels.append(pixel)
+	return pixels
 
 
 func _slice_encounters() -> Array[EncounterData]:

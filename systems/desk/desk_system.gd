@@ -24,8 +24,8 @@ const LAW_HEADING := "Odin's Law"
 @export var hover_label: HoverLabel
 @export var soul: WaitingSoul
 @export var hud: Hud
-@export var ask_huginn: Button
-@export var huginn: Control
+@export var raven: Raven
+@export var gate_band: GateBand
 @export var phase_card: PhaseCard
 @export var feather: ClickableSprite
 @export var mentor_portrait: ClickableSprite
@@ -85,15 +85,16 @@ func bind(p_commands: DeskCommands) -> void:
 	_telling.finished.connect(_on_tale_told)
 	_telling.silenced.connect(_on_tale_silenced)
 	_note = DeskNote.new(caption_strip, gate)
+	_note.doors = doors
 	_mentor = DeskMentor.new(
 		commands, mentor_bubble, doors, caption_strip, _note, stamp_flow, _step_waits, _input_held
 	)
+	# Her writing holds the gate: a click finishes it and nothing else (D18, D27, D43).
+	_mentor.gate = gate
 	_highlights = DeskHighlights.new(commands, body_chart, _panels(), _mentor.guided_step)
 	_note.pair_shown.connect(_highlights.light)
 	_note.pair_dropped.connect(_highlights.drop)
-	_huginn = DeskHuginn.new(
-		commands, _note, caption_strip, ask_huginn, huginn, hover_label, _input_held
-	)
+	_huginn = DeskHuginn.new(commands, _note, caption_strip, raven, hover_label, _input_held)
 	_huginn.thread_selected.connect(refresh)
 	_sounds = DeskSounds.new(_sound_players(), gate)
 	_pins = DeskPins.new(
@@ -115,6 +116,11 @@ func bind(p_commands: DeskCommands) -> void:
 	for door: Door in doors:
 		gate.pause_changed.connect(door.set_paused)
 	gate.pause_changed.connect(hud.set_paused)
+	# The idles, the glow pulse and the fog keep their own clocks too (D17, D19).
+	for idle: Callable in [
+		raven.set_paused, gate_band.set_paused, mentor_portrait.set_paused, soul.set_paused
+	]:
+		gate.pause_changed.connect(idle)
 	use_options(options)
 	# The stamp's slam window and its refusal while a tale is told are the gate's (D4, D27).
 	stamp_flow.gate = gate
@@ -146,12 +152,17 @@ func bind(p_commands: DeskCommands) -> void:
 	soul.plate_hover_ended.connect(hover_label.hide_label)
 	mentor_portrait.clicked.connect(_mentor.clicked)
 	mentor_bubble.acknowledged.connect(_mentor.acknowledged)
-	ask_huginn.pressed.connect(_huginn.ask)
+	# A hover tag never covers a sheet's heading or the note (D20), and covers the sheets as
+	# little as it can (a fact's tag stays on the chart).
+	var keep_clear: Array[Rect2] = [caption_strip.get_global_rect()]
+	var sheets: Array[Rect2] = []
+	for panel: EvidencePanel in _panels():
+		keep_clear.append(panel.heading_rect())
+		sheets.append(panel.get_global_rect())
+	hover_label.set_keep_clear(keep_clear, sheets)
 	_phases.on_restart = restart
 	phase_card.advanced.connect(_on_phase_advanced)
 	phase_card.skipped.connect(_on_phase_skipped)
-	ask_huginn.mouse_entered.connect(_on_ask_huginn_hovered)
-	ask_huginn.mouse_exited.connect(hover_label.hide_label)
 	refresh()
 
 
@@ -178,6 +189,10 @@ func refresh() -> void:
 		_pins.rebuild()
 	# A pending stamp's new tide figure waits for the slam's impact (D38).
 	DeskReadouts.show_doors(doors, commands, stamp_flow.displayed_tide())
+	# The gate band darkens by day, and the doors' stones with it (D39).
+	gate_band.set_day(commands.day_rules().day)
+	for door: Door in doors:
+		door.set_day(commands.day_rules().day)
 	_refresh_hud()
 	law_panel.set_new(DeskReadouts.new_decrees(commands))
 	_phases.show(phase_card, commands)
@@ -194,11 +209,23 @@ func use_options(p_options: Options) -> void:
 	stamp_flow.options = options
 	soul.reduce_motion = options.reduce_motion
 	hud.reduce_motion = options.reduce_motion
+	# No idle, glow pulse or fog drift under reduce motion (D17, D19, D37).
+	raven.reduce_motion = options.reduce_motion
+	gate_band.reduce_motion = options.reduce_motion
+	mentor_portrait.reduce_motion = options.reduce_motion
+	for door: Door in doors:
+		door.reduce_motion = options.reduce_motion
 	if _telling != null:
 		_pins.options = options
 		_telling.set_cps(options.cps())
 		_note.use_options(options)
+		_mentor.use_options(options)
 		_sounds.use_options(options)
+
+
+## What is lit and selected; its `selection_changed` tells the cursor to carry a pin (D13).
+func highlights() -> DeskHighlights:
+	return _highlights
 
 
 ## True while the soul's tale is being told: the clock waits (D5) and so does the stamp (D4).
@@ -216,6 +243,7 @@ func _step_waits() -> bool:
 func finish_tellings() -> void:
 	if _telling != null:
 		_telling.finish()
+		_mentor.finish_reveal()
 
 
 ## The width of one line of the clerk's note, which captions are cut against.
@@ -344,10 +372,6 @@ func _on_phase_skipped() -> void:
 func _on_clock_warning() -> void:
 	_warned = true
 	_refresh_hud()
-
-
-func _on_ask_huginn_hovered() -> void:
-	_huginn.hovered()
 
 
 ## No pin, knot or Huginn answer while a stamped soul waits (D48) or the stamp preview is open

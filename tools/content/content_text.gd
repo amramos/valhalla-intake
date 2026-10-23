@@ -136,7 +136,7 @@ static func slice() -> SliceData:
 	slice.mentor_honest_format = "%s. Nothing in that saga was a lie."
 	slice.mentor_promise_format = "%s. Hel pays well."
 	slice.mentor_grey_line = "One of them lies. The body may say which."
-	slice.mentor_grey_huginn_line = "Huginn answers that. Two a day."
+	slice.mentor_grey_huginn_line = "Huginn answers that. Click the raven to ask him."
 	slice.mentor_tide_line = "The Law is kept. Hel's tide grows by one."
 	slice.mentor_tide_suffix = "Hel's tide grows by one."
 	slice.desk_text = desk_text()

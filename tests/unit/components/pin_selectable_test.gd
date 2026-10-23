@@ -53,12 +53,38 @@ func test_the_selected_line_carries_a_stuck_pin_left_of_its_text() -> void:
 	_assert_pin_colours(hit)
 
 
-func test_a_selected_fact_carries_its_pin_inside_its_corner() -> void:
+func test_a_selected_fact_carries_its_pin_inside_its_corner_and_keeps_its_corner_marks() -> void:
 	var hit: PinSelectable = _area(FACT, PinSelectable.HoverMark.CORNERS, true)
 	hit.selected = true
 	await wait_process_frames(2)
-	assert_eq(Palette.bounds(hit.drawn_rects()), Rect2(1, 1, 5, 5))
-	_assert_pin_colours(hit)
+	var pin: Array[Rect2] = []
+	var marks: Array[Rect2] = []
+	for index: int in range(hit.drawn_rects().size()):
+		var is_pin: bool = hit.drawn_colors()[index] != hit.outline_color
+		(pin if is_pin else marks).append(hit.drawn_rects()[index])
+	assert_eq(Palette.bounds(pin), Rect2(1, 1, 5, 5), "the stuck pin in the top-left corner")
+	assert_eq(marks.size(), 8, "the critic's case: corner ticks, no outline")
+	for rect: Rect2 in marks:
+		assert_eq(rect.size, Vector2.ONE, "single-pixel ticks, never a side of a box")
+
+
+## The critic's case: a lit fact (the mentor's step, a caption's pair) showed a rectangle. Lit, a
+## fact shows its corner brackets in the lit colour, never four full sides.
+func test_a_lit_fact_shows_brackets_in_the_lit_colour_and_no_rectangle() -> void:
+	var hit: PinSelectable = _area(Vector2(20, 20), PinSelectable.HoverMark.CORNERS, true)
+	hit.show_corners = true
+	hit.lit = true
+	hit.selected = true
+	await wait_process_frames(2)
+	var longest: float = 0.0
+	var lit: int = 0
+	for index: int in range(hit.drawn_rects().size()):
+		var rect: Rect2 = hit.drawn_rects()[index]
+		longest = maxf(longest, maxf(rect.size.x, rect.size.y))
+		lit += 1 if hit.drawn_colors()[index] == hit.lit_color else 0
+	assert_true(longest <= float(PinSelectable.PIN_SIZE), "no side runs the fact's length")
+	assert_eq(lit, 8, "four brackets of two arms in the lit colour")
+	assert_true(hit.drawn_colors().has(hit.pin_color), "and the stuck pin")
 
 
 func test_a_lit_selected_item_shows_both_its_outline_and_its_pin() -> void:

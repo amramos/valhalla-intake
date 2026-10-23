@@ -5,7 +5,8 @@ extends Control
 ## quota, Huginn's answers on day 3 and the ledger as a closed book with a wax dot while a promise
 ## is open. Each object has its own small Night 1 plate (2 px padding) so its number reads on
 ## every day's band (D39); there is no frame around the whole. Only the flame and the wax dot are
-## ember (UI accents). Rank is never shown here.
+## ember (UI accents). Rank is never shown here, nor an extra answer's price: that is the raven's
+## hover (D40).
 ##
 ## A no-seam pin that charged time is shown by the desk system calling `gutter(seconds)` at the
 ## pin (D36); the readout carries no field for it, so a refresh never replays the gutter. Its
@@ -20,10 +21,8 @@ const ICON_TEXT_GAP := 1
 ## The font's cap height at PixelFont.SIZE; a text row's plate is PAD + CAP + PAD tall.
 const CAP := 7
 const ROW_HEIGHT := CAP + 2 * PAD
-## The objects' top-left corner and width (screen x 384–478 from y 2); the stone left of them
+## The objects start 32 px into the node (screen x 384–478 from y 2); the stone left of them
 ## holds the gutter's label.
-const ORIGIN := Vector2i(32, 2)
-const OBJECTS_WIDTH := 94
 const FIRST_ROW_Y := 2
 const SECOND_ROW_Y := FIRST_ROW_Y + ROW_HEIGHT + 1
 ## The candle's plate spans both rows at the left; the other objects start right of it.
@@ -37,9 +36,6 @@ const BOOK_AT := Vector2i(116, 12)
 const GUTTER_AT := Vector2i(7, 0)
 const GUTTER_PAD := Vector2i(1, 1)
 
-## "extra answer: N feathers" is drawn under the Ask Huginn button, inside the HUD's column.
-const EXTRA_NOTE_TOP := 42.0
-const EXTRA_NOTE_FORMAT := "extra answer:\n%d feathers"
 ## The warning clock blinks at this rate (seconds per phase).
 const BLINK_SECONDS := 0.5
 
@@ -96,13 +92,6 @@ func gutter(seconds_lost: int) -> void:
 		return
 	_gutter.start("-" + format_time(seconds_lost))
 	queue_redraw()
-
-
-## The note under Ask Huginn, or "" when hidden.
-func extra_note() -> String:
-	if not _shown.huginn_on or _shown.huginn_left > 0 or _shown.extra_cost <= 0:
-		return ""
-	return EXTRA_NOTE_FORMAT % _shown.extra_cost
 
 
 func is_warning() -> bool:
@@ -200,7 +189,6 @@ func _draw() -> void:
 	_draw_book()
 	if _gutter.label() != "":
 		_draw_gutter_label()
-	_draw_extra_note()
 
 
 func _draw_candle() -> void:
@@ -284,20 +272,6 @@ func _draw_gutter_label() -> void:
 	_gutter_plate = _whole(plate)
 	_paint(_gutter_plate, _color(&"night"))
 	_text(GUTTER_AT + GUTTER_PAD, text, _color(_gutter.ink()))
-
-
-## The Ask Huginn button's caption (D29, D30); it lives below this node until the raven replaces
-## the button, so it is the one thing drawn outside the HUD's rect.
-func _draw_extra_note() -> void:
-	var note: String = extra_note()
-	if note == "":
-		return
-	var plate := Rect2(ORIGIN.x, EXTRA_NOTE_TOP, OBJECTS_WIDTH, 2 * 10 + 2)
-	draw_rect(plate, _color(&"night"))
-	var row: float = EXTRA_NOTE_TOP + 1
-	for line: String in note.split("\n"):
-		_text(Vector2i(ORIGIN.x + 3, int(row)), line, _color(&"text_light"))
-		row += 10
 
 
 func _paint(rect: Rect2, color: Color) -> void:

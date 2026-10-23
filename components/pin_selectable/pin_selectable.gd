@@ -6,7 +6,9 @@ extends Control
 ##
 ## Its marks are drawn pixel by pixel and never cross its text (D12): a hovered line is underlined
 ## in ink on its last row, a hovered fact shows corner brackets, and the selected item carries a
-## stuck pin head beside it instead of a filled box.
+## stuck pin head beside it instead of a filled box. A fact (corner marks) never shows a
+## rectangular outline: lit, its brackets take the lit colour; selected, it keeps its corner marks
+## under the pin.
 
 signal clicked(item_id: String)
 signal cancel_requested
@@ -128,14 +130,16 @@ func _draw() -> void:
 	_rects.clear()
 	_colors.clear()
 	var area := Rect2(Vector2.ZERO, size)
-	if lit:
+	if lit and hover_mark == HoverMark.CORNERS:
+		_draw_corners(area, BRACKET, lit_color)
+	elif lit:
 		_outline(area, lit_color)
 	elif show_outline:
 		_outline(area, outline_color)
 	elif _hovered:
 		_draw_hover(area)
-	elif show_corners:
-		_draw_corners(area, 1)
+	elif show_corners or (selected and hover_mark == HoverMark.CORNERS):
+		_draw_corners(area, 1, outline_color)
 	if selected:
 		var pin: Rect2 = pin_rect()
 		draw_pin_head(_paint, Vector2i(pin.position), pin_color, pin_highlight, pin_shadow)
@@ -147,7 +151,7 @@ func _draw_hover(area: Rect2) -> void:
 			var width: float = area.size.x if underline_width < 0 else float(underline_width)
 			_paint(Rect2(0, area.size.y - 1, width, 1), underline_color)
 		HoverMark.CORNERS:
-			_draw_corners(area, BRACKET)
+			_draw_corners(area, BRACKET, outline_color)
 		_:
 			_outline(area, outline_color)
 
@@ -168,8 +172,8 @@ func _paint(rect: Rect2, color: Color) -> void:
 	_colors.append(color)
 
 
-## Corner marks: single pixels when idle, `arm`-long brackets when hovered.
-func _draw_corners(area: Rect2, arm: int) -> void:
+## Corner marks: single pixels when idle, `arm`-long brackets when hovered or lit.
+func _draw_corners(area: Rect2, arm: int, color: Color) -> void:
 	var right: float = area.size.x - 1.0
 	var bottom: float = area.size.y - 1.0
 	var reach: float = float(arm - 1)
@@ -178,8 +182,8 @@ func _draw_corners(area: Rect2, arm: int) -> void:
 	]:
 		var dx: float = reach if corner.x == 0.0 else -reach
 		var dy: float = reach if corner.y == 0.0 else -reach
-		_paint(Rect2(minf(corner.x, corner.x + dx), corner.y, arm, 1), outline_color)
-		_paint(Rect2(corner.x, minf(corner.y, corner.y + dy), 1, arm), outline_color)
+		_paint(Rect2(minf(corner.x, corner.x + dx), corner.y, arm, 1), color)
+		_paint(Rect2(corner.x, minf(corner.y, corner.y + dy), 1, arm), color)
 
 
 func _on_mouse_entered() -> void:

@@ -41,7 +41,7 @@ func test_an_answer_that_ends_the_day_never_replaces_the_horn() -> void:
 	_click(_knot(0))
 	_system._process(Fixture.CLOCK_SECONDS - 3.0)
 	assert_eq(_desk.commands().phase(), RunState.DESK, "3 s left")
-	_click(_system.ask_huginn)
+	_click_at(_raven_point())
 	assert_ne(_desk.commands().phase(), RunState.DESK, "the 5 s answer ended the day")
 	var strip: CaptionStrip = _system.caption_strip
 	strip._process(strip.hold_seconds + 1.0)
@@ -71,7 +71,7 @@ func test_an_open_stamp_prompt_lets_no_huginn_answer_through() -> void:
 	_click(_door(&"hel"))
 	assert_true(_system.stamp_flow.stamp_prompt.is_asking())
 	var before: float = _desk.commands().time_left()
-	_click(_system.ask_huginn)
+	_click_at(_raven_point())
 	assert_eq(_desk.commands().huginn_left(), 2, "no answer spent under the prompt")
 	assert_eq(_desk.commands().thread_answer(0), "")
 	assert_eq(_desk.commands().time_left(), before, "no Huginn charge under the prompt")
@@ -104,9 +104,18 @@ func _threads_drawn() -> void:
 		await get_tree().process_frame
 
 
+## A point on the raven's bird, above the stamp prompt's reach.
+func _raven_point() -> Vector2:
+	return _system.raven.global_position + Raven.BIRD_RECT.get_center()
+
+
 ## A move, a press and a release on `target`, pushed through the desk's viewport.
 func _click(target: Control) -> void:
-	var at: Vector2 = target.get_global_rect().get_center()
+	_click_at(target.get_global_rect().get_center())
+
+
+## A move, a press and a release at `at`, pushed through the desk's viewport.
+func _click_at(at: Vector2) -> void:
 	var motion := InputEventMouseMotion.new()
 	motion.position = at
 	motion.global_position = at
