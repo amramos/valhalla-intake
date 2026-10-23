@@ -1,11 +1,16 @@
 class_name ThreadLine
 extends Control
 ## One thread on the desk (D8, D12): an axis-aligned route pinned at both ends, drawn pixel by
-## pixel 3 px wide (an ink halo, a core in its kind's colour and a lighter edge) in its kind's line
+## pixel 3 px wide (a core in its kind's colour, a lighter edge and an ink halo) in its kind's line
 ## pattern, so kinds differ by shape as well as colour (red bold and unbroken, grey dotted, law
 ## dashed; no reserved colour). A 5×5 wooden pin head holds each end. A grey thread carries an
 ## 8 px tied knot that selects it for Huginn (filled once answered); every other thread carries a
 ## 6 px bead. A click on either shows the thread's caption again (D33).
+##
+## A gutter is 4 px and holds two lanes (ThreadRouter): the route runs along the lane's outer
+## column and the stroke grows from it toward the gutter's middle (lane 0 toward +x/+y, lane 1
+## toward -x/-y), so the whole 3 px stays inside the gutter and two threads side by side both
+## keep their cores in view.
 
 signal knot_clicked(thread_index: int)
 signal knot_hover_started(text: String, area: Rect2)
@@ -40,6 +45,8 @@ const BEAD: Array[String] = [
 ## Seam.Kind: RED, GREY or LAW.
 var kind: int = Seam.Kind.RED
 var thread_index: int = -1
+## The router's lane (0 or 1): which way the stroke grows from the route.
+var lane: int = 0
 ## The route, in global pixels.
 var points: PackedVector2Array = PackedVector2Array()
 ## Where the thread meets its items (global): the router's caps, kept for tools.
@@ -60,6 +67,8 @@ var _knot: PinSelectable = null
 var _reveal: int = -1
 ## How far the thread has fallen, in pixels.
 var _drop: int = 0
+## The desk's other hit areas (global): pin heads and the knot keep clear of them.
+var _avoid: Array[Rect2] = []
 ## What the last `_draw` painted, in order, in local pixels (tests).
 var _rects: Array[Rect2] = []
 var _colors: Array[Color] = []
@@ -83,8 +92,11 @@ func setup(
 	thread_index = p_index
 	points = p_points
 	caps = p_caps
-	var knot_size: int = knot_size_for(kind)
-	_add_knot(KnotPlacer.place(pixels(), avoid, knot_size), knot_size, knot_hover)
+	_avoid = avoid
+	# The click area is never under PinSelectable's 8×8 minimum, so a 6 px bead is placed (and
+	# kept clear of other hit areas) at that size and drawn centred in it.
+	var hit_size: int = maxi(knot_size_for(kind), int(PinSelectable.MIN_SIZE.x))
+	_add_knot(KnotPlacer.place(pixels(), avoid, hit_size), hit_size, knot_hover)
 	queue_redraw()
 
 
@@ -144,13 +156,23 @@ func covers(at: Vector2i) -> bool:
 
 
 ## The two pin heads' rectangles in global pixels, first end first (tests and the fit check).
+## Each sits on its end of the route, or slides along the thread just far enough to clear every
+## hit area in `avoid` (a fact's edge, a centre-to-centre body thread), never past its middle.
 func pin_head_rects() -> Array[Rect2]:
 	var rects: Array[Rect2] = []
 	var route: Array[Vector2i] = pixels()
 	if route.is_empty():
 		return rects
-	for end: Vector2i in [route[0], route[route.size() - 1]]:
-		rects.append(Rect2(Vector2(end - Vector2i(2, 2)), Vector2(PIN_SIZE, PIN_SIZE)))
+	var reach: int = maxi((route.size() - 1) / 2, 0)
+	for step: int in [1, -1]:
+		var start: int = 0 if step == 1 else route.size() - 1
+		var chosen: Rect2 = _pin_box(route[start])
+		for slide: int in range(reach + 1):
+			var box: Rect2 = _pin_box(route[start + slide * step])
+			if not _hits_avoid(box):
+				chosen = box
+				break
+		rects.append(chosen)
 	return rects
 
 
@@ -194,34 +216,57 @@ func _draw() -> void:
 	var origin: Vector2 = global_position - Vector2(0, _drop)
 	var route: Array[Vector2i] = pixels()
 	var shown: int = route.size() if _reveal < 0 else mini(_reveal, route.size())
+	# Ink under all 3 px of every pixel (the gaps of a pattern show it), then the core and its
+	# lighter edge where the pattern is on: core, edge, halo, 3 px in all (D12).
 	for index: int in range(shown):
-		_paint(Rect2(Vector2(route[index]) - origin - Vector2.ONE, Vector2(3, 3)), ink)
+		var far: Vector2i = route[index] + _side(route, index) * 2
+		var backing := Rect2(Vector2(route[index]), Vector2.ONE).merge(
+			Rect2(Vector2(far), Vector2.ONE)
+		)
+		_paint(Rect2(backing.position - origin, backing.size), ink)
 	for index: int in range(shown):
 		if not _pattern_on(index):
 			continue
 		_paint(Rect2(Vector2(route[index]) - origin, Vector2.ONE), color)
-		# The lighter edge runs beside the core on one side: 3 px in all with the halo (D12).
-		var along: Vector2i = route[mini(index + 1, route.size() - 1)] - route[maxi(index - 1, 0)]
-		var side := Vector2i(1, 0) if absi(along.y) >= absi(along.x) else Vector2i(0, 1)
-		_paint(Rect2(Vector2(route[index] + side) - origin, Vector2.ONE), edge)
+		_paint(Rect2(Vector2(route[index] + _side(route, index)) - origin, Vector2.ONE), edge)
 	if shown == 0:
 		return
-	_draw_pin(route[0], origin)
+	var pins: Array[Rect2] = pin_head_rects()
+	_draw_pin(pins[0], origin)
 	if _reveal >= 0:
 		return
-	_draw_pin(route[route.size() - 1], origin)
+	_draw_pin(pins[1], origin)
 	if _knot != null:
 		var corner := Vector2i(_knot.global_position - origin)
 		if kind == Seam.Kind.GREY:
 			_draw_knot(corner, color, ink)
 		else:
-			_draw_bead(corner, color, edge, ink)
+			var inset: int = (int(_knot.size.x) - BEAD_SIZE) / 2
+			_draw_bead(corner + Vector2i(inset, inset), color, edge, ink)
 
 
-func _draw_pin(end: Vector2i, origin: Vector2) -> void:
+## The unit step from route pixel `index` toward the gutter's middle: across the route's run.
+func _side(route: Array[Vector2i], index: int) -> Vector2i:
+	var along: Vector2i = route[mini(index + 1, route.size() - 1)] - route[maxi(index - 1, 0)]
+	var side := Vector2i(1, 0) if absi(along.y) >= absi(along.x) else Vector2i(0, 1)
+	return side if lane % 2 == 0 else -side
+
+
+func _hits_avoid(box: Rect2) -> bool:
+	for rect: Rect2 in _avoid:
+		if box.intersects(rect):
+			return true
+	return false
+
+
+func _pin_box(centre: Vector2i) -> Rect2:
+	return Rect2(Vector2(centre - Vector2i(2, 2)), Vector2(PIN_SIZE, PIN_SIZE))
+
+
+func _draw_pin(box: Rect2, origin: Vector2) -> void:
 	PinSelectable.draw_pin_head(
 		_paint,
-		end - Vector2i(2, 2) - Vector2i(origin),
+		Vector2i(box.position - origin),
 		get_theme_color(&"pin_head", &"DeskPalette"),
 		get_theme_color(&"pin_highlight", &"DeskPalette"),
 		get_theme_color(&"ink", &"DeskPalette")

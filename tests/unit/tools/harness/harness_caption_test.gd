@@ -6,9 +6,21 @@ extends GutTest
 const Harness := preload("res://tools/harness/harness.gd")
 const THEME := "res://scenes/desk/desk_theme.tres"
 ## Any evidence id: a body fact, a claim or witness line, a decree.
-const ID_PATTERN := "\b[BCWL][0-9]+\b"
+## A raw string: in a plain one "\b" is a backspace, not a word boundary.
+const ID_PATTERN := r"\b[BCWL][0-9]+\b"
 
 var _ids := RegEx.create_from_string(ID_PATTERN)
+
+
+## The detector itself: it finds every kind of id and nothing that merely starts with B, C, W, L.
+func test_the_id_detector_finds_ids_and_only_ids() -> void:
+	var found: Array[String] = []
+	for text: String in [
+		"Citation: L2.", "C1 against L1", "His W2.", "B4 and L3", "decree II", "Bersi", "Loki", "W"
+	]:
+		if _ids.search(text) != null:
+			found.append(text)
+	assert_eq(found, ["Citation: L2.", "C1 against L1", "His W2.", "B4 and L3"] as Array[String])
 
 
 ## Every soul of the real slice at the desk, by (day, slot, mercy): the legal run (Hakon returns

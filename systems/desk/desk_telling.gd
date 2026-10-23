@@ -10,6 +10,8 @@ extends RefCounted
 
 ## The whole tale shows: by pace or by a consumed click.
 signal finished
+## The tale was cut short (a consumed click, a new soul, a restart): its voice must stop now.
+signal silenced
 
 enum Stage { IDLE, CLAIM, WITNESS }
 
@@ -64,6 +66,7 @@ func finish() -> void:
 		return
 	_skipping = true
 	_end_token()
+	silenced.emit()
 	if _stage == Stage.CLAIM:
 		_claim.finish_telling()
 	if _stage == Stage.WITNESS:
@@ -74,6 +77,8 @@ func finish() -> void:
 ## stops their tellers.
 func stop() -> void:
 	_end_token()
+	if _stage != Stage.IDLE:
+		silenced.emit()
 	_stage = Stage.IDLE
 	_skipping = false
 

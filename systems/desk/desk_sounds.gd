@@ -36,5 +36,12 @@ func play(sound: StringName, pitch_scale: float = 1.0) -> void:
 	player.play()
 
 
+## Stops `sound` where it is (a skipped tale's blip).
+func stop(sound: StringName) -> void:
+	var player: AudioStreamPlayer = _players.get(sound, null)
+	if player != null:
+		player.stop()
+
+
 func player(sound: StringName) -> AudioStreamPlayer:
 	return _players.get(sound, null)

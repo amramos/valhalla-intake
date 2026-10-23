@@ -48,6 +48,7 @@ func rebuild(
 		var answer: String = answers[index] if index < answers.size() else ""
 		var line := ThreadLine.new()
 		line.name = "Thread%d" % index
+		line.lane = index % 2
 		_layer.add_child(line)
 		line.size = _layer.size
 		var ends: Array = _ends(a, b)

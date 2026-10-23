@@ -89,7 +89,8 @@ func ask(realm: StringName) -> void:
 	if stamp_prompt.is_asking() and stamp_prompt.realm == realm:
 		return
 	stamp_prompt.reduce_motion = _reduce_motion()
-	stamp_prompt.ask(encounter.soul_name, realm)
+	# The rise stops under the pause like every presentation (the gate watches it).
+	_watch(stamp_prompt.ask(encounter.soul_name, realm))
 
 
 ## Redraws the held state, and walks in a soul seated with no slam under way (a new day, a held

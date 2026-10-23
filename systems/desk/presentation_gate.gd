@@ -14,6 +14,9 @@ extends Node
 signal consumed(kind: StringName)
 ## The slam lock opened (by `slam_release` or `cancel_all`).
 signal released
+## The presentation clocks stopped (true) or resumed (false): anything that keeps its own clock (the
+## note's hold, a door's flare) follows it, so the pause and focus loss stop every one.
+signal pause_changed(paused: bool)
 
 const TELLING := &"telling"
 const WRITTEN := &"written"
@@ -139,6 +142,7 @@ func set_paused(paused: bool) -> void:
 	_prune()
 	for teller: Teller in _tellers:
 		teller.set_paused(paused)
+	pause_changed.emit(paused)
 	if paused:
 		for tween: Tween in _tweens:
 			if tween.is_running():
@@ -162,14 +166,20 @@ func is_paused() -> bool:
 	return _paused
 
 
-## A restart: kills every watched tween, ends every consumer without finishing it, and opens the
-## slam lock (emitting `released` if it was shut). Tellers, players and the pause stay as they are.
+## A restart: kills every watched tween, stops every player the pause holds (so a resume never
+## plays the old run's sound), ends every consumer without finishing it, and opens the slam lock
+## (emitting `released` if it was shut). Tellers and the pause itself stay as they are.
 func cancel_all() -> void:
 	for tween: Tween in _tweens:
 		if tween.is_valid():
 			tween.kill()
 	_tweens.clear()
 	_paused_tweens.clear()
+	_prune()
+	for player: AudioStreamPlayer in _paused_players:
+		player.stop()
+		player.stream_paused = false
+	_paused_players.clear()
 	_consumers.clear()
 	slam_release()
 

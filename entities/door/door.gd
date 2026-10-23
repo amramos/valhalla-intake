@@ -43,6 +43,8 @@ var tide := Vector2i.ZERO
 
 var _hovered: bool = false
 var _flare_left: float = 0.0
+## The pause holds the flare where it is (the gate's pause_changed).
+var _paused: bool = false
 
 
 func _ready() -> void:
@@ -71,6 +73,11 @@ func flare() -> void:
 
 func is_flaring() -> bool:
 	return _flare_left > 0.0
+
+
+## A paused door keeps its flare as it is until resumed (the pause, focus loss).
+func set_paused(paused: bool) -> void:
+	_paused = paused
 
 
 ## The sprite drawn now (tests).
@@ -119,7 +126,7 @@ func _drop_data(_at: Vector2, _data: Variant) -> void:
 
 
 func _process(delta: float) -> void:
-	if _flare_left <= 0.0:
+	if _flare_left <= 0.0 or _paused:
 		return
 	_flare_left = maxf(0.0, _flare_left - delta)
 	queue_redraw()

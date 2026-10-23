@@ -21,20 +21,51 @@ func test_a_pin_head_sits_on_each_end_of_the_thread() -> void:
 		assert_eq(_at(line, Vector2i(end.position) + Vector2i(1, 1)), highlight, "its highlight")
 
 
-func test_the_thread_is_three_pixels_halo_core_and_lighter_edge() -> void:
-	var line: ThreadLine = await _line(Seam.Kind.RED)
+## The review's case: a pin at a fact's edge would cover the fact; it slides along the thread
+## just far enough to clear every hit area.
+func test_a_pin_head_slides_along_the_thread_off_a_hit_area() -> void:
+	var fact := Rect2(6, 6, 6, 8)
+	var line: ThreadLine = await _line(Seam.Kind.RED, 0, [fact] as Array[Rect2])
+	var pins: Array[Rect2] = line.pin_head_rects()
+	assert_eq(pins[0], Rect2(12, 8, 5, 5), "the first clear spot along the route")
+	assert_false(pins[0].intersects(fact))
+	assert_eq(pins[1], Rect2(38, 28, 5, 5), "a clear end stays put")
+	var head: Color = THEME.get_color(&"pin_head", &"DeskPalette")
+	assert_eq(_at(line, Vector2i(14, 10)), head, "and is drawn there")
+
+
+func test_the_thread_is_three_pixels_core_lighter_edge_and_halo() -> void:
 	var ink: Color = THEME.get_color(&"ink", &"DeskPalette")
-	var across: Array[Color] = []
-	for y: int in range(8, 13):
-		across.append(_at(line, Vector2i(25, y)))
-	var expected: Array[Color] = [
-		TRANSPARENT,
-		ink,
-		THEME.get_color(&"thread_red", &"DeskPalette"),
-		THEME.get_color(&"thread_red_light", &"DeskPalette"),
-		TRANSPARENT,
-	]
-	assert_eq(across, expected, "halo, core, edge: 3 px in all")
+	var core: Color = THEME.get_color(&"thread_red", &"DeskPalette")
+	var edge: Color = THEME.get_color(&"thread_red_light", &"DeskPalette")
+	var lane_zero: Array[Color] = _across(await _line(Seam.Kind.RED, 0), 25, 8, 13)
+	var lane_one: Array[Color] = _across(await _line(Seam.Kind.RED, 1), 25, 8, 13)
+	assert_eq(
+		lane_zero,
+		[TRANSPARENT, TRANSPARENT, core, edge, ink] as Array[Color],
+		"lane 0 grows from its route toward +y: 3 px in all"
+	)
+	assert_eq(
+		lane_one,
+		[ink, edge, core, TRANSPARENT, TRANSPARENT] as Array[Color],
+		"lane 1 grows toward -y, so two lanes in a 4 px gutter keep both cores"
+	)
+
+
+## The review's case: a 3 px stroke on a vertical run grows sideways by lane, never past it.
+func test_a_vertical_run_grows_toward_its_lane_side_only() -> void:
+	var lane_zero: ThreadLine = await _line(Seam.Kind.GREY, 0)
+	var lane_one: ThreadLine = await _line(Seam.Kind.GREY, 1)
+	var zero: Array[Color] = _across_x(lane_zero, 20, 37, 44)
+	var one: Array[Color] = _across_x(lane_one, 20, 37, 44)
+	assert_eq(zero.slice(0, 3), [TRANSPARENT, TRANSPARENT, TRANSPARENT] as Array[Color])
+	assert_ne(zero[3], TRANSPARENT, "lane 0's route column")
+	assert_ne(zero[5], TRANSPARENT, "lane 0's halo two columns right")
+	assert_eq(zero[6], TRANSPARENT)
+	assert_eq(one[0], TRANSPARENT)
+	assert_ne(one[1], TRANSPARENT, "lane 1's halo two columns left")
+	assert_ne(one[3], TRANSPARENT, "lane 1's route column")
+	assert_eq(one.slice(4), [TRANSPARENT, TRANSPARENT, TRANSPARENT] as Array[Color])
 
 
 func test_each_kind_keeps_its_pattern_with_the_halo_unbroken() -> void:
@@ -109,6 +140,20 @@ func _at(line: ThreadLine, at: Vector2i) -> Color:
 	return Palette.color_at(line.drawn_rects(), line.drawn_colors(), at)
 
 
+func _across(line: ThreadLine, x: int, from_y: int, to_y: int) -> Array[Color]:
+	var colors: Array[Color] = []
+	for y: int in range(from_y, to_y):
+		colors.append(_at(line, Vector2i(x, y)))
+	return colors
+
+
+func _across_x(line: ThreadLine, y: int, from_x: int, to_x: int) -> Array[Color]:
+	var colors: Array[Color] = []
+	for x: int in range(from_x, to_x):
+		colors.append(_at(line, Vector2i(x, y)))
+	return colors
+
+
 func _count_in(line: ThreadLine, box: Rect2, color: Color) -> int:
 	var count: int = 0
 	for y: int in range(int(box.position.y), int(box.end.y)):
@@ -124,16 +169,17 @@ func _knot_cells(code: String) -> int:
 	return count
 
 
-func _line(kind: int) -> ThreadLine:
+func _line(kind: int, lane: int = 0, avoid: Array[Rect2] = []) -> ThreadLine:
 	var host := Control.new()
 	host.theme = THEME
 	host.size = Vector2(80, 60)
 	add_child_autofree(host)
 	var line := ThreadLine.new()
+	line.lane = lane
 	host.add_child(line)
 	line.size = host.size
 	var caps: Array[Rect2] = []
-	line.setup(kind, 0, PackedVector2Array(ROUTE), caps, "")
+	line.setup(kind, 0, PackedVector2Array(ROUTE), caps, "", avoid)
 	# Keep the knot clear of the strip the tests read.
 	line.knot().global_position = Vector2(50, 40)
 	await wait_process_frames(2)

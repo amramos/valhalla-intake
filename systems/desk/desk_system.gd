@@ -11,6 +11,8 @@ extends Node
 
 const HORN_TEXT := "The horn. The day is over."
 const LAW_HEADING := "Odin's Law"
+## A new thread is drawn taut in this long (D12).
+const DRAW_IN_SECONDS := 0.15
 
 @export var body_chart: BodyChart
 @export var claim_panel: EvidencePanel
@@ -49,6 +51,8 @@ var huginn_thread: int = -1
 
 var _shown_encounter: Encounter = null
 var _lit: Array[String] = []
+## The cited pair of a held soul: lit until it is sent on, whatever the note shows (D28, D48).
+var _held_pair: Array[String] = []
 ## Said when the desk empties (the horn); outlives the soul it ended.
 var _announcement: String = ""
 var _warned: bool = false
@@ -65,12 +69,17 @@ func bind(p_commands: DeskCommands) -> void:
 	threads_board = ThreadBoard.new(body_chart, claim_panel, witness_panel, law_panel, thread_layer)
 	_telling = DeskTelling.new(claim_panel, witness_panel, gate)
 	_telling.finished.connect(_on_tale_told)
+	_telling.silenced.connect(_on_tale_silenced)
 	_note = DeskNote.new(caption_strip, gate)
 	_note.pair_shown.connect(_light)
 	_note.pair_dropped.connect(_on_pair_dropped)
 	_sounds = DeskSounds.new(_sound_players(), gate)
 	for panel: EvidencePanel in [claim_panel, witness_panel]:
 		panel.teller().blip.connect(_on_blip)
+	# The note's hold and the doors' flares keep their own clocks; the gate's pause stops them.
+	gate.pause_changed.connect(caption_strip.set_paused)
+	for door: Door in doors:
+		gate.pause_changed.connect(door.set_paused)
 	use_options(options)
 	# The stamp's slam window and its refusal while a tale is told are the gate's (D4, D27).
 	stamp_flow.gate = gate
@@ -198,6 +207,7 @@ func _show_encounter(encounter: Encounter) -> void:
 	selection.cancel()
 	huginn_thread = -1
 	_lit.clear()
+	_held_pair.clear()
 	hover_label.hide_label()
 	_telling.stop()
 	caption_strip.clear()
@@ -304,7 +314,9 @@ func _pin(a: String, b: String) -> void:
 func _draw_in(thread_index: int) -> void:
 	for line: ThreadLine in _lines:
 		if is_instance_valid(line) and line.thread_index == thread_index:
-			gate.watch_tween(line.draw_in())
+			# Reduce motion (D37): the thread and its knot show whole at once.
+			var seconds: float = 0.0 if options.reduce_motion else DRAW_IN_SECONDS
+			gate.watch_tween(line.draw_in(seconds))
 
 
 ## A thread's caption on the note, quoting the pair it lights while it shows (D6, D28).
@@ -325,6 +337,8 @@ func _light(pair: Array[String]) -> void:
 func _apply_highlights() -> void:
 	var chosen: String = selection.selected_id
 	var lit: Array[String] = _lit
+	if commands.awaiting_next() and not _held_pair.is_empty():
+		lit = _held_pair
 	var step: MentorStep = _guided_step()
 	if lit.is_empty() and step != null:
 		lit = step.highlight
@@ -463,8 +477,14 @@ func _on_tale_told() -> void:
 
 ## A held citation (or the feather) lights its pair; no caption may darken it (D28, D48).
 func _light_held(pair: Array[String]) -> void:
+	_held_pair = pair.duplicate()
 	_note.release_pair()
 	_light(pair)
+
+
+## A tale cut short stops its voice at once, mid-blip (D27).
+func _on_tale_silenced() -> void:
+	_sounds.stop(&"blip")
 
 
 ## The caption that quoted `pair` gave way to one that quotes nothing: its pair goes dark, but a

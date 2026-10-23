@@ -98,6 +98,45 @@ func test_threads_never_cross_any_panel_of_text() -> void:
 				)
 
 
+## The review's case: the whole 3 px stroke of threads in both lanes of every gutter stays out of
+## the papers, not only the route's centre line. Pin heads and knots are checked against the hit
+## areas instead: a pin sits on a paper's edge by design (D12).
+func test_every_drawn_stroke_stays_in_the_gutters_in_both_lanes() -> void:
+	_pin("C1", "W1")
+	_pin("B1", "W2")
+	_pin("B3", "L3")
+	_pin("C2", "L5")
+	await wait_process_frames(2)
+	var lines: Array[ThreadLine] = _threads()
+	var lanes: Dictionary[int, bool] = {}
+	var panels: Array[Rect2] = []
+	for panel: EvidencePanel in [_system.claim_panel, _system.witness_panel, _system.law_panel]:
+		panels.append(panel.get_global_rect())
+	var crossings: Array[String] = []
+	var strokes: int = 0
+	for line: ThreadLine in lines:
+		lanes[line.lane] = true
+		var marks: Array[Rect2] = line.pin_head_rects()
+		if line.has_knot():
+			marks.append(line.knot().get_global_rect())
+		for mark: Rect2 in marks:
+			for area: Rect2 in _hit_rects():
+				if mark.intersects(area):
+					crossings.append("thread %d mark %s on %s" % [line.thread_index, mark, area])
+		for local: Rect2 in line.drawn_rects():
+			var rect := Rect2(local.position + line.global_position, local.size)
+			if _inside_any(rect, marks):
+				continue
+			strokes += 1
+			for panel: Rect2 in panels:
+				if rect.intersects(panel):
+					crossings.append("thread %d stroke %s in %s" % [line.thread_index, rect, panel])
+	assert_eq(lines.size(), 4)
+	assert_eq(lanes.size(), 2, "both lanes are drawn")
+	assert_gt(strokes, 100, "the strokes were drawn and read")
+	assert_eq(crossings, [] as Array[String])
+
+
 ## The review's case: a restart from a soul at the desk (D31) leaves nothing of that soul under
 ## the dawn card, although no soul is at the desk before or after the run restarts. A click drops
 ## the lit pair, so the half-made pin is checked on a second restart.
@@ -187,6 +226,13 @@ func _knot(thread_index: int) -> PinSelectable:
 		if line.thread_index == thread_index and line.has_knot():
 			return line.knot()
 	return null
+
+
+func _inside_any(rect: Rect2, boxes: Array[Rect2]) -> bool:
+	for box: Rect2 in boxes:
+		if box.encloses(rect):
+			return true
+	return false
 
 
 func _hit_rects() -> Array[Rect2]:

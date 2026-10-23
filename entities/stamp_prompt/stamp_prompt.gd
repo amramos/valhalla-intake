@@ -65,8 +65,9 @@ func _ready() -> void:
 	_slot.visible = false
 
 
-## Raises the stamp for `p_realm` over the writ of `soul_name`.
-func ask(soul_name: String, p_realm: StringName) -> void:
+## Raises the stamp for `p_realm` over the writ of `soul_name`. Returns the rise's tween, for the
+## presentation gate's pause (null when it rises at once).
+func ask(soul_name: String, p_realm: StringName) -> Tween:
 	_finish_sweep()
 	if _state == State.IDLE or _state == State.ASKING:
 		_set_name_now(soul_name)
@@ -85,6 +86,7 @@ func ask(soul_name: String, p_realm: StringName) -> void:
 		_face.position.y = 0
 	# Asking again (another door) restarts the arm time, as a fresh stamp would.
 	_stamp.rearm()
+	return _motion
 
 
 static func question_for(p_realm: StringName) -> String:

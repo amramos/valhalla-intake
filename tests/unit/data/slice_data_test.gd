@@ -10,6 +10,8 @@ const L1 := (
 const L2 := "Whoever lies to the Gate goes to Hel, whatever else the Law says."
 const L3 := "Even so, a warrior without a weapon in hand goes to Hel."
 const L4 := "Even so, those who fled the battle go to Hel."
+## Any evidence id in displayed text. A raw string: in a plain one "\b" is a backspace.
+const ID_PATTERN := r"\b[BCWL][0-9]+\b"
 const L5 := "Those who fell defending hearth and kin go to Fólkvangr, whatever I, III and IV say."
 
 var _slice: SliceData = load("res://data/slice.tres") as SliceData
@@ -249,10 +251,22 @@ func test_the_dawn_cards_explain_the_tide_and_what_a_citation_needs() -> void:
 	assert_eq(_slice.rules_to_core().mentor_tide_line, "The Law is kept. Hel's tide grows by one.")
 
 
+## The id detector below finds every kind of id and nothing that merely starts with B, C, W, L.
+func test_the_id_detector_finds_ids_and_only_ids() -> void:
+	var ids := RegEx.create_from_string(ID_PATTERN)
+	var found: Array[String] = []
+	for text: String in [
+		"Citation: L2.", "C1 against L1", "His W2.", "B4 and L3", "decree II", "Bersi", "Loki", "W"
+	]:
+		if ids.search(text) != null:
+			found.append(text)
+	assert_eq(found, ["Citation: L2.", "C1 against L1", "His W2.", "B4 and L3"] as Array[String])
+
+
 ## D6: the player never reads an id. Every authored text the desk, the dawn card or the dusk
 ## shows names decrees by their numerals and lines by their words; only ids and commands keep them.
 func test_no_displayed_text_names_an_id() -> void:
-	var ids := RegEx.create_from_string("\b[BCWL][0-9]+\b")
+	var ids := RegEx.create_from_string(ID_PATTERN)
 	var texts: Array[String] = []
 	var souls: Array[EncounterData] = [
 		_slice.returned_ignored, _slice.returned_missed, _slice.fallback

@@ -27,6 +27,19 @@ static func commands() -> DeskCommands:
 	return result
 
 
+## The first soul as a liar bound for Hel, or as a hero bound for Valhalla: everything else (name,
+## witness, every line, every seam) the same, for the liar-and-hero leak test (D1, D45).
+static func matched(liar: bool) -> DeskCommands:
+	var soul: Encounter = _first()
+	soul.liar = liar
+	soul.legal_realm = Realm.HEL if liar else Realm.VALHALLA
+	soul.worthy_realm = soul.legal_realm
+	var result := DeskCommands.new()
+	var days: Array[DayRules] = [_day(3)]
+	result.start_run(days, [[soul]], SliceRules.new(), {})
+	return result
+
+
 static func instant() -> Options:
 	var options := Options.new()
 	options.text_speed = Options.INSTANT

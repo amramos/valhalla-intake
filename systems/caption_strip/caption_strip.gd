@@ -43,6 +43,8 @@ var _frame: ParchmentFrame = null
 var _teller: Teller = null
 var _held: float = 0.0
 var _writing: bool = false
+## The pause holds the shown message where it is (the gate's pause_changed).
+var _paused: bool = false
 var _current: Caption = null
 ## Waiting messages, newest last.
 var _pending: Array[Caption] = []
@@ -133,8 +135,17 @@ func teller() -> Teller:
 	return _teller
 
 
+## A paused note neither counts its hold nor shows the next message (the pause, focus loss).
+func set_paused(paused: bool) -> void:
+	_paused = paused
+
+
+func is_paused() -> bool:
+	return _paused
+
+
 func _process(delta: float) -> void:
-	if _writing:
+	if _writing or _paused:
 		return
 	_held += delta
 	if _held >= hold_seconds and not _pending.is_empty():
