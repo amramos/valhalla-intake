@@ -1,7 +1,7 @@
 # Game UI overhaul — decisions ledger
 
 **State:** PROVISIONALLY APPROVED
-**Mode:** hands-off · **Plan:** `game-ui-plan.md` · **Epic:** (created at hand-off)
+**Mode:** hands-off · **Plan:** `game-ui-plan.md` · **Epic:** [#19](https://github.com/amramos/valhalla-intake/issues/19) (features #20-#24)
 **After the plan:** the owner chose `team-lead-handsoff` (2026-10-23). See D-row on delivery.
 
 This is the owner's document: read this, not the plan. Every decision the plan relies on is a row
