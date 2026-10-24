@@ -4,18 +4,22 @@ extends SceneTree
 ##
 ##   godot --path . --resolution 480x270 -s tools/desk_shots/desk_shots.gd -- <output-folder>
 ##
-## Title -> day 1 -> dusk -> day 2 (pause, Hakon) -> Hel's offer -> day 3 (the ledger, returned
-## Hakon) -> the ending -> Play again. Each step is a mouse move, click, drag or key pushed through
-## the viewport, as a player's would be, and each step's outcome is checked; the run prints FAIL
-## lines and exits 1 when one does not hold. Day 1 is played by hand; later souls go to their
-## legal doors by door click and confirm.
+## Title (and its options) -> day 1 -> dusk -> day 2 (pause and its options, Hakon) -> Hel's offer
+## -> day 3 (the ledger, returned Hakon) -> the ending (its tableau, then its last page) -> Play
+## again. Each dawn opens on the dark "DAY N" card and then Odin's writ; each dusk is the day-book.
+## Each step is a mouse move, click, drag or key pushed through the viewport, as a player's would
+## be, and each step's outcome is checked; the run prints FAIL lines and exits 1 when one does not
+## hold. Day 1 is played by hand; later souls go to their legal doors by door click and confirm.
 ##
 ## The whole slice is played at the "instant" text speed, handed in through `Desk.use_options`, so
 ## what is left is the time no player can skip. For the time budget (D30) the run prints one
 ## `FORCED <soul> <seconds>` line per soul: the presentation gate's gated seconds (written
 ## captions, the slam window) from the end of the previous soul's slam to the end of this soul's,
 ## so a soul's slam and the first moments of the next tale, which overlap, count once, for the soul
-## stamped. An honest soul over `FORCED_BUDGET` fails the run.
+## stamped. An honest soul over `FORCED_BUDGET` fails the run. The dark dawn card is gated too (up
+## to 1.5 s a day, D21): it gets its own `DAWN <day> <seconds>` line, and the count starts afresh
+## after it, so FORCED stays per soul. Day 1's card is left to run out; days 2 and 3 are clicked
+## through, a click that only ends the card (D27).
 ##
 ## After "Play again" a second pass plays days 1 and 2 again at the normal text speed, each tale
 ## let run to its end before anything is pressed (a press during it would only finish it, D27),
@@ -31,6 +35,8 @@ const TITLE_SCENE := "res://scenes/title/title.tscn"
 const MAX_TALE_SECONDS := 30.0
 ## Forced (unskippable) seconds an honest soul may cost at most (D30).
 const FORCED_BUDGET := 2.0
+## The centre of the screen: a click there during the dark dawn card lands on nothing but the card.
+const SCREEN_CENTRE := Vector2(240, 135)
 
 var _out: String = ""
 var _desk: Desk = null
@@ -65,6 +71,13 @@ func _run() -> void:
 	await _shot("00_title")
 	var title: TitleScreen = current_scene as TitleScreen
 	await _wait(0.4)
+	await _click_control(title.options_button())
+	_expect(title.options_panel().is_open(), "Options opens the panel on the title")
+	await _wait(0.4)
+	await _shot("00b_title_options")
+	await _click_control(title.options_panel().back_button())
+	_expect(not title.options_panel().is_open(), "Back closes the options")
+	await _wait(0.4)
 	await _click_control(title.start_button())
 	await _frames(4)
 	_desk = current_scene as Desk
@@ -80,16 +93,14 @@ func _run() -> void:
 	_account("")
 	await _dusk("16_dusk1")
 	_expect(_desk.commands().day_number() == 2, "Next day opens day 2")
-	await _shot("20_dawn2")
-	await _begin()
+	await _begin("20_dawn2")
 	await _escape_and_resume()
 	await _finish_day("21_day2", &"hakon")
 	_account("")
 	await _dusk("22_dusk2")
 	_expect(_desk.commands().promise_state() == RunState.PROMISE_OPEN, "Hel's offer is recorded")
 	_expect(_desk.commands().day_number() == 3, "day 3 dawns")
-	await _shot("26_dawn3")
-	await _begin()
+	await _begin("26_dawn3")
 	_account(_soul())
 	await _await_tale()
 	var tray: LedgerTray = _desk.system().ledger_tray
@@ -102,9 +113,10 @@ func _run() -> void:
 	await _dusk("30_dusk3")
 	_expect(_desk.commands().phase() == RunState.ENDING, "day 3's dusk leads to the ending")
 	await _wait(0.4)
-	await _click_control(_desk.system().phase_card.next_button())
+	await _click_control(_desk.system().day_book.next_button())
 	var restarted: bool = _desk.commands().day_number() == 1
 	_expect(restarted and _desk.commands().phase() == RunState.DAWN, "Play again")
+	await _wait(0.4)
 	await _shot("35_play_again")
 	await _telling_pass()
 	_finish()
@@ -134,12 +146,26 @@ func _finish() -> void:
 
 func _day_one() -> void:
 	var system: DeskSystem = _desk.system()
+	var writ: DawnWrit = system.dawn_writ
 	await _frames(3)
-	await _shot("01_dawn")
-	await _double_click_control(system.phase_card.next_button())
+	_expect(writ.is_showing_card(), "day 1 dawns on the dark card")
+	await _wait(0.5)
+	await _shot("01_dawn_card")
+	# Left alone, the card ends by itself and the dark lifts on Odin's writ.
+	var start: int = Time.get_ticks_msec()
+	while writ.is_showing_card() and Time.get_ticks_msec() - start < 3000:
+		await process_frame
+	_expect(not writ.is_showing_card(), "the dark card ends by itself (D21)")
+	await _wait(0.4)
+	await _shot("01b_dawn_writ")
+	_dawn_done(1)
+	# A double-click as the tab appears (rearmed here, as when the dark lifts) begins nothing: its
+	# first press falls inside the arm time and its second is a double-click's (D9).
+	writ.next_button().rearm()
+	await _double_click_control(writ.next_button())
 	_expect(_desk.commands().phase() == RunState.DAWN, "a double-click on Begin is ignored")
 	await _wait(0.4)
-	await _click_control(system.phase_card.next_button())
+	await _click_control(writ.next_button())
 	_expect(_soul() == "Ulf", "Begin seats Ulf")
 	_expect(system.body_chart.layers().size() == 5, "Ulf's chart is his own art stack")
 	_account(_soul())
@@ -224,26 +250,71 @@ func _finish_day(shot_prefix: String = "", soul: StringName = &"") -> void:
 		await _wait(0.7)
 
 
-## Shoots every dusk card (and the ending) unless `shoot` is off, pressing Next with real clicks.
+## Shoots every spread of the day-book (and the ending's tableau and last page) unless `shoot` is
+## off, pressing Next with real clicks once each page's ink is dry. The next dawn's count starts
+## afresh as the book closes.
 func _dusk(prefix: String, shoot: bool = true) -> void:
-	var card: PhaseCard = _desk.system().phase_card
+	var book: DayBook = _desk.system().day_book
 	var day: int = _desk.commands().day_number()
 	var play_again: String = _desk.commands().slice_rules().text.play_again
 	for index: int in range(10):
+		await _frames(2)
+		if book.tableau() != &"":
+			# The ending's tableau shows 1.5 s on the gate band, then the last page (D23).
+			await _wait(0.4)
+			if shoot:
+				await _shot("%s_tableau" % prefix)
+		await _await_ink(book)
 		await _wait(0.4)
 		if shoot:
 			await _shot("%s_card%d" % [prefix, index + 1])
-		if card.next_button().text == play_again:
+		if book.next_button().text == play_again:
 			return
-		await _click_control(card.next_button())
+		await _click_control(book.next_button())
 		if _desk.commands().phase() == RunState.DAWN and _desk.commands().day_number() > day:
+			_desk.gate().reset_gated_seconds()
 			return
 
 
-func _begin() -> void:
+## Waits for the day-book's ink (and the ending's tableau) to finish by itself.
+func _await_ink(book: DayBook) -> void:
+	var start: int = Time.get_ticks_msec()
+	while book.is_writing() and Time.get_ticks_msec() - start < MAX_TALE_SECONDS * 1000.0:
+		await process_frame
+	_expect(not book.is_writing(), "the day-book's ink dries by itself")
+
+
+## Begins the day: a click through the dark "DAY N" card, which only ends it, then the writ's tab.
+## Shoots the card and the writ when `prefix` is given.
+func _begin(prefix: String = "") -> void:
+	var writ: DawnWrit = _desk.system().dawn_writ
+	var day: int = _desk.commands().day_number()
+	await _frames(2)
+	_expect(writ.is_showing_card(), "day %d dawns on the dark card" % day)
 	await _wait(0.4)
-	await _click_control(_desk.system().phase_card.next_button())
+	if prefix != "":
+		await _shot(prefix + "_card")
+	await _hover_at(SCREEN_CENTRE)
+	await _press(SCREEN_CENTRE, false)
+	var only_card: bool = not writ.is_showing_card()
+	_expect(only_card and _desk.commands().phase() == RunState.DAWN, "a click ends only the card")
+	await _wait(0.4)
+	if prefix != "":
+		await _shot(prefix + "_writ")
+	_dawn_done(day)
+	await _click_control(writ.next_button())
 	_expect(_desk.commands().phase() == RunState.DESK, "Begin opens the desk")
+	# The writ slides away; a pause straight after would hold it mid-slide in the shots.
+	await _wait(DawnWrit.SLIDE_SECONDS + 0.1)
+
+
+## Prints the dawn's gated seconds (the dark card) on its own line in the instant pass, and starts
+## the count afresh for the day's first soul.
+func _dawn_done(day: int) -> void:
+	var gate: PresentationGate = _desk.gate()
+	if _label == "FORCED":
+		print("DAWN %d %.2f" % [day, gate.gated_seconds()])
+	gate.reset_gated_seconds()
 
 
 func _escape_and_resume() -> void:
@@ -256,7 +327,17 @@ func _escape_and_resume() -> void:
 	_expect(_desk.pause_overlay().is_open() and _desk.commands().is_paused(), "Esc pauses")
 	await _shot("21a_pause")
 	await _wait(0.4)
-	await _click_control(_desk.pause_overlay().resume_button())
+	var pause: PauseOverlay = _desk.pause_overlay()
+	await _click_control(pause.options_button())
+	_expect(pause.options_panel().is_open(), "Options opens the panel over the pause")
+	await _wait(0.4)
+	await _shot("21b_pause_options")
+	root.push_input(key)
+	await _frames(3)
+	var back: bool = not pause.options_panel().is_open() and pause.is_open()
+	_expect(back and _desk.commands().is_paused(), "Esc closes the options first, still paused")
+	await _wait(0.4)
+	await _click_control(pause.resume_button())
 	_expect(not _desk.commands().is_paused(), "Resume carries on")
 
 
@@ -338,8 +419,12 @@ func _door(realm: StringName) -> Door:
 
 
 func _hover(target: Control) -> void:
+	await _hover_at(target.get_global_rect().get_center())
+
+
+func _hover_at(at: Vector2) -> void:
 	var motion := InputEventMouseMotion.new()
-	motion.position = target.get_global_rect().get_center()
+	motion.position = at
 	motion.global_position = motion.position
 	root.push_input(motion)
 	await _frames(2)

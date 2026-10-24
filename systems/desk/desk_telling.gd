@@ -55,9 +55,18 @@ func _init(claim: EvidencePanel, witness: EvidencePanel, gate: PresentationGate)
 		panel.teller().blip.connect(_on_blip)
 
 
-## Characters a second for the next tale (Options.cps(): INF tells at once).
+## Characters a second (Options.cps(): INF tells at once), for the next tale and for the tale
+## being told: a change of text speed reaches the sheet in progress at once (D37), and "instant"
+## finishes the tale as a consumed click would, releasing the gate.
 func set_cps(cps: float) -> void:
 	_cps = cps
+	if _stage == Stage.IDLE:
+		return
+	if is_inf(cps) or cps <= 0.0:
+		finish()
+		return
+	for panel: EvidencePanel in [_claim, _witness]:
+		panel.teller().set_cps(cps)
 
 
 ## Tells the shown claim from its first line, then calls `show_witness` (which puts the witness's

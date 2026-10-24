@@ -1,8 +1,9 @@
 extends GutTest
-## The slice's flow and shell with the full content (D15, D23, D31, D34): the title, dawn cards,
-## the dusk sequence with "Next" and "Skip all", the ledger tray, the pause with its confirmed
-## restart and quit, and the ending with "Play again". Days are played through DeskCommands
-## (each soul stamped to its legal door) and every screen is driven through its own buttons.
+## The slice's flow and shell with the full content (D15, D23, D31, D34): the title, Odin's writ
+## at dawn, the day-book's dusk spreads with "Next" and "Skip all", the ledger tray, the pause with
+## its confirmed restart and quit, and the ending with "Play again". Days are played through
+## DeskCommands (each soul stamped to its legal door) and every screen is driven through its own
+## buttons.
 
 const DESK_SCENE := preload("res://scenes/desk/desk.tscn")
 const TITLE_SCENE := preload("res://scenes/title/title.tscn")
@@ -41,7 +42,7 @@ func test_the_title_offers_start_and_quit_in_the_slices_words() -> void:
 
 func test_each_dawn_card_shows_its_days_lines_with_the_clock_filled() -> void:
 	assert_eq(_card(), _joined(ScreenText.dawn_lines(_commands().day_rules())))
-	assert_eq(_system.phase_card.next_button().text, _text().begin_label)
+	assert_eq(_system.dawn_writ.next_button().text, _text().begin_label)
 	_play_to_dusk(1)
 	_skip_dusk()
 	assert_eq(_commands().day_number(), 2)
@@ -50,17 +51,17 @@ func test_each_dawn_card_shows_its_days_lines_with_the_clock_filled() -> void:
 
 
 func test_the_dusk_shows_its_cards_one_by_one_then_the_next_day() -> void:
-	_play_to_dusk(1)
+	_play_to_dusk(2)
 	var cards: Array[String] = ScreenText.dusk_cards(_commands().dusk_report(), _rules())
-	assert_gt(cards.size(), 1)
+	assert_gt(cards.size(), 1, "day 2's dusk has a second spread: Hel's offer and the story")
 	for index: int in range(cards.size()):
 		assert_string_contains(_card(), cards[index], "card %d" % (index + 1))
-		assert_string_contains(_card(), _text().dusk_title_format % 1)
+		assert_string_contains(_card(), _text().dusk_title_format % 2)
 		var last: bool = index == cards.size() - 1
-		assert_eq(_system.phase_card.skip_button().visible, not last, "Skip all until the last")
-		_press(_system.phase_card.next_button())
+		assert_eq(_system.day_book.skip_button().visible, not last, "Skip all until the last")
+		_press(_system.day_book.next_button())
 	assert_eq(_commands().phase(), RunState.DAWN)
-	assert_eq(_commands().day_number(), 2)
+	assert_eq(_commands().day_number(), 3)
 
 
 func test_the_dusk_names_the_rank_and_explains_the_feathers() -> void:
@@ -76,7 +77,7 @@ func test_the_dusk_names_the_rank_and_explains_the_feathers() -> void:
 func test_skip_all_keeps_hels_offer_in_the_ledger() -> void:
 	_play_to_dusk(2)
 	assert_ne(_commands().ledger_line(), "", "Hel made her offer at day 2's dusk")
-	_press(_system.phase_card.skip_button())
+	_press(_system.day_book.skip_button())
 	assert_eq(_commands().day_number(), 3, "Skip all goes straight to the next dawn")
 	assert_eq(_commands().promise_state(), RunState.PROMISE_OPEN, "the request is recorded (D15)")
 	_system.ledger_tray.press()
@@ -93,7 +94,7 @@ func test_the_ledger_tray_shows_the_empty_ledger_before_any_request() -> void:
 
 func test_a_double_click_on_a_card_never_skips_a_card() -> void:
 	_play_to_dusk(1)
-	var next: GuardedButton = _system.phase_card.next_button()
+	var next: GuardedButton = _system.day_book.next_button()
 	next.arm_now()
 	var shown: String = _card()
 	_click(next.get_global_rect().get_center(), false)
@@ -106,7 +107,7 @@ func test_a_double_click_on_a_card_never_skips_a_card() -> void:
 
 
 func test_esc_pauses_and_dims_the_desk_and_resume_carries_on() -> void:
-	_press(_system.phase_card.next_button())
+	_press(_system.dawn_writ.next_button())
 	_escape()
 	assert_true(_desk.pause_overlay().is_open())
 	assert_true(_commands().is_paused())
@@ -120,8 +121,8 @@ func test_esc_pauses_and_dims_the_desk_and_resume_carries_on() -> void:
 
 func test_restart_is_confirmed_and_restores_the_whole_day_one_dawn() -> void:
 	_play_to_dusk(2)
-	_press(_system.phase_card.skip_button())
-	_press(_system.phase_card.next_button())
+	_press(_system.day_book.skip_button())
+	_press(_system.dawn_writ.next_button())
 	_commands().pin("C1", "W1")
 	assert_ne(_commands().ledger_line(), "")
 	_escape()
@@ -139,7 +140,7 @@ func test_restart_is_confirmed_and_restores_the_whole_day_one_dawn() -> void:
 	assert_eq(_commands().hel_tide(), 0)
 	assert_eq(_card(), _joined(ScreenText.dawn_lines(_commands().day_rules())), "day 1's dawn")
 	assert_eq(_system.caption_strip.shown_text(), "")
-	_press(_system.phase_card.next_button())
+	_press(_system.dawn_writ.next_button())
 	assert_eq(_system.soul.soul_name(), "Ulf")
 	assert_eq(_commands().threads().size(), 0)
 	assert_eq(_system.hud.shown_time(), "untimed")
@@ -177,7 +178,7 @@ func test_the_hud_clock_shows_nothing_stale_after_the_day_ends() -> void:
 
 func test_the_ending_puts_a_blank_line_between_its_sections() -> void:
 	_play_to_dusk(3)
-	_press(_system.phase_card.skip_button())
+	_press(_system.day_book.skip_button())
 	var sections: PackedStringArray = _card().split("\n\n")
 	assert_eq(sections.size(), 4, "outcome, rows, ledger, standing")
 	var report: EndingReport = _commands().ending()
@@ -190,14 +191,14 @@ func test_the_ending_puts_a_blank_line_between_its_sections() -> void:
 func test_the_ending_follows_day_threes_dusk_and_play_again_restarts() -> void:
 	_play_to_dusk(3)
 	assert_eq(_commands().phase(), RunState.ENDING)
-	_press(_system.phase_card.skip_button())
+	_press(_system.day_book.skip_button())
 	var ending: String = _joined(ScreenText.ending_lines(_commands().ending(), _rules()))
 	assert_eq(_card().replace("\n\n", "\n"), ending, "the slice ending (A8)")
 	assert_string_contains(
 		_card(), _text().standing_format % [_commands().feathers(), _commands().rank_name()]
 	)
-	assert_eq(_system.phase_card.next_button().text, _text().play_again)
-	_press(_system.phase_card.next_button())
+	assert_eq(_system.day_book.next_button().text, _text().play_again)
+	_press(_system.day_book.next_button())
 	assert_eq(_commands().phase(), RunState.DAWN)
 	assert_eq(_commands().day_number(), 1)
 
@@ -214,8 +215,11 @@ func _text() -> DeskText:
 	return _rules().text
 
 
+## What the screen between souls shows: Odin's writ at dawn, the day-book at dusk and the ending.
 func _card() -> String:
-	return _system.phase_card.shown_text()
+	if _commands().phase() == RunState.DAWN:
+		return _system.dawn_writ.shown_text()
+	return _system.day_book.shown_text()
 
 
 func _joined(lines: Array[String]) -> String:
@@ -256,7 +260,7 @@ func _play_to_dusk(day: int) -> void:
 
 
 func _skip_dusk() -> void:
-	_press(_system.phase_card.skip_button())
+	_press(_system.day_book.skip_button())
 
 
 ## A move, a press and a release at `at`, pushed through the desk's viewport.

@@ -34,6 +34,16 @@ var hall_text: String = "Odin counts his einherjar and finds them true. The gate
 var ending_row_format: String = "%s: %s. Truth: %s."
 var ending_ignored: String = " Ignored."
 var ending_missed: String = " Missed."
+## The record's word after the truth (D23, D47): the stamp matched it, a worthy soul went to Hel,
+## a liar went to Valhalla; a wrong door that tips no ending has none.
+var ending_matched: String = " Matched."
+var ending_damned: String = " Worthy, damned."
+var ending_admitted: String = " Liar, admitted."
+## The day-book's column headers over the ending's rows.
+var ending_sent_header: String = "Sent"
+var ending_truth_header: String = "Truth"
+var ending_record_header: String = "Record"
+var ending_cited_header: String = "Cited"
 ## Format: the name.
 var ending_never_format: String = "%s: never judged."
 var returned_name_format: String = "%s (returned)"

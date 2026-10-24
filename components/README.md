@@ -19,3 +19,6 @@ its owner connects it.
 | `pixel_font/` | Applies the pixel font's crisp rendering settings at runtime (ADR-0008) |
 | `teller/` | Tells a label's text line by line at a set pace with pauses and voice blips; finish-now and pause (D4, D41) |
 | `parchment_frame/` | Draws a parchment sheet in code from a seed: deckled or torn edge, rule, shadow; never over its `inner` rect (D8) |
+| `pixel_capitals/` | `PixelCapitals`: the carved capitals for titles ("DAY II", "PAUSED", the endings' names, the game's name), placed pixel by pixel in code, never a second font (D3) |
+| `tag_button/` | `TagButton`: a guarded button drawn as a parchment tag nailed by a pin head; hovered, a rim; chosen, an ember pin (D24, D37, D42) |
+| `hanging_sheet/` | `HangingSheet`: a parchment hung by two pin heads, its heading in the carved capitals (the pause, the options); never takes the mouse (D37, D42) |

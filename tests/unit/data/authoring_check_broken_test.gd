@@ -204,8 +204,8 @@ func test_a_witness_heading_too_wide_for_its_panel_fails() -> void:
 	)
 
 
-func test_a_dawn_card_too_long_for_the_screen_fails() -> void:
+func test_a_dawn_writ_too_long_for_its_sheet_fails() -> void:
 	var day: DayRules = _slice.days[0].to_core()
-	for _line: int in 30:
-		day.dawn_lines.append("One more line on the dawn card.")
-	assert_string_contains("\n".join(_checker.check_dawn_card(day)), "the dawn card of day 1")
+	for _line: int in 6:
+		day.dawn_lines.append("One more line on the dawn writ.")
+	assert_string_contains("\n".join(_checker.check_dawn_card(day)), "the dawn writ of day 1")

@@ -55,6 +55,15 @@ func use_options(p_options: Options) -> void:
 	_options = p_options
 	if is_node_ready():
 		_system.use_options(_options)
+		_pause.use_options(_options)
+		# Turned on mid-presentation (under the pause), reduce motion settles every decorative
+		# movement under way at its end state; durations and state cues stay (D37).
+		if _options.reduce_motion:
+			_end_jolt()
+			_system.stamp_flow.stamp_prompt.settle_motion()
+			for screen: Object in [_system.day_book, _system.dawn_writ]:
+				if screen != null and screen.has_method(&"settle_motion"):
+					screen.call(&"settle_motion")
 
 
 func options() -> Options:
@@ -100,12 +109,15 @@ func _ready() -> void:
 	_pause.resumed.connect(_set_paused.bind(false))
 	_pause.restart_confirmed.connect(_on_restart_confirmed)
 	_pause.quit_confirmed.connect(_on_quit_confirmed)
+	# The pause's options panel edits the desk's own options; each change applies at once (D37).
+	_pause.use_options(_options)
+	_pause.options_changed.connect(use_options)
 
 
-## Esc: open the pause, or close it again (D31).
+## Esc: open the pause, or close it again; an open options panel closes first (D42).
 func toggle_pause() -> void:
 	if _pause.is_open():
-		_pause.close()
+		_pause.escape()
 	else:
 		_set_paused(true)
 		_system.hover_label.hide_label()

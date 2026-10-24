@@ -13,6 +13,13 @@ extends Control
 ## "-0:10" shows on the stone left of the candle, never over a number (D11): the node reaches
 ## 32 px left of the objects for it and starts at the screen's top edge. The gate's pause holds
 ## the gutter and the blink (`set_paused`); a restart clears the gutter (`clear_gutter`).
+##
+## Each object's plate hovers its plain-language label (HudHover, D20): a mouse-through area on
+## each plate takes the hover, never a click, which passes on to whatever is under the HUD. The
+## book's click is the LedgerTray's, which lies over it and hands its hover here (`hover`).
+
+signal hover_started(text: String, area: Rect2)
+signal hover_ended
 
 ## Padding inside every plate, and the stone left between two plates.
 const PAD := 2
@@ -35,6 +42,8 @@ const BOOK_AT := Vector2i(116, 12)
 ## share the candle plate's empty left padding, which is the same Night 1.
 const GUTTER_AT := Vector2i(7, 0)
 const GUTTER_PAD := Vector2i(1, 1)
+## Every object's plate lies inside this box (screen x 384–478, y 2–25); a hover tag hangs under it.
+const OBJECTS_BOX := Rect2i(32, FIRST_ROW_Y, 94, 23)
 
 ## The warning clock blinks at this rate (seconds per phase).
 const BLINK_SECONDS := 0.5
@@ -64,10 +73,15 @@ var _texts: Array[String] = []
 var _ember_rects: Array[Rect2] = []
 var _gutter_plate := Rect2()
 var _paused: bool = false
+var _hover := HudHover.new()
 
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hover.box = _whole(OBJECTS_BOX)
+	_hover.build(self)
+	_hover.started.connect(_on_hover_started)
+	_hover.ended.connect(hover_ended.emit)
 
 
 func refresh(readout: HudReadout) -> void:
@@ -132,6 +146,32 @@ func clear_gutter() -> void:
 	queue_redraw()
 
 
+## The mouse is over `object` (&"" for none): "candle", "clock", "quill", "slate", "raven" or
+## "book". The LedgerTray hands the book's hover here; tests and tools call it too.
+func hover(object: StringName) -> void:
+	_hover.hover(object)
+
+
+## The objects' plates and which one the mouse is over, as last drawn (tests and tools).
+func hover_map() -> HudHover:
+	return _hover
+
+
+## The plate `object` was last drawn on, in global pixels; empty when it was not drawn.
+func object_plate(object: StringName) -> Rect2:
+	var plate: Rect2 = _hover.plate(object)
+	return Rect2(plate.position + global_position, plate.size) if plate.has_area() else Rect2()
+
+
+## The box every object's plate lies in, in global pixels (a hover tag keeps clear of it).
+func objects_rect() -> Rect2:
+	return Rect2(_whole(OBJECTS_BOX).position + global_position, Vector2(OBJECTS_BOX.size))
+
+
+func _on_hover_started(text: String, area: Rect2) -> void:
+	hover_started.emit(text, Rect2(area.position + global_position, area.size))
+
+
 func _process(delta: float) -> void:
 	if _paused:
 		return
@@ -180,6 +220,7 @@ func _draw() -> void:
 	_texts.clear()
 	_ember_rects.clear()
 	_gutter_plate = Rect2()
+	_hover.clear()
 	_draw_candle()
 	var right: int = _draw_clock()
 	_draw_icon_object(Vector2i(right + GAP, FIRST_ROW_Y), &"quill", str(_shown.feathers))
@@ -189,10 +230,13 @@ func _draw() -> void:
 	_draw_book()
 	if _gutter.label() != "":
 		_draw_gutter_label()
+	# The hover areas follow the plates once the draw is done, never moved inside the draw itself.
+	_hover.place_areas.call_deferred()
 
 
 func _draw_candle() -> void:
 	_paint(_whole(CANDLE_PLATE), _color(&"night"))
+	_hover.record(&"candle", _whole(CANDLE_PLATE))
 	var flame: int = _gutter.flame_frame() if is_lit() else HudMarks.UNLIT
 	var ramp: Array[Color] = [
 		_color(&"parchment_light"), _color(&"parchment"), _color(&"parchment_dim")
@@ -213,6 +257,7 @@ func _draw_clock() -> int:
 	var plate := Rect2i(OBJECTS_X, FIRST_ROW_Y, _text_width(_time_text) + 2 * PAD, ROW_HEIGHT)
 	var turned: bool = _warning and _blink < BLINK_SECONDS
 	_paint(_whole(plate), _color(&"text_light" if turned else &"night"))
+	_hover.record(&"clock", _whole(plate))
 	var ink: Color = _color(&"ink" if turned else &"text_light")
 	_text(plate.position + Vector2i(PAD, PAD), _time_text, ink)
 	return plate.end.x
@@ -223,6 +268,7 @@ func _draw_icon_object(at: Vector2i, icon: StringName, text: String) -> int:
 	var width: int = PixelGlyph.SIZE + ICON_TEXT_GAP + _text_width(text)
 	var plate := Rect2i(at, Vector2i(width + 2 * PAD, ROW_HEIGHT))
 	_paint(_whole(plate), _color(&"night"))
+	_hover.record(icon, _whole(plate))
 	HudMarks.glyph(_paint, icon, at + Vector2i(PAD, PAD), _color(&"glyph"))
 	var text_at := at + Vector2i(PAD + PixelGlyph.SIZE + ICON_TEXT_GAP, PAD)
 	_text(text_at, text, _color(&"text_light"))
@@ -235,6 +281,7 @@ func _draw_slate() -> int:
 	var width: int = HudMarks.SLATE_SIZE.x + ICON_TEXT_GAP + 1 + _text_width(numeral)
 	var plate := Rect2i(OBJECTS_X, SECOND_ROW_Y, width + 2 * PAD, ROW_HEIGHT)
 	_paint(_whole(plate), _color(&"night"))
+	_hover.record(&"slate", _whole(plate))
 	var colors: Array[Color] = [
 		_color(&"slate", SLATE_FALLBACK),
 		_color(&"chalk", CHALK_FALLBACK),
@@ -251,7 +298,9 @@ func _draw_slate() -> int:
 
 
 func _draw_book() -> void:
-	_paint(Rect2(Vector2(BOOK_AT - Vector2i(PAD, PAD)), Vector2(12, 12)), _color(&"night"))
+	var plate := Rect2(Vector2(BOOK_AT - Vector2i(PAD, PAD)), Vector2(12, 12))
+	_paint(plate, _color(&"night"))
+	_hover.record(&"book", plate)
 	var colors: Dictionary[String, Color] = {
 		"d": _color(&"wood_dark"),
 		"l": _color(&"wood_light"),

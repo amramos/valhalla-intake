@@ -22,7 +22,7 @@ func _open(options: Options) -> void:
 	_desk.use_options(options)
 	_viewport.add_child(_desk)
 	_system = _desk.system()
-	_system.phase_card.next_button().pressed.emit()
+	_system.dawn_writ.next_button().pressed.emit()
 
 
 func test_a_held_citation_keeps_its_pair_lit_through_the_mentors_comment() -> void:

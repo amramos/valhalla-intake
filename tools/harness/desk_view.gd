@@ -48,8 +48,11 @@ func _describe_overlay() -> String:
 	var t: DeskText = text()
 	var choice: String = "%s\n  %s / %s"
 	var pause: Array[String] = [t.resume_label, t.restart_label, t.quit_label]
+	var title: Array[String] = [
+		t.title_name, t.start_label, OptionsPanel.OPENER_LABEL, t.quit_label
+	]
 	var screens: Dictionary = {
-		TITLE: "== %s ==\n  %s\n  %s" % [t.title_name, t.start_label, t.quit_label],
+		TITLE: "== %s ==\n  %s\n  %s\n  %s" % title,
 		PAUSED: "== %s ==\n  %s" % [t.pause_title, "\n  ".join(pause)],
 		CONFIRM_RESTART: choice % [t.restart_confirm, t.confirm_yes, t.confirm_no],
 		CONFIRM_QUIT: choice % [t.quit_confirm, t.confirm_yes, t.confirm_no],

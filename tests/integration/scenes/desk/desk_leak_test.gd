@@ -45,7 +45,7 @@ func _open(commands: DeskCommands) -> DeskSystem:
 	desk.use_options(Fixture.normal())
 	viewport.add_child(desk)
 	var system: DeskSystem = desk.system()
-	system.phase_card.next_button().pressed.emit()
+	system.dawn_writ.next_button().pressed.emit()
 	return system
 
 

@@ -163,6 +163,24 @@ func test_the_same_step_again_does_not_restart_her_writing() -> void:
 	assert_eq(bubble.shown_text(), "")
 
 
+func test_a_new_pace_reaches_her_words_mid_writing_and_instant_finishes_them() -> void:
+	# A review finding: the text speed changed in the options did not reach a writing under way.
+	var bubble: MentorBubble = _bubble()
+	watch_signals(bubble)
+	bubble.show_step(STAMP_HIM, true)
+	bubble.teller()._process(0.1)
+	bubble.write_cps = 120.0
+	assert_eq(_text(bubble).visible_characters, 6, "the writing goes on from where it was")
+	bubble.teller()._process(0.05)
+	assert_eq(_text(bubble).visible_characters, 12, "at the new pace")
+	bubble.write_cps = INF
+	assert_false(bubble.is_revealing(), "instant writes the rest at once")
+	assert_eq(_text(bubble).visible_characters, -1)
+	assert_signal_emit_count(bubble, "reveal_finished", 1, "and finishes once")
+	bubble.write_cps = 60.0
+	assert_signal_emit_count(bubble, "reveal_finished", 1, "a new pace after it changes nothing")
+
+
 func _painted_in(bubble: MentorBubble, area: Rect2, color: Color) -> bool:
 	var rects: Array[Rect2] = bubble.drawn_rects()
 	for index: int in range(rects.size()):

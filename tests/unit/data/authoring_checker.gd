@@ -20,13 +20,6 @@ const BUBBLE_SIZE := Vector2i(94, 40)
 const DESK_SCENE := "res://scenes/desk/desk.tscn"
 const PANEL_PADDING := 2
 const WITNESS_PREFIX := "WITNESS "
-## The phase card's dawn layout: 320 px wide, padding 6, 10 px a line, then a gap and the button.
-const CARD_WIDTH := 320
-const CARD_PADDING := 6
-const CARD_LINE_PITCH := 10
-const CARD_GAP := 4
-const CARD_BUTTON := 14
-const CARD_MAX_HEIGHT := 266
 const THEME_PATH := "res://scenes/desk/desk_theme.tres"
 ## R1 (matrix §0, "What makes a law thread"): the evidence that shows each decree's condition.
 ## Whether a line states a death in battle is the author's reading, not something a check can
@@ -176,20 +169,29 @@ func witness_heading_room() -> int:
 	return 0
 
 
-## The dawn card (entities/phase_card/phase_card.gd) wraps its text at the card's inner width
-## and grows to fit, up to the 270 px screen less 4; more lines than that would be cut off.
+## Odin's writ (entities/phase_card/writ_lines.gd, D21) wraps each dawn line at its text width,
+## one paragraph a line with a small gap, Odin's mark under the last, inside a sheet of fixed
+## size: more would run off it.
 func check_dawn_card(day: DayRules) -> Array[String]:
 	if _font == null:
 		return []
-	var lines: int = 0
-	for line: String in ScreenText.dawn_lines(day):
-		lines += wrapped_lines(line, CARD_WIDTH - CARD_PADDING * 2)
-	var room: int = int(
-		(CARD_MAX_HEIGHT - CARD_PADDING * 2 - CARD_GAP - CARD_BUTTON) / float(CARD_LINE_PITCH)
-	)
-	if lines <= room:
+	var lines: Array[String] = ScreenText.dawn_lines(day)
+	var rows: Array[int] = []
+	for line: String in lines:
+		rows.append(wrapped_lines(line, WritLines.TEXT_WIDTH))
+	var last_row: int = 0
+	if not lines.is_empty():
+		last_row = WritLines.last_row_width(lines[lines.size() - 1], _font, _font_size)
+	var mark: int = WritLines.text_width(WritLines.SIGNATURE, _font, _font_size)
+	var height: int = WritLines.signed_height(rows, last_row, mark)
+	if height <= WritLines.TEXT_ROOM:
 		return []
-	return ["the dawn card of day %d needs %d lines; the screen holds %d" % [day.day, lines, room]]
+	return [
+		(
+			"the dawn writ of day %d needs %d px; the writ holds %d"
+			% [day.day, height, WritLines.TEXT_ROOM]
+		)
+	]
 
 
 func wrapped_lines(text: String, width: int) -> int:

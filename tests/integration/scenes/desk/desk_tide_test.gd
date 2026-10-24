@@ -112,7 +112,7 @@ func _open(options: Options, commands: DeskCommands = null) -> void:
 	_desk.use_options(options)
 	add_child_autofree(_desk)
 	_system = _desk.system()
-	_system.phase_card.next_button().pressed.emit()
+	_system.dawn_writ.next_button().pressed.emit()
 
 
 ## Asgaut to Hel (his legal and worthy realm: no figure), sent on if held, the window open again.

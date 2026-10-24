@@ -25,10 +25,6 @@ static func days() -> Array[Dictionary]:
 				"Untimed today.",
 				"The Law: I, II, III.",
 				"Doors: Valhalla and Hel. Fólkvangr is barred.",
-				(
-					"Send a worthy soul to Hel and they join her tide. At three, they break"
-					+ " the line at Ragnarok."
-				),
 				"The senior valkyrie will show you the first three.",
 			],
 		},
@@ -82,11 +78,7 @@ static func days() -> Array[Dictionary]:
 					+ " I, III and IV say."
 				),
 				"NEW door: Fólkvangr opens.",
-				(
-					"Huginn perches on your desk. He answers only about a thread you made: which"
-					+ " side of a grey thread lies. 2 answers a day, 5 s each. A third costs 2"
-					+ " feathers."
-				),
+				"Huginn perches here: 2 answers a day.",
 			],
 		},
 	]
@@ -137,8 +129,8 @@ static func slice() -> SliceData:
 	slice.mentor_promise_format = "%s. Hel pays well."
 	slice.mentor_grey_line = "One of them lies. The body may say which."
 	slice.mentor_grey_huginn_line = "Huginn answers that. Click the raven to ask him."
-	slice.mentor_tide_line = "The Law is kept. Hel's tide grows by one."
-	slice.mentor_tide_suffix = "Hel's tide grows by one."
+	slice.mentor_tide_line = "The Law is kept. Hel's tide grows by one. At 3, they march."
+	slice.mentor_tide_suffix = "Hel's tide grows. At 3, they march."
 	slice.desk_text = desk_text()
 	return slice
 
@@ -169,6 +161,13 @@ static func desk_text() -> DeskTextData:
 	text.ending_row_format = "%s: %s. Truth: %s."
 	text.ending_ignored = " Ignored."
 	text.ending_missed = " Missed."
+	text.ending_matched = " Matched."
+	text.ending_damned = " Worthy, damned."
+	text.ending_admitted = " Liar, admitted."
+	text.ending_sent_header = "Sent"
+	text.ending_truth_header = "Truth"
+	text.ending_record_header = "Record"
+	text.ending_cited_header = "Cited"
 	text.ending_never_format = "%s: never judged."
 	text.returned_name_format = "%s (returned)"
 	text.standing_format = "Feathers: %d. Rank: %s."

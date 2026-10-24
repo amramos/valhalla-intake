@@ -187,7 +187,7 @@ func _desk(viewport: SubViewport = null) -> Desk:
 
 
 func _begin(system: DeskSystem) -> void:
-	system.phase_card.next_button().pressed.emit()
+	system.dawn_writ.next_button().pressed.emit()
 	system.finish_tellings()
 
 

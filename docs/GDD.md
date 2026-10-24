@@ -195,8 +195,9 @@ anything else is off-rule and is cut. Loki appears only in the story, and in his
 
 ### 3.10 Dusk
 Dusk takes 90 seconds or less, and every beat can be skipped. It is the clerk's **day-book**
-opened over the dimmed desk, one spread per beat group, pages turned by their dog-ear; the ending
-is its last page after a short tableau (ledger D22, D23):
+opened over the dimmed desk in at most two spreads (citations, quota and the recap; then new
+requests and the story beat), pages turned by their dog-ear; the ending is its last page after a
+short tableau on the gate band (ledger D22, D23):
 - citations and quota;
 - the **recap**: what really happened to 2–3 souls, telling a broken decree apart from an
   unresolved truth;

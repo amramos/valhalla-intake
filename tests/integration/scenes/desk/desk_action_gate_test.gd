@@ -20,7 +20,7 @@ func before_each() -> void:
 	_desk.use_options(Fixture.instant())
 	_viewport.add_child(_desk)
 	_system = _desk.system()
-	_system.phase_card.next_button().pressed.emit()
+	_system.dawn_writ.next_button().pressed.emit()
 
 
 func test_a_no_seam_pin_that_ends_the_day_keeps_the_horns_caption() -> void:

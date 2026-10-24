@@ -1,7 +1,10 @@
-"""Synthesizes the desk's action sounds (D25, D41, D50) as 16-bit 22050 Hz mono WAV files.
+"""Synthesizes the game's own sounds (D25, D41, D50) as 16-bit 22050 Hz mono WAV files.
 
 Run from anywhere with ``py -3 tools/audio/synth_sounds.py``: it writes every sound into
-``assets/audio/`` and then reads each file back and checks its format, length and peak level.
+``assets/audio/`` and then reads each file back and checks its format, length and peak level, that
+a one-shot starts and ends at silence, and that a loop joins itself without a click. A loop
+carries its loop points in the file (a ``smpl`` chunk, which Godot's WAV importer reads), so it
+loops in any checkout: the ``.import`` files are not in the repository.
 ``--check`` only runs the check on the files already there. Standard library only (``wave``,
 ``math``, ``struct``, ``random`` with a fixed seed), so the same script always writes the same
 bytes, needs no download and carries no licence but the project's.
@@ -29,18 +32,24 @@ SEED = 1066
 OUT_DIR = Path(__file__).resolve().parents[2] / "assets" / "audio"
 # A file's first and last samples stay this close to silence, so no sound starts or ends on a click.
 EDGE_LIMIT = 0.02
+# A loop's step from its last sample back to its first is no larger than this many times its
+# largest step inside the file: the seam is as smooth as the sound itself.
+SEAM_RATIO = 1.0
 PEAK_TOLERANCE_DB = 0.5
 LENGTH_TOLERANCE_S = 0.001
 
 
 @dataclass(frozen=True)
 class Sound:
-    """One sound: its file, its length in seconds, its peak in dBFS and how it is made."""
+    """One sound: its file, its length in seconds, its peak in dBFS and how it is made. A loop
+    plays over and over (its ``smpl`` chunk says so), so it must join itself instead of fading
+    out."""
 
     name: str
     seconds: float
     peak_db: float
     make: Callable[[int, random.Random], list[float]]
+    loop: bool = False
 
 
 def _count(seconds: float) -> int:
@@ -143,6 +152,68 @@ def _caw(count: int, rng: random.Random) -> list[float]:
     return _fade_edges(samples, 0.002, 0.012)
 
 
+def _page_turn(count: int, rng: random.Random) -> list[float]:
+    """A 120 ms rustle: noise through a low-pass whose cutoff sweeps from high to low, with a
+    quick attack and a soft decay. A page of the day-book turned (D22)."""
+    samples = []
+    low = 0.0
+    seconds = count / RATE
+    for index in range(count):
+        t = index / RATE
+        # The filter's coefficient falls from bright (0.85) to dull (0.06) over the sound.
+        coefficient = 0.85 * (0.06 / 0.85) ** (t / seconds)
+        low += coefficient * (rng.uniform(-1.0, 1.0) - low)
+        envelope = min(1.0, t / 0.006) * (1.0 - t / seconds) ** 1.5
+        samples.append(low * envelope)
+    return _fade_edges(samples, 0.001, 0.01)
+
+
+def _drone(count: int, _rng: random.Random) -> list[float]:
+    """A 4 s low drone of two tones, 55 Hz and the fifth above it at 82.5 Hz, with a soft octave
+    and a slow breath. Every frequency makes a whole number of cycles in 4 s, so the loop's end
+    meets its start exactly: the drone under the day-book (D22)."""
+    samples = []
+    seconds = count / RATE
+    for index in range(count):
+        t = index / RATE
+        tone = (
+            math.sin(2.0 * math.pi * 55.0 * t)
+            + 0.7 * math.sin(2.0 * math.pi * 82.5 * t)
+            + 0.25 * math.sin(2.0 * math.pi * 110.0 * t)
+        )
+        breath = 0.8 + 0.2 * math.sin(2.0 * math.pi * t / seconds)
+        samples.append(tone * breath)
+    return samples
+
+
+def _wind(count: int, rng: random.Random) -> list[float]:
+    """A 6 s wind: noise through a low-pass whose cutoff and level drift slowly in gusts. The
+    gusts repeat every 6 s and the loop's first half-second is cross-faded with what follows its
+    end, so the wind blows on without a seam: the title's wind (D24)."""
+    fade = _count(0.5)
+    seconds = count / RATE
+    raw = []
+    low = 0.0
+    lower = 0.0
+    for index in range(count + fade):
+        t = index / RATE
+        gust = 0.5 + 0.3 * math.sin(2.0 * math.pi * t / seconds) + 0.2 * math.sin(
+            2.0 * math.pi * 3.0 * t / seconds + 1.0
+        )
+        coefficient = 0.02 + 0.06 * gust
+        low += coefficient * (rng.uniform(-1.0, 1.0) - low)
+        lower += 0.5 * (low - lower)
+        raw.append(lower * (0.35 + 0.65 * gust))
+    samples = raw[:count]
+    for index in range(fade):
+        # Equal power: uncorrelated noise keeps its level through the cross-fade.
+        rise = math.sin(0.5 * math.pi * index / fade)
+        samples[index] = raw[index] * rise + raw[count + index] * math.cos(
+            0.5 * math.pi * index / fade
+        )
+    return samples
+
+
 SOUNDS = [
     Sound("blip.wav", 0.040, -14.0, _blip),
     Sound("pin_tack.wav", 0.030, -6.0, _pin_tack),
@@ -150,6 +221,9 @@ SOUNDS = [
     Sound("no_seam_tick.wav", 0.060, -6.0, _no_seam_tick),
     Sound("horn.wav", 1.200, -6.0, _horn),
     Sound("caw.wav", 0.150, -6.0, _caw),
+    Sound("page_turn.wav", 0.120, -12.0, _page_turn),
+    Sound("drone.wav", 4.000, -14.0, _drone, loop=True),
+    Sound("wind.wav", 6.000, -18.0, _wind, loop=True),
 ]
 
 
@@ -158,6 +232,51 @@ def _normalized(samples: list[float], peak_db: float) -> list[int]:
     largest = max(abs(sample) for sample in samples)
     gain = (10.0 ** (peak_db / 20.0)) / largest if largest > 0.0 else 0.0
     return [int(round(sample * gain * FULL_SCALE)) for sample in samples]
+
+
+# The ``smpl`` chunk's fixed fields before its first loop: manufacturer, product, sample period,
+# MIDI unity note, pitch fraction, SMPTE format and offset, the loop count, the sampler data.
+SMPL_HEADER = "<9I"
+# One loop: its cue point id, its type (0 is forward), its first and last frame, fraction, plays
+# (0 is forever).
+SMPL_LOOP = "<6I"
+LOOP_FORWARD = 0
+
+
+def _smpl_chunk(frame_count: int) -> bytes:
+    """A ``smpl`` chunk looping the whole file forward, for ever."""
+    period_ns = int(round(1_000_000_000 / RATE))
+    header = struct.pack(SMPL_HEADER, 0, 0, period_ns, 60, 0, 0, 0, 1, 0)
+    loop = struct.pack(SMPL_LOOP, 0, LOOP_FORWARD, 0, frame_count - 1, 0, 0)
+    body = header + loop
+    return b"smpl" + struct.pack("<I", len(body)) + body
+
+
+def _add_chunk(path: Path, chunk: bytes) -> None:
+    """Appends `chunk` to a RIFF file and corrects the RIFF size."""
+    with open(path, "r+b") as handle:
+        handle.seek(0, 2)
+        handle.write(chunk)
+        size = handle.tell() - 8
+        handle.seek(4)
+        handle.write(struct.pack("<I", size))
+
+
+def _loop_points(path: Path) -> tuple[int, int, int] | None:
+    """The first loop of a file's ``smpl`` chunk as (type, first, last), or None without one."""
+    data = path.read_bytes()
+    at = 12
+    while at + 8 <= len(data):
+        chunk_id = data[at : at + 4]
+        (size,) = struct.unpack("<I", data[at + 4 : at + 8])
+        if chunk_id == b"smpl":
+            loop_at = at + 8 + struct.calcsize(SMPL_HEADER)
+            _cue, kind, first, last, _fraction, _plays = struct.unpack(
+                SMPL_LOOP, data[loop_at : loop_at + struct.calcsize(SMPL_LOOP)]
+            )
+            return (kind, first, last)
+        at += 8 + size + (size & 1)
+    return None
 
 
 def write_all(out_dir: Path) -> None:
@@ -171,6 +290,8 @@ def write_all(out_dir: Path) -> None:
             handle.setsampwidth(SAMPLE_WIDTH)
             handle.setframerate(RATE)
             handle.writeframes(struct.pack(f"<{len(frames)}h", *frames))
+        if sound.loop:
+            _add_chunk(out_dir / sound.name, _smpl_chunk(len(frames)))
 
 
 def check_all(out_dir: Path) -> list[str]:
@@ -195,15 +316,25 @@ def check_all(out_dir: Path) -> list[str]:
         peak = max(abs(frame) for frame in frames) / FULL_SCALE
         peak_db = 20.0 * math.log10(peak) if peak > 0.0 else -math.inf
         edge = max(abs(frames[0]), abs(frames[-1])) / FULL_SCALE
+        largest_step = max(abs(frames[i + 1] - frames[i]) for i in range(count - 1))
+        seam = abs(frames[0] - frames[-1])
         print(
             f"{sound.name:17} {seconds * 1000.0:7.1f} ms  peak {peak_db:6.2f} dBFS"
             f"  (want {sound.seconds * 1000.0:.0f} ms, {sound.peak_db:.0f} dBFS)"
+            + (f"  loop seam {seam}, largest step {largest_step}" if sound.loop else "")
         )
         if abs(seconds - sound.seconds) > LENGTH_TOLERANCE_S:
             problems.append(f"{sound.name}: {seconds:.4f} s, want {sound.seconds} s")
         if abs(peak_db - sound.peak_db) > PEAK_TOLERANCE_DB:
             problems.append(f"{sound.name}: peak {peak_db:.2f} dBFS, want {sound.peak_db}")
-        if edge > EDGE_LIMIT:
+        if sound.loop and seam > SEAM_RATIO * largest_step:
+            problems.append(f"{sound.name}: the loop clicks at its seam ({seam} > {largest_step})")
+        loop = _loop_points(path)
+        if sound.loop and loop != (LOOP_FORWARD, 0, count - 1):
+            problems.append(f"{sound.name}: no forward loop over the whole file ({loop})")
+        if not sound.loop and loop is not None:
+            problems.append(f"{sound.name}: a one-shot carries loop points ({loop})")
+        if not sound.loop and edge > EDGE_LIMIT:
             problems.append(f"{sound.name}: starts or ends on a click ({edge:.3f} of full scale)")
     return problems
 

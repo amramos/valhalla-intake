@@ -1,34 +1,30 @@
 class_name PhaseFlow
 extends RefCounted
-## The cards between souls (D15, D23, D34): the dawn card, the dusk sequence with "Next" and
-## "Skip all", and the slice's ending after day 3's dusk. ScreenText composes every word; this
-## keeps the place in the sequence and turns a button into the next command. Skipping hides
-## nothing with consequences: the ledger is written in core before the first card shows. It holds
-## no card node, so the text harness walks the same sequence (D13): card() says what shows, and
-## show() draws it on the desk's PhaseCard.
-
-const CARD_WIDTH := 320.0
-const ENDING_WIDTH := 470.0
+## The screens between souls (D15, D21, D22, D23, D34): the dawn, the dusk day-book's spreads with
+## "Next" and "Skip all", and the slice's ending after day 3's dusk. ScreenText composes every
+## word; this keeps the place in the sequence and turns a button into the next command. Skipping
+## hides nothing with consequences: the ledger is written in core before the first spread shows.
+## It holds no node, so the text harness walks the same sequence (D13, D44): card() says what
+## shows, one card per spread, and show_screens() draws it on Odin's writ and the day-book.
 
 ## What "Play again" does (the desk system's full restart).
 var on_restart: Callable = Callable()
 
-## The dusk being shown (its day), its cards, and the card on screen.
+## The dusk being shown (its day), its spreads, and the spread on screen.
 var _dusk_day: int = -1
-var _cards: Array[String] = []
+var _spreads: Array[DuskSpread] = []
 var _index: int = 0
 var _ending: bool = false
 
 
-## One card as it shows: a title line ("" for none) over its body, the main button's label, the
-## "Skip all" label ("" for no second button) and the card's width.
+## One card as it shows: a title line ("" for none) over its body, the main button's label and the
+## "Skip all" label ("" for no second button).
 class Card:
 	extends RefCounted
 	var title: String = ""
 	var body: String = ""
 	var next_label: String = ""
 	var skip_label: String = ""
-	var width: float = CARD_WIDTH
 
 	func text() -> String:
 		return body if title == "" else title + "\n" + body
@@ -37,7 +33,7 @@ class Card:
 ## Forgets the sequence (a restart).
 func reset() -> void:
 	_dusk_day = -1
-	_cards.clear()
+	_spreads.clear()
 	_index = 0
 	_ending = false
 
@@ -66,11 +62,10 @@ func card(commands: DeskCommands) -> Card:
 			if _ending:
 				shown.body = ending_text(commands.ending(), rules)
 				shown.next_label = text.play_again
-				shown.width = ENDING_WIDTH
 			else:
-				var last: bool = _index >= _cards.size() - 1
-				shown.title = text.dusk_title_format % commands.dusk_report().day
-				shown.body = _cards[_index]
+				var last: bool = _index >= _spreads.size() - 1
+				shown.title = _spreads[_index].title
+				shown.body = _spreads[_index].body()
 				shown.next_label = _finish_label(commands) if last else text.next_label
 				shown.skip_label = "" if last else text.skip_all_label
 		_:
@@ -78,13 +73,54 @@ func card(commands: DeskCommands) -> Card:
 	return shown
 
 
-## Draws the card for the commands' phase, or hides it while a soul is at the desk.
-func show(card_node: PhaseCard, commands: DeskCommands) -> void:
-	var shown: Card = card(commands)
-	if shown == null:
-		card_node.visible = false
+## Draws the phase on the desk's screens: the dawn on Odin's writ, dusk's spread and the ending in
+## the day-book; whichever is not the phase's closes, and both close while a soul is at the desk.
+func show_screens(writ: DawnWrit, book: DayBook, commands: DeskCommands) -> void:
+	sync(commands)
+	if commands.phase() == RunState.DAWN:
+		book.close()
+		var day: DayRules = commands.day_rules()
+		var begin: String = commands.slice_rules().text.begin_label
+		writ.show_dawn(day.day, ScreenText.dawn_lines(day), begin)
 		return
-	card_node.show_card(shown.text(), shown.next_label, shown.skip_label, shown.width)
+	writ.close()
+	show_book(book, commands)
+
+
+## Draws dusk's spread on show, or the ending (its tableau, then the last spread), in the
+## day-book; closes the book in any other phase.
+func show_book(book: DayBook, commands: DeskCommands) -> void:
+	var shown: Card = card(commands)
+	if shown == null or commands.phase() == RunState.DAWN:
+		book.close()
+		return
+	if not _ending:
+		book.show_spread(_spreads[_index], shown.next_label, shown.skip_label)
+		return
+	var report: EndingReport = commands.ending()
+	var rules: SliceRules = commands.slice_rules()
+	var lines: Array[String] = ScreenText.ending_lines(report, rules)
+	var outcome: Array[String] = [lines[1]]
+	book.show_ending(
+		tableau_for(report.outcome),
+		ScreenText.ending_rows(report, rules),
+		lines[0],
+		outcome,
+		report.promise_line,
+		lines[-1],
+		shown.next_label,
+		ScreenText.ending_headers(rules)
+	)
+
+
+## The ending's tableau on the gate band for an outcome (D23).
+static func tableau_for(outcome: StringName) -> StringName:
+	match outcome:
+		EndingReport.TIDE:
+			return DayBook.TIDE
+		EndingReport.HOLLOW:
+			return DayBook.HOLLOW
+	return DayBook.HOLDS
 
 
 ## The card's main button: begin the day, the next dusk card, the next day, or play again. The
@@ -101,7 +137,7 @@ func advance(commands: DeskCommands) -> void:
 					on_restart.call()
 				else:
 					commands.restart_run()
-			elif _index < _cards.size() - 1:
+			elif _index < _spreads.size() - 1:
 				_index += 1
 			else:
 				_finish(commands)
@@ -120,13 +156,13 @@ static func ending_text(report: EndingReport, rules: SliceRules) -> String:
 	return "\n\n".join(ScreenText.ending_sections(report, rules))
 
 
-## Which card shows: its index within the dusk, or -1 on the ending (tests, the harness).
+## Which spread shows: its index within the dusk, or -1 on the ending (tests, the harness).
 func card_index() -> int:
 	return -1 if _ending else _index
 
 
 func card_count() -> int:
-	return _cards.size()
+	return _spreads.size()
 
 
 ## Whether the slice's ending shows (after day 3's dusk), with only "Play again".
@@ -139,13 +175,9 @@ func _start_dusk(commands: DeskCommands) -> void:
 	if report.day == _dusk_day:
 		return
 	_dusk_day = report.day
-	_cards = ScreenText.dusk_cards(report, commands.slice_rules())
+	_spreads = ScreenText.dusk_spreads(report, commands.slice_rules())
 	_index = 0
 	_ending = false
-	if _cards.is_empty():
-		_ending = commands.phase() == RunState.ENDING
-		if not _ending:
-			_cards = [""]
 
 
 func _finish(commands: DeskCommands) -> void:

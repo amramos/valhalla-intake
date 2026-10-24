@@ -173,3 +173,33 @@ func test_starting_again_replaces_the_telling_without_finishing_it() -> void:
 	_teller._process(1.0)
 	assert_eq(_label.text, "gh")
 	assert_eq(_events, ["line 0", "line 0", "finished"])
+
+
+func test_a_new_pace_mid_telling_keeps_what_shows_and_tells_the_rest_at_it() -> void:
+	_teller.start(_label, "abcdefgh", CPS, PAUSE, 7)
+	_teller._process(2 * STEP)
+	_teller.set_cps(2 * CPS)
+	assert_eq(_label.visible_characters, 2, "nothing restarts")
+	assert_true(_teller.is_telling())
+	assert_eq(_teller.pace(), 2 * CPS)
+	_teller._process(STEP)
+	assert_eq(_label.visible_characters, 4, "two characters a step at the doubled pace")
+
+
+func test_an_infinite_pace_mid_telling_shows_the_rest_and_finishes_now_once() -> void:
+	_teller.start(_label, "abcd\nef", CPS, PAUSE, 7)
+	_teller._process(STEP)
+	_teller.set_cps(INF)
+	assert_eq(_label.visible_characters, -1, "the whole text shows at once")
+	assert_false(_teller.is_telling())
+	assert_eq(_events, ["line 0", "line 1", "finished"], "finished now, not on a later frame")
+	_teller._process(1.0)
+	_teller.set_cps(INF)
+	assert_eq(_events.count("finished"), 1, "and only once")
+
+
+func test_a_new_pace_with_nothing_told_changes_nothing() -> void:
+	_teller.set_cps(INF)
+	assert_eq(_events, [] as Array[String])
+	_teller.start(_label, "ab", CPS, PAUSE, 7)
+	assert_eq(_teller.pace(), CPS, "a telling takes its own pace from start")

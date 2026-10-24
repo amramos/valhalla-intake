@@ -1,6 +1,6 @@
 extends GutTest
 ## The text of the flow screens (matrix A5, A6, A8), composed once for both the desk and the
-## harness: the dawn card, the dusk cards and the slice ending.
+## harness: the dawn card, the dusk day-book's cards (one per spread) and the slice ending.
 
 const Fixture := preload("res://tests/unit/core/slice_fixture.gd")
 
@@ -23,6 +23,8 @@ func test_the_dawn_card_fills_in_the_clock() -> void:
 	)
 
 
+## The day-book's two spreads carry the old five cards' words in the same order (D22, D44): the
+## citations, the quota with its feathers and the rank, the recap; requests; the story beat.
 func test_the_dusk_cards_run_citations_quota_and_feathers_recap_requests_story() -> void:
 	var desk: DeskCommands = Fixture.desk()
 	desk.debug_jump(2, 3)
@@ -30,20 +32,23 @@ func test_the_dusk_cards_run_citations_quota_and_feathers_recap_requests_story()
 	desk.next_soul()
 	var report: DuskReport = desk.dusk_report()
 	var cards: Array[String] = ScreenText.dusk_cards(report, _rules)
-	assert_eq(cards.size(), 5)
-	assert_eq(cards[0], "Citations today: 1.\n" + report.citations[0])
-	assert_eq(
-		cards[1],
+	assert_eq(cards.size(), 2, "one card per spread")
+	var old_cards: Array[String] = [
+		"Citations today: 1.\n" + report.citations[0],
 		(
 			"Odin wanted 1. Valhalla took 2. +2 feathers.\n"
 			+ "Feathers: 12 at dawn, 12 now.\n"
 			+ "Citation (Grim): -2.\nQuota: +2.\n"
 			+ "Rank: Chooser of the Slain."
-		)
-	)
-	assert_eq(cards[2], "\n".join(report.recap))
-	assert_string_contains(cards[3], "Hel: send Ragna to Hel. 4 feathers.")
-	assert_eq(cards[4], "Eyvind prays.\nHakon is back.")
+		),
+		"\n".join(report.recap),
+		"\n".join(report.requests),
+		"Eyvind prays.\nHakon is back.",
+	]
+	assert_eq("\n".join(cards), "\n".join(old_cards), "the same words, in the same order")
+	assert_eq(cards[0], "\n".join(old_cards.slice(0, 3)), "citations, quota, then the recap")
+	assert_string_contains(cards[1], "Hel: send Ragna to Hel. 4 feathers.")
+	assert_true(cards[1].ends_with("Eyvind prays.\nHakon is back."))
 
 
 func test_a_quiet_dusk_says_so_and_leaves_empty_cards_out() -> void:
@@ -52,9 +57,11 @@ func test_a_quiet_dusk_says_so_and_leaves_empty_cards_out() -> void:
 	desk.stamp(Realm.VALHALLA)
 	desk.next_soul()
 	var cards: Array[String] = ScreenText.dusk_cards(desk.dusk_report(), _rules)
-	assert_eq(cards[0], "No citations today.")
-	assert_true(cards[1].begins_with("Odin wanted 1. Valhalla took 2. +2 feathers."))
-	assert_eq(cards.size(), 3, "citations, quota, recap; no request or story on day 1")
+	assert_true(
+		cards[0].begins_with("No citations today.\nOdin wanted 1. Valhalla took 2. +2 feathers."),
+		"never alone on a page: the quota shares it"
+	)
+	assert_eq(cards.size(), 1, "one spread; no request or story on day 1")
 
 
 func test_a_short_quota_names_the_feathers_lost() -> void:
@@ -63,10 +70,9 @@ func test_a_short_quota_names_the_feathers_lost() -> void:
 	for _soul: int in 3:
 		desk.stamp(Realm.HEL)
 		desk.next_soul()
-	assert_true(
-		ScreenText.dusk_cards(desk.dusk_report(), _rules)[1].begins_with(
-			"Odin wanted 1. Valhalla took 0. -1 feathers."
-		)
+	assert_string_contains(
+		ScreenText.dusk_cards(desk.dusk_report(), _rules)[0],
+		"\nOdin wanted 1. Valhalla took 0. -1 feathers.\n"
 	)
 
 
@@ -83,9 +89,9 @@ func test_strict_obedience_ends_on_hels_tide_naming_the_souls() -> void:
 			+ "Asa, Hakon, Hakon (returned)."
 		)
 	)
-	assert_true(lines.has("Asa: Hel. Truth: Valhalla. Missed."))
-	assert_true(lines.has("Hakon (returned): Hel. Truth: Valhalla. Missed."))
-	assert_true(lines.has("Ulf: Valhalla. Truth: Valhalla."))
+	assert_true(lines.has("Asa: Hel. Truth: Valhalla. Worthy, damned. Missed."))
+	assert_true(lines.has("Hakon (returned): Hel. Truth: Valhalla. Worthy, damned. Missed."))
+	assert_true(lines.has("Ulf: Valhalla. Truth: Valhalla. Matched."))
 	assert_true(lines.has("Broken. Ragna went to Fólkvangr."))
 	assert_eq(lines[-1], "Feathers: %d. Rank: Chooser of the Slain." % desk.feathers())
 
@@ -119,7 +125,7 @@ func test_day_threes_quota_and_feathers_are_on_its_dusk_card_not_the_ending() ->
 	desk.stamp(Realm.HEL)
 	var quota: String = "Odin wanted 2. Valhalla took 1. -1 feathers."
 	var dusk: Array[String] = ScreenText.dusk_cards(desk.dusk_report(), _rules)
-	assert_true(dusk[1].begins_with(quota + "\n"), "day 3's dusk card names the quota")
+	assert_string_contains(dusk[0], "\n" + quota + "\n", "day 3's dusk spread names the quota")
 	var lines: Array[String] = ScreenText.ending_lines(desk.ending(), _rules)
 	assert_false(lines.has(quota), "the ending leaves it to the dusk card")
 	assert_false(lines.has("Quota: -1."), "and the day's feather changes")

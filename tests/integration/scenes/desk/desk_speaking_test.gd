@@ -52,7 +52,7 @@ func _open(options: Options) -> void:
 	_system = _desk.system()
 	for panel: EvidencePanel in [_system.claim_panel, _system.witness_panel]:
 		panel.teller().blip.connect(_on_blip)
-	_system.phase_card.next_button().pressed.emit()
+	_system.dawn_writ.next_button().pressed.emit()
 
 
 func _on_blip(_pitch_scale: float) -> void:

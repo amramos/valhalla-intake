@@ -1,3 +1,4 @@
+# gdlint: disable=max-public-methods
 class_name StampPrompt
 extends Control
 ## The writ and the stamp under the doors (D9, D14, D15, D54-D56). The writ always carries the name
@@ -211,7 +212,7 @@ func slam(p_realm: StringName) -> Tween:
 	_impact.set_burst(1)
 	_motion = _timeline(
 		[
-			[FLASH_SECONDS, _end_flash.bind(0.0 if reduce_motion else IMPACT_DIM)],
+			[FLASH_SECONDS, _end_flash],
 			[BURST_MID_SECONDS, _impact.set_burst.bind(2)],
 			[SQUASH_SECONDS, _face.set_squashed.bind(false)],
 			[DENT_SECONDS, _writ.set_dented.bind(false)],
@@ -277,6 +278,27 @@ func send_on() -> void:
 		send_on_requested.emit()
 
 
+## Reduce motion turned on mid-presentation, under the pause say (D37): the rise and the sweep
+## take their end states at once and the veil its reduce-motion state (none), so the raised stamp
+## is the cue. A slam under way keeps its timing and its cues (the ink, the squash, the dent, the
+## burst, the shockwave) and loses only its flash and veil.
+func settle_motion() -> void:
+	reduce_motion = true
+	_finish_sweep()
+	match _state:
+		State.ASKING:
+			if _motion != null and _motion.is_valid():
+				_motion.kill()
+			_motion = null
+			_face.position.y = RAISED_Y
+			_choice_veil()
+		State.PRESSED:
+			_choice_veil()
+		State.INKED:
+			_set_flash(false)
+			_impact.set_veil(0.0)
+
+
 ## Every movement stopped and the writ clean, with the latest name: a restart.
 func reset_writ() -> void:
 	_stop_motion()
@@ -301,10 +323,11 @@ func _set_flash(on: bool) -> void:
 	_writ.set_flash(on)
 
 
-## The flash ends and the desk yields under the impact's veil (`alpha`).
-func _end_flash(alpha: float) -> void:
+## The flash ends and the desk yields under the impact's veil; none under reduce motion, read when
+## the flash ends so that turning it on mid-slam holds (`settle_motion`).
+func _end_flash() -> void:
 	_set_flash(false)
-	_impact.set_veil(alpha)
+	_impact.set_veil(0.0 if reduce_motion else IMPACT_DIM)
 
 
 ## The desk dims while the stamp is raised (D56); under reduce motion the raised stamp is the cue.

@@ -170,7 +170,7 @@ func test_no_screen_shows_destinations_seams_or_truth_before_its_day_is_over() -
 	_check(title, data_truths)
 	title.act("start")
 	_play(title, _legal, true, data_truths)
-	assert_gt(_checked, 80, "every screen of every run was described")
+	assert_gt(_checked, 70, "every screen of every run was described (a card per spread)")
 	assert_eq(_leaks, [] as Array[String])
 
 
@@ -181,7 +181,9 @@ func test_strict_obedience_through_the_harness_ends_on_hels_tide() -> void:
 	var ending: String = harness.describe()
 	assert_true(ending.begins_with("Hel's tide\n"), ending)
 	assert_string_contains(ending, "break the line: Asa, Hakon, Hakon (returned).")
-	assert_string_contains(ending, "Hakon (returned): Hel. Truth: Valhalla. Ignored.")
+	assert_string_contains(
+		ending, "Hakon (returned): Hel. Truth: Valhalla. Worthy, damned. Ignored."
+	)
 	assert_string_contains(ending, "Broken. Ragna went to Fólkvangr.")
 	assert_string_contains(ending, "Feathers: 13. Rank: Chooser of the Slain.")
 	assert_string_contains(harness.actions(), "Play again")
@@ -201,14 +203,14 @@ func test_mercy_through_the_harness_holds_the_hall() -> void:
 	_play(harness, _worthy, false)
 	var ending: String = harness.describe()
 	assert_true(ending.begins_with("The Hall holds\n"), ending)
-	assert_string_contains(ending, "Egil: Fólkvangr. Truth: Fólkvangr.")
-	assert_string_contains(ending, "Asa: Valhalla. Truth: Valhalla.")
+	assert_string_contains(ending, "Egil: Fólkvangr. Truth: Fólkvangr. Matched.")
+	assert_string_contains(ending, "Asa: Valhalla. Truth: Valhalla. Matched.")
 	assert_false(ending.contains("(returned)"), "Hakon was spared, so Egil came instead")
 
 
 func test_the_title_starts_the_run_and_quit_asks_first() -> void:
 	var harness := Harness.new(SliceLoader.load_slice(), true)
-	assert_eq(harness.describe(), "== Valhalla Intake ==\n  Start\n  Quit")
+	assert_eq(harness.describe(), "== Valhalla Intake ==\n  Start\n  Options\n  Quit")
 	harness.act("begin")
 	assert_false(harness.last_ok, "the title comes first")
 	harness.act("quit")
@@ -232,23 +234,23 @@ func test_the_dawn_card_reads_the_days_lines_with_its_clock() -> void:
 	)
 
 
+## One card per spread of the day-book (D22): the citations and the quota share the first.
 func test_dusk_turns_its_cards_with_next_and_skip_all_goes_to_dawn() -> void:
 	var harness := Harness.new(SliceLoader.load_slice())
 	harness.act("jump 2 4")
 	harness.act("stamp valhalla")
 	harness.act("next")
 	var cards: Array[String] = harness.view.dusk_cards()
-	assert_string_contains(harness.describe(), "== Dusk, day 2. Card 1 of %d ==" % cards.size())
-	assert_string_contains(harness.describe(), "Citations today: 1.")
-	harness.act("next")
-	var quota: String = harness.describe()
-	assert_string_contains(quota, "Card 2 of")
-	assert_string_contains(quota, "Feathers: 12 at dawn, 12 now.")
-	assert_string_contains(quota, "Citation (Brand): -2.")
-	assert_string_contains(quota, "Quota: +2.")
+	assert_eq(cards.size(), 2, "the citations, quota and recap, then requests and the story")
+	var first: String = harness.describe()
+	assert_string_contains(first, "== Dusk, day 2. Card 1 of 2 ==")
+	assert_string_contains(first, "Citations today: 1.")
+	assert_string_contains(first, "Feathers: 12 at dawn, 12 now.")
+	assert_string_contains(first, "Citation (Brand): -2.")
+	assert_string_contains(first, "Quota: +2.")
 	assert_string_contains(harness.actions(), "Next")
-	for _card: int in cards.size() - 2:
-		harness.act("next")
+	harness.act("next")
+	assert_string_contains(harness.describe(), "Card 2 of 2")
 	assert_string_contains(harness.describe(), "Hakon is back.")
 	assert_string_contains(harness.actions(), "Next day")
 	harness.act("next")

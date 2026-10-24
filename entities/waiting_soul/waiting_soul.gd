@@ -4,7 +4,8 @@ extends Control
 ## layers are the chart's front view cropped (BodyStacks), so it shows nothing the chart doesn't.
 ## It can be dragged onto a door (D9). The plate is plain, frost-burned for a returned soul, or
 ## carries Hel's mark; it hovers the encounter's plate label. A soul shown after `prepare_arrival`
-## waits off-screen to the left, its name off the plate, until `arrive` walks it in (D15). While
+## waits off-screen to the left until `arrive` walks it in (D15); until then the plate is still the
+## stamped soul's (its name, its plate, its label), so it never goes blank in the slam. While
 ## it tells its tale it speaks (D4, D17): the plate lights and the figure dips 1 px on each voice
 ## blip; otherwise it is still. A returned soul's frost glints now and then (D17): three rime pixels
 ## on the plate, never on evidence; reduce motion and the gate's pause hold it.
@@ -46,8 +47,13 @@ var reduce_motion: bool = false
 var _figure: DragSource = null
 var _plate: Control = null
 var _name: Label = null
+## What the plate shows now: the seated soul's, or the stamped soul's while an arrival is pending.
 var _plate_label: String = ""
 var _plate_texture: Texture2D = null
+## The seated encounter's name, plate and label, which the plate takes at `arrive`.
+var _seated_name: String = ""
+var _seated_label: String = ""
+var _seated_texture: Texture2D = null
 var _arrival: Tween = null
 var _speaking: bool = false
 var _bob: Tween = null
@@ -92,9 +98,8 @@ func show_soul(encounter: Encounter) -> void:
 		_figure.position = FIGURE_AT
 		return
 	_figure.position = Vector2(ARRIVE_FROM_X, FIGURE_AT.y) if arrive_pending else FIGURE_AT
-	_name.visible = not arrive_pending
-	_name.text = encounter.soul_name
-	_plate_label = encounter.plate_label
+	_seated_name = encounter.soul_name
+	_seated_label = encounter.plate_label
 	var layers: Array[Texture2D] = []
 	if stacks != null:
 		layers = stacks.soul_layers(encounter.id)
@@ -103,17 +108,27 @@ func show_soul(encounter: Encounter) -> void:
 		if stand_in != null:
 			layers = [stand_in]
 	_figure.layers = layers
-	_plate_texture = plate_plain
+	_seated_texture = plate_plain
 	if encounter.hel_marked:
-		_plate_texture = plate_hel
+		_seated_texture = plate_hel
 	elif encounter.returned:
-		_plate_texture = plate_frost
-	_glint.reset()
-	_plate.queue_redraw()
+		_seated_texture = plate_frost
+	if not arrive_pending:
+		_show_seated_plate()
+	elif not _name.visible:
+		# Nobody left the desk (the day's first soul): its plate waits blank for the walk-in.
+		_plate_texture = _seated_texture
+		_plate.queue_redraw()
 
 
+## The seated soul's name (the desk already knows who is next while it waits to arrive).
 func soul_name() -> String:
-	return _name.text if visible else ""
+	return _seated_name if visible else ""
+
+
+## The name the plate shows now: the stamped soul's until the next one's walk-in starts.
+func plate_name() -> String:
+	return _name.text if visible and _name.visible else ""
 
 
 func figure() -> DragSource:
@@ -125,8 +140,11 @@ func plate_texture() -> Texture2D:
 	return _plate_texture
 
 
-## The next soul shown waits off-screen for `arrive` (the walk-in after a stamp, D15).
+## The next soul shown waits off-screen for `arrive` (the walk-in after a stamp, D15). The plate
+## keeps what it shows (the stamped soul's), or goes blank when nobody stands at the desk.
 func prepare_arrival() -> void:
+	if not arrive_pending and not visible:
+		_name.visible = false
 	arrive_pending = true
 
 
@@ -136,7 +154,7 @@ func arrive(seconds: float = ARRIVE_SECONDS) -> Tween:
 	if not arrive_pending:
 		return null
 	arrive_pending = false
-	_name.visible = true
+	_show_seated_plate()
 	_stop_arrival()
 	if seconds <= 0.0 or not is_inside_tree():
 		_figure.position = FIGURE_AT
@@ -153,7 +171,7 @@ func is_arriving() -> bool:
 ## The walk-in skipped: the figure stands in its place at once.
 func finish_arrival() -> void:
 	arrive_pending = false
-	_name.visible = true
+	_show_seated_plate()
 	_stop_arrival()
 	_figure.position = FIGURE_AT
 
@@ -246,6 +264,15 @@ func _lift() -> void:
 
 func _on_plate_entered() -> void:
 	plate_hover_started.emit(_plate_label, _plate.get_global_rect())
+
+
+func _show_seated_plate() -> void:
+	_glint.reset()
+	_name.text = _seated_name
+	_name.visible = true
+	_plate_label = _seated_label
+	_plate_texture = _seated_texture
+	_plate.queue_redraw()
 
 
 func _stop_arrival() -> void:

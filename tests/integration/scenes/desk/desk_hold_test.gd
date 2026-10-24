@@ -16,7 +16,7 @@ func before_each() -> void:
 	_desk.use_options(Fixture.instant())
 	add_child_autofree(_desk)
 	_system = _desk.system()
-	_system.phase_card.next_button().pressed.emit()
+	_system.dawn_writ.next_button().pressed.emit()
 
 
 func test_while_a_cited_soul_waits_only_next_soul_acts() -> void:
@@ -154,7 +154,7 @@ func test_a_restart_from_a_soul_at_the_desk_clears_the_whole_desk() -> void:
 	assert_eq(_system._lit, [] as Array[String], "nothing lit")
 	assert_eq(_system.huginn_thread, -1, "no thread for Huginn")
 
-	_system.phase_card.next_button().pressed.emit()
+	_system.dawn_writ.next_button().pressed.emit()
 	_area("C3").press()
 	assert_true(_system.claim_panel.area("C3").selected, "a half-made pin")
 	_restart()
@@ -170,7 +170,7 @@ func _restart() -> void:
 
 func _assert_empty_dawn() -> void:
 	assert_eq(_desk.commands().phase(), RunState.DAWN)
-	assert_true(_system.phase_card.visible, "the dawn card shows")
+	assert_true(_system.dawn_writ.visible, "the dawn shows")
 	assert_eq(_soul(), "", "no soul at the desk")
 	assert_false(_system.body_chart.has_item("B1"), "no body facts")
 	assert_false(_system.claim_panel.has_item("C1"), "no claim")

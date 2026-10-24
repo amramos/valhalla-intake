@@ -48,9 +48,17 @@ func line_width() -> int:
 	return int(_strip.size.x) - CaptionStrip.TEXT_LEFT - CaptionStrip.TEXT_RIGHT
 
 
-## The quill's pace follows the text speed: INF at "instant" writes at once (D37, D43).
+## The quill's pace follows the text speed: INF at "instant" writes at once (D37, D43). A caption
+## being written takes the new pace now (never longer than the strip's second); "instant" writes
+## the rest at once, and its `writing_finished` releases the gate.
 func use_options(options: Options) -> void:
-	_strip.write_cps = options.cps() * WRITE_PACE
+	var cps: float = options.cps() * WRITE_PACE
+	_strip.write_cps = cps
+	if not _strip.is_writing():
+		return
+	if not is_inf(cps) and cps > 0.0:
+		cps = maxf(cps, _strip.shown_text().length() / CaptionStrip.MAX_WRITE_SECONDS)
+	_strip.teller().set_cps(cps)
 
 
 ## A thread's caption: the pair named by its words (D6), both speakers on a grey thread.

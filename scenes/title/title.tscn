@@ -3,7 +3,22 @@
 [ext_resource type="Script" path="res://scenes/title/title.gd" id="1_title"]
 [ext_resource type="Theme" path="res://scenes/desk/desk_theme.tres" id="2_theme"]
 [ext_resource type="Texture2D" path="res://assets/art/scenes/gate-desk.png" id="3_backdrop"]
-[ext_resource type="Script" path="res://components/guarded_button/guarded_button.gd" id="4_guard"]
+[ext_resource type="Script" path="res://components/tag_button/tag_button.gd" id="4_tag"]
+[ext_resource type="Script" path="res://scenes/desk/gate_band.gd" id="5_band"]
+[ext_resource type="Texture2D" path="res://assets/art/fog/fog-day1.png" id="6_fog1"]
+[ext_resource type="Script" path="res://entities/door/door.gd" id="7_door"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/valhalla-lit.png" id="8_vlit"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/valhalla-locked.png" id="9_vlock"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/valhalla-lit-dim.png" id="10_vdim"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/hel-lit.png" id="11_hlit"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/hel-locked.png" id="12_hlock"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/hel-lit-dim.png" id="13_hdim"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/folkvangr-lit.png" id="14_flit"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/folkvangr-locked.png" id="15_flock"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/folkvangr-lit-dim.png" id="16_fdim"]
+[ext_resource type="PackedScene" path="res://entities/options_panel/options_panel.tscn" id="17_options"]
+[ext_resource type="AudioStream" path="res://assets/audio/wind.wav" id="18_wind"]
+[ext_resource type="Script" path="res://systems/desk/presentation_gate.gd" id="19_gate"]
 
 [node name="Title" type="Control"]
 layout_mode = 3
@@ -20,40 +35,103 @@ offset_bottom = 270.0
 mouse_filter = 2
 texture = ExtResource("3_backdrop")
 
-[node name="Dim" type="ColorRect" parent="."]
+[node name="GateBand" type="Control" parent="."]
 layout_mode = 0
-offset_top = 96.0
 offset_right = 480.0
-offset_bottom = 270.0
+offset_bottom = 96.0
 mouse_filter = 2
-color = Color(0.0431, 0.0902, 0.1333, 0.75)
+script = ExtResource("5_band")
+day_textures = Array[Texture2D]([ExtResource("3_backdrop")])
+fog_sheets = Array[Texture2D]([ExtResource("6_fog1")])
 
-[node name="Name" type="Label" parent="."]
+[node name="DoorValhalla" type="Control" parent="."]
 layout_mode = 0
-offset_top = 110.0
+offset_left = 89.0
+offset_top = 9.0
+offset_right = 149.0
+offset_bottom = 77.0
+mouse_filter = 2
+script = ExtResource("7_door")
+realm = &"valhalla"
+glyph = &"spear"
+lit_texture = ExtResource("8_vlit")
+locked_texture = ExtResource("9_vlock")
+lit_dim_texture = ExtResource("10_vdim")
+
+[node name="DoorHel" type="Control" parent="."]
+layout_mode = 0
+offset_left = 196.0
+offset_top = 9.0
+offset_right = 256.0
+offset_bottom = 77.0
+mouse_filter = 2
+script = ExtResource("7_door")
+realm = &"hel"
+glyph = &"serpent"
+lit_texture = ExtResource("11_hlit")
+locked_texture = ExtResource("12_hlock")
+lit_dim_texture = ExtResource("13_hdim")
+
+[node name="DoorFolkvangr" type="Control" parent="."]
+layout_mode = 0
+offset_left = 318.0
+offset_top = 9.0
+offset_right = 378.0
+offset_bottom = 77.0
+mouse_filter = 2
+script = ExtResource("7_door")
+realm = &"folkvangr"
+glyph = &"boar"
+lit_texture = ExtResource("14_flit")
+locked_texture = ExtResource("15_flock")
+lit_dim_texture = ExtResource("16_fdim")
+
+[node name="Name" type="Control" parent="."]
+layout_mode = 0
+offset_top = 106.0
 offset_right = 240.0
-offset_bottom = 123.0
+offset_bottom = 117.0
 scale = Vector2(2, 2)
-theme_override_colors/font_color = Color(0.9647, 0.9333, 0.8235, 1)
-text = "Valhalla Intake"
-horizontal_alignment = 1
+mouse_filter = 2
 
 [node name="Start" type="Button" parent="."]
 layout_mode = 0
-offset_left = 200.0
-offset_top = 150.0
-offset_right = 280.0
-offset_bottom = 164.0
+offset_left = 210.0
+offset_top = 146.0
+offset_right = 270.0
+offset_bottom = 159.0
 focus_mode = 0
 text = "Start"
-script = ExtResource("4_guard")
+script = ExtResource("4_tag")
+center_text = true
+
+[node name="Options" type="Button" parent="."]
+layout_mode = 0
+offset_left = 210.0
+offset_top = 164.0
+offset_right = 270.0
+offset_bottom = 177.0
+focus_mode = 0
+text = "Options"
+script = ExtResource("4_tag")
+center_text = true
 
 [node name="Quit" type="Button" parent="."]
 layout_mode = 0
-offset_left = 200.0
-offset_top = 170.0
-offset_right = 280.0
-offset_bottom = 184.0
+offset_left = 210.0
+offset_top = 182.0
+offset_right = 270.0
+offset_bottom = 195.0
 focus_mode = 0
 text = "Quit"
-script = ExtResource("4_guard")
+script = ExtResource("4_tag")
+center_text = true
+
+[node name="OptionsPanel" parent="." instance=ExtResource("17_options")]
+layout_mode = 0
+
+[node name="WindPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("18_wind")
+
+[node name="PresentationGate" type="Node" parent="."]
+script = ExtResource("19_gate")

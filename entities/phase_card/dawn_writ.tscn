@@ -1,0 +1,73 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/phase_card/dawn_writ.gd" id="1_writ"]
+[ext_resource type="Script" path="res://components/parchment_frame/parchment_frame.gd" id="2_frame"]
+[ext_resource type="Script" path="res://components/guarded_button/guarded_button.gd" id="3_guard"]
+
+[node name="DawnWrit" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+offset_right = 480.0
+offset_bottom = 270.0
+script = ExtResource("1_writ")
+
+[node name="Writ" type="Control" parent="."]
+layout_mode = 0
+offset_left = 120.0
+offset_top = 20.0
+offset_right = 360.0
+offset_bottom = 150.0
+mouse_filter = 2
+
+[node name="Sheet" type="Control" parent="Writ"]
+layout_mode = 0
+offset_right = 240.0
+offset_bottom = 130.0
+mouse_filter = 2
+script = ExtResource("2_frame")
+seed = 21
+inner = Rect2(8, 8, 224, 120)
+
+[node name="Lines" type="Control" parent="Writ"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 5.0
+offset_right = 232.0
+offset_bottom = 128.0
+mouse_filter = 2
+
+[node name="Seal" type="Control" parent="Writ"]
+layout_mode = 0
+offset_left = 117.0
+offset_top = 1.0
+offset_right = 122.0
+offset_bottom = 6.0
+mouse_filter = 2
+
+[node name="Tab" type="Control" parent="Writ"]
+layout_mode = 0
+offset_left = 100.0
+offset_top = 129.0
+offset_right = 140.0
+offset_bottom = 144.0
+mouse_filter = 2
+script = ExtResource("2_frame")
+seed = 5
+
+[node name="Begin" type="Button" parent="Writ"]
+layout_mode = 0
+offset_left = 100.0
+offset_top = 129.0
+offset_right = 140.0
+offset_bottom = 144.0
+focus_mode = 0
+flat = true
+text = "Begin"
+script = ExtResource("3_guard")
+
+[node name="Curtain" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 480.0
+offset_bottom = 270.0
+color = Color(0.0431, 0.0902, 0.1333, 1)
