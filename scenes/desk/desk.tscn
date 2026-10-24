@@ -33,6 +33,12 @@
 [ext_resource type="AudioStream" path="res://assets/audio/seam_found.ogg" id="31_seam"]
 [ext_resource type="Script" path="res://entities/pause_overlay/pause_overlay.gd" id="32_pause"]
 [ext_resource type="Script" path="res://entities/ledger_tray/ledger_tray.gd" id="33_ledger"]
+[ext_resource type="Script" path="res://systems/desk/presentation_gate.gd" id="34_gate"]
+[ext_resource type="AudioStream" path="res://assets/audio/blip.wav" id="35_blip"]
+[ext_resource type="AudioStream" path="res://assets/audio/pin_tack.wav" id="36_tack"]
+[ext_resource type="AudioStream" path="res://assets/audio/thread_pull.wav" id="37_pull"]
+[ext_resource type="AudioStream" path="res://assets/audio/no_seam_tick.wav" id="38_tick"]
+[ext_resource type="AudioStream" path="res://assets/audio/horn.wav" id="39_horn"]
 
 [node name="Desk" type="Control"]
 layout_mode = 3
@@ -139,20 +145,10 @@ focus_mode = 0
 text = "Ask Huginn"
 
 [node name="StampPrompt" parent="." instance=ExtResource("6_prompt")]
-offset_left = 140.0
-offset_top = 79.0
-offset_right = 340.0
-offset_bottom = 95.0
-
-[node name="NextSoul" type="Button" parent="."]
-visible = false
-layout_mode = 0
-offset_left = 140.0
-offset_top = 80.0
-offset_right = 190.0
-offset_bottom = 94.0
-focus_mode = 0
-text = "Next soul"
+offset_left = 150.0
+offset_top = 77.0
+offset_right = 330.0
+offset_bottom = 96.0
 
 [node name="BodyChart" type="Control" parent="."]
 layout_mode = 0
@@ -217,8 +213,9 @@ offset_top = 100.0
 offset_right = 478.0
 offset_bottom = 244.0
 script = ExtResource("8_panel")
-heading = "LAW"
+heading = "Odin's Law"
 wrap_lines = true
+style = &"scroll"
 
 [node name="CaptionStrip" type="Control" parent="."]
 layout_mode = 0
@@ -258,18 +255,35 @@ stream = ExtResource("30_thud")
 [node name="SeamPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("31_seam")
 
-[node name="StampFlow" type="Node" parent="." node_paths=PackedStringArray("doors", "stamp_prompt", "soul", "feather", "next_soul_button", "caption_strip", "thud_player", "walk_layer")]
+[node name="BlipPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("35_blip")
+
+[node name="TackPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("36_tack")
+
+[node name="PullPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("37_pull")
+
+[node name="TickPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("38_tick")
+
+[node name="HornPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("39_horn")
+
+[node name="PresentationGate" type="Node" parent="."]
+script = ExtResource("34_gate")
+
+[node name="StampFlow" type="Node" parent="." node_paths=PackedStringArray("doors", "stamp_prompt", "soul", "feather", "caption_strip", "thud_player", "walk_layer")]
 script = ExtResource("15_stamp")
 doors = [NodePath("../DoorValhalla"), NodePath("../DoorHel"), NodePath("../DoorFolkvangr")]
 stamp_prompt = NodePath("../StampPrompt")
 soul = NodePath("../Soul")
 feather = NodePath("../Feather")
-next_soul_button = NodePath("../NextSoul")
 caption_strip = NodePath("../CaptionStrip")
 thud_player = NodePath("../ThudPlayer")
 walk_layer = NodePath("../WalkLayer")
 
-[node name="DeskSystem" type="Node" parent="." node_paths=PackedStringArray("body_chart", "claim_panel", "witness_panel", "law_panel", "doors", "thread_layer", "caption_strip", "hover_label", "soul", "hud", "ask_huginn", "huginn", "phase_card", "feather", "mentor_portrait", "mentor_bubble", "stamp_flow", "seam_player", "ledger_tray")]
+[node name="DeskSystem" type="Node" parent="." node_paths=PackedStringArray("body_chart", "claim_panel", "witness_panel", "law_panel", "doors", "thread_layer", "caption_strip", "hover_label", "soul", "hud", "ask_huginn", "huginn", "phase_card", "feather", "mentor_portrait", "mentor_bubble", "stamp_flow", "seam_player", "ledger_tray", "gate", "blip_player", "tack_player", "pull_player", "tick_player", "horn_player")]
 script = ExtResource("12_system")
 body_chart = NodePath("../BodyChart")
 claim_panel = NodePath("../ClaimPanel")
@@ -290,3 +304,9 @@ mentor_bubble = NodePath("../MentorBubble")
 stamp_flow = NodePath("../StampFlow")
 seam_player = NodePath("../SeamPlayer")
 ledger_tray = NodePath("../LedgerTray")
+gate = NodePath("../PresentationGate")
+blip_player = NodePath("../BlipPlayer")
+tack_player = NodePath("../TackPlayer")
+pull_player = NodePath("../PullPlayer")
+tick_player = NodePath("../TickPlayer")
+horn_player = NodePath("../HornPlayer")

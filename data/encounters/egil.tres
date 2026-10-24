@@ -55,7 +55,7 @@ a = "C3"
 b = "L5"
 kind = 2
 destination = &"folkvangr"
-caption = "L5 sends him to Fólkvangr."
+caption = "Decree V sends him to Fólkvangr."
 
 [sub_resource type="Resource" id="seam_W1_L5"]
 script = ExtResource("4_b6vw3")
@@ -63,7 +63,7 @@ a = "W1"
 b = "L5"
 kind = 2
 destination = &"folkvangr"
-caption = "L5 sends him to Fólkvangr."
+caption = "Decree V sends him to Fólkvangr."
 
 [resource]
 script = ExtResource("3_wnkji")

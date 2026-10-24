@@ -1,31 +1,56 @@
 class_name EvidencePanel
 extends Control
-## A parchment panel of numbered lines: the claim, the witness or the Law (D7, D32). Every line is
-## a pin hit area. Lines are drawn as authored, prefixed by their id ("C1 ", "L3 "); decrees wrap
-## at word boundaries, testimony lines never wrap, so a line too long for the panel shows as
-## overflow instead of silently breaking.
+## A paper of evidence lines (D6-D9): a saga sheet (the claim or a witness) or the Law scroll.
+## Every line is a pin hit area. The sheet is torn parchment headed by the speaker in full ink,
+## each line opening with a straight quote mark; the scroll hangs between two knotwork rods, its
+## decrees numbered in roman numerals right-aligned in their own column, and its parchment grows
+## with the decrees in force. Ids show only with `show_ids` (tools). Decrees wrap at word
+## boundaries; testimony never wraps, so a line too long for the sheet shows as overflow.
+##
+## `tell` writes the lines out one by one through a Teller (D4); a line's hit area is hidden, and
+## a click on it ignored, until its line begins to show.
 
 signal item_clicked(item_id: String)
 signal cancel_requested
 signal item_hover_started(item_id: String, text: String, area: Rect2)
 signal item_hover_ended(item_id: String)
+## The telling started by `tell` has shown every line (by pace or by `finish_telling`).
+signal telling_finished
 
 ## Pixels between text lines (font size 16, line_spacing −3; ADR-0008).
-const LINE_PITCH := 10
-## Inner margin between the frame and the text.
+const LINE_PITCH := PaperLine.LINE_PITCH
+## Inner margin between the paper's edge and the text.
 const PADDING := 2
 ## The label's first ink row sits this far below its top; lines are shifted up to match.
-const LABEL_TOP := 3
+const LABEL_TOP := PaperLine.LABEL_TOP
+## The height of each knotwork rod of the scroll (D9).
+const ROD_HEIGHT := ScrollRod.HEIGHT
+## The scroll's parchment never shows shorter than this, rods excluded.
+const MIN_SCROLL_BODY := 40
+## The scroll's parchment ends this far below the last line: the frame's 2 px edge and shadow.
+const SCROLL_TAIL := 3
 
 @export var heading: String = ""
 ## Wrap long lines at word boundaries (decrees); testimony lines never wrap.
 @export var wrap_lines: bool = false
+## &"sheet" (claim, witness) or &"scroll" (the Law).
+@export var style: StringName = &"sheet"
+## Shows the authored ids ("C1 ", "L1") instead of quote marks and numerals (tools only).
+@export var show_ids: bool = false
 
 var _areas: Dictionary[String, PinSelectable] = {}
 var _labels: Dictionary[String, Label] = {}
+## Line ids in shown order (the telling's order).
+var _order: Array[String] = []
 var _heading_label: Label = null
 var _note_label: Label = null
+var _frame: ParchmentFrame = null
+var _teller: Teller = null
 var _content_bottom: int = 0
+## Where the scroll's lower rod begins, in panel pixels (sheets: the panel's height).
+var _body_end: int = 0
+## A telling is under way and its end not yet announced.
+var _awaiting_finish: bool = false
 ## Lines marked NEW (D34): a bar in the margin and a note in the heading.
 var _new_ids: Array[String] = []
 ## The heading's hover label (the witness's full description, D52); "" for none.
@@ -34,19 +59,31 @@ var _heading_hover: String = ""
 
 func _ready() -> void:
 	clip_contents = false
-	_heading_label = _make_label(get_theme_color(&"ink_soft", &"DeskPalette"))
+	_frame = ParchmentFrame.new()
+	_frame.name = "Paper"
+	_frame.show_behind_parent = true
+	_frame.torn = true
+	_frame.seed = hash(String(name))
+	add_child(_frame)
+	_teller = Teller.new()
+	_teller.name = "Teller"
+	add_child(_teller)
+	_teller.line_shown.connect(_on_line_shown)
+	_teller.finished.connect(_on_teller_finished)
+	_heading_label = PaperLine.make_label(get_theme_color(&"ink", &"DeskPalette"))
 	_heading_label.name = "Heading"
 	add_child(_heading_label)
 	_heading_label.mouse_entered.connect(_on_heading_entered)
 	_heading_label.mouse_exited.connect(func() -> void: item_hover_ended.emit(""))
-	_note_label = _make_label(get_theme_color(&"ink_soft", &"DeskPalette"))
+	_note_label = PaperLine.make_label(get_theme_color(&"ink_soft", &"DeskPalette"))
 	_note_label.name = "Note"
 	add_child(_note_label)
 	_layout([], "")
 
 
 ## Shows the lines; `note` stands in for an empty panel ("No witness came back.", D46).
-## `heading_hover` is the heading's hover label ("" for none).
+## `heading_hover` is the heading's hover label ("" for none). Stops a telling in progress
+## without announcing its end.
 func show_lines(
 	items: Array[EvidenceItem],
 	title: String = heading,
@@ -58,7 +95,35 @@ func show_lines(
 	_heading_label.mouse_filter = (
 		Control.MOUSE_FILTER_STOP if heading_hover != "" else Control.MOUSE_FILTER_IGNORE
 	)
+	_teller.stop()
+	_awaiting_finish = false
 	_layout(items, note)
+
+
+## Writes the shown lines out one at a time at `cps` characters a second with `line_pause`
+## seconds between lines (D4); `voice` is `hash(soul_name)`. `telling_finished` follows once
+## every line shows; an empty panel finishes on the next frame.
+func tell(voice: int, cps: float, line_pause: float) -> void:
+	var labels: Array[Label] = []
+	for id: String in _order:
+		_areas[id].visible = false
+		labels.append(_labels[id])
+	_awaiting_finish = true
+	_teller.start_labels(labels, cps, line_pause, voice)
+
+
+## Shows every line now and announces the end of the telling (a consumed click, D27).
+func finish_telling() -> void:
+	_teller.finish()
+
+
+func is_telling() -> bool:
+	return _teller.is_telling()
+
+
+## The panel's Teller, for the presentation gate (pause) and the voice blips.
+func teller() -> Teller:
+	return _teller
 
 
 ## Marks lines NEW until the day's first stamp (D34); an empty list clears the marks.
@@ -92,7 +157,7 @@ func anchor_rect(item_id: String) -> Rect2:
 	return _areas[item_id].get_global_rect() if _areas.has(item_id) else Rect2()
 
 
-## Every hit area's rectangle in global coordinates (a knot must not cover one).
+## Every hit area's rectangle in global coordinates (a knot must not cover one), shown or not.
 func hit_rects() -> Array[Rect2]:
 	var rects: Array[Rect2] = []
 	if not is_visible_in_tree():
@@ -128,12 +193,7 @@ func line_count(item_id: String) -> int:
 
 ## The width the line's text needs on one line, in pixels.
 func text_width(item_id: String) -> int:
-	if not _labels.has(item_id):
-		return 0
-	var label: Label = _labels[item_id]
-	var font: Font = label.get_theme_font(&"font")
-	var font_size: int = label.get_theme_font_size(&"font_size")
-	return int(font.get_string_size(label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x) - 1
+	return PaperLine.width_of(self, _labels[item_id].text) if _labels.has(item_id) else 0
 
 
 ## Where the last line's ink ends, in panel pixels.
@@ -141,9 +201,12 @@ func content_bottom() -> int:
 	return _content_bottom
 
 
-## True when text runs past the panel's frame (the fit check reports it).
+## True when text runs past the paper (the fit check reports it).
 func overflows() -> bool:
-	if _content_bottom > int(size.y) - PADDING:
+	if style == &"scroll":
+		if _content_bottom + SCROLL_TAIL + ROD_HEIGHT > int(size.y):
+			return true
+	elif _content_bottom > int(size.y) - PADDING:
 		return true
 	if wrap_lines:
 		return false
@@ -158,12 +221,21 @@ func _layout(items: Array[EvidenceItem], note: String) -> void:
 		_areas[id].queue_free()
 	_areas.clear()
 	_labels.clear()
-	var y: int = PADDING
+	_order.clear()
+	var top: int = ROD_HEIGHT if style == &"scroll" else 0
+	var y: int = top + PADDING
 	_heading_label.visible = heading != ""
+	var rule_y: int = -1
 	if heading != "":
 		_heading_label.text = _heading_text()
 		_heading_label.position = Vector2(PADDING, y - LABEL_TOP)
+		_heading_label.size = Vector2(inner_width() if style == &"scroll" else 0, 0)
+		_heading_label.horizontal_alignment = (
+			HORIZONTAL_ALIGNMENT_CENTER if style == &"scroll" else HORIZONTAL_ALIGNMENT_LEFT
+		)
 		y += LINE_PITCH
+		rule_y = y - 1 - top
+	var lines_top: int = y
 	for item: EvidenceItem in items:
 		y += _add_line(item, y)
 	_note_label.visible = items.is_empty() and note != ""
@@ -172,36 +244,51 @@ func _layout(items: Array[EvidenceItem], note: String) -> void:
 		_note_label.position = Vector2(PADDING, y - LABEL_TOP)
 		y += LINE_PITCH
 	_content_bottom = y
+	_body_end = int(size.y)
+	if style == &"scroll":
+		_body_end = mini(maxi(y + SCROLL_TAIL, top + MIN_SCROLL_BODY), int(size.y) - ROD_HEIGHT)
+	_frame.position = Vector2(0, top)
+	_frame.size = Vector2(size.x, _body_end - top)
+	_frame.rule_y = rule_y
+	# The lines and their hit areas: nothing but plain parchment is drawn under them.
+	_frame.inner = Rect2(PADDING, lines_top - top, inner_width(), maxi(y - lines_top, 0))
 	queue_redraw()
 
 
 func _add_line(item: EvidenceItem, y: int) -> int:
-	var hit := PinSelectable.new()
-	hit.name = "Line%s" % item.id
-	hit.item_id = item.id
-	hit.select_color = get_theme_color(&"select_light", &"DeskPalette")
-	hit.lit_color = get_theme_color(&"lit", &"DeskPalette")
+	var hit: PinSelectable = PaperLine.build(
+		self, item, style == &"scroll", show_ids, inner_width(), wrap_lines
+	)
 	hit.position = Vector2(PADDING, y)
-	var label: Label = _make_label(get_theme_color(&"ink", &"DeskPalette"))
-	label.text = "%s %s" % [item.id, item.text]
-	label.position = Vector2(0, -LABEL_TOP)
-	if wrap_lines:
-		label.autowrap_mode = TextServer.AUTOWRAP_WORD
-	hit.add_child(label)
-	add_child(hit)
-	if wrap_lines:
-		label.size = Vector2(inner_width(), 0)
-	var lines: int = maxi(1, label.get_line_count())
-	hit.size = Vector2(inner_width(), lines * LINE_PITCH)
-	hit.clicked.connect(func(id: String) -> void: item_clicked.emit(id))
+	hit.clicked.connect(_on_line_clicked.bind(hit))
 	hit.cancel_requested.connect(func() -> void: cancel_requested.emit())
 	hit.hover_started.connect(
 		func(id: String, text: String, at: Rect2) -> void: item_hover_started.emit(id, text, at)
 	)
 	hit.hover_ended.connect(func(id: String) -> void: item_hover_ended.emit(id))
 	_areas[item.id] = hit
-	_labels[item.id] = label
-	return lines * LINE_PITCH
+	_labels[item.id] = PaperLine.text_label(hit)
+	_order.append(item.id)
+	return int(hit.size.y)
+
+
+## A click on a line not yet told is ignored (D4: lines are pinnable as they appear).
+func _on_line_clicked(id: String, hit: PinSelectable) -> void:
+	if hit.visible:
+		item_clicked.emit(id)
+
+
+func _on_line_shown(index: int) -> void:
+	if index < _order.size():
+		_areas[_order[index]].visible = true
+
+
+func _on_teller_finished() -> void:
+	for id: String in _areas:
+		_areas[id].visible = true
+	if _awaiting_finish:
+		_awaiting_finish = false
+		telling_finished.emit()
 
 
 func _on_heading_entered() -> void:
@@ -213,27 +300,34 @@ func _heading_text() -> String:
 	var shown: Array[String] = []
 	for id: String in _new_ids:
 		if _areas.has(id) or _labels.is_empty():
-			shown.append(id)
+			shown.append(id if show_ids else DecreeNumeral.roman(id))
 	if shown.is_empty():
 		return heading
 	return "%s  NEW: %s" % [heading, ", ".join(shown)]
 
 
-func _make_label(color: Color) -> Label:
-	var label := Label.new()
-	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	label.add_theme_color_override(&"font_color", color)
-	return label
-
-
 func _draw() -> void:
-	var area := Rect2(Vector2.ZERO, size)
-	draw_rect(area, get_theme_color(&"parchment", &"DeskPalette"))
-	draw_rect(area.grow(-0.5), get_theme_color(&"frame", &"DeskPalette"), false, 1.0)
+	if style == &"scroll":
+		var width: int = int(size.x)
+		ScrollRod.draw(_paint, Vector2i(0, 0), width, _rod_colors())
+		ScrollRod.draw(_paint, Vector2i(0, _body_end), width, _rod_colors())
 	for id: String in _new_ids:
 		if _areas.has(id):
 			var line: PinSelectable = _areas[id]
 			draw_rect(
-				Rect2(0, line.position.y, 2, line.size.y),
+				Rect2(line.position.x - PADDING, line.position.y, PADDING, line.size.y),
 				get_theme_color(&"select_light", &"DeskPalette")
 			)
+
+
+func _paint(rect: Rect2, color: Color) -> void:
+	draw_rect(rect, color)
+
+
+## Wood 2, 3 and 4 for the rods' knotwork.
+func _rod_colors() -> Array[Color]:
+	return [
+		get_theme_color(&"wood_dark", &"DeskPalette"),
+		get_theme_color(&"frame", &"DeskPalette"),
+		get_theme_color(&"wood_light", &"DeskPalette"),
+	]

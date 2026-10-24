@@ -5,6 +5,7 @@ extends GutTest
 const DESK_SCENE := preload("res://scenes/desk/desk.tscn")
 const MANIFEST := "res://docs/art/slice-asset-manifest.json"
 const STACKS := preload("res://entities/body_chart/body_stacks.tres")
+const Fixture := preload("res://tests/integration/scenes/desk/desk_fixture.gd")
 
 var _desk: Desk = null
 var _system: DeskSystem = null
@@ -13,6 +14,7 @@ var _system: DeskSystem = null
 func before_each() -> void:
 	_desk = DESK_SCENE.instantiate() as Desk
 	_desk.use_commands(SliceLoader.load_slice())
+	_desk.use_options(Fixture.instant())
 	add_child_autofree(_desk)
 	_system = _desk.system()
 	_system.phase_card.next_button().pressed.emit()
@@ -54,6 +56,8 @@ func test_the_chart_and_the_gate_draw_the_souls_own_layers() -> void:
 	assert_eq(chart[4].resource_path, "res://assets/art/body/heads/ulf.png")
 	var figure: Array[Texture2D] = _system.soul.figure().layers
 	assert_eq(figure[0].resource_path, "res://assets/art/souls/base-tunic.png")
+	# The first soul walks in from off the desk (D15); its place is where the walk ends.
+	_system.soul.finish_arrival()
 	assert_eq(_system.soul.figure().global_position, Vector2(6, -2), "the head is not clipped")
 	_stamp(&"valhalla")
 	assert_eq(

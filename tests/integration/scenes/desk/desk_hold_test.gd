@@ -13,6 +13,7 @@ var _system: DeskSystem = null
 func before_each() -> void:
 	_desk = DESK_SCENE.instantiate() as Desk
 	_desk.use_commands(Fixture.commands())
+	_desk.use_options(Fixture.instant())
 	add_child_autofree(_desk)
 	_system = _desk.system()
 	_system.phase_card.next_button().pressed.emit()
@@ -26,7 +27,7 @@ func test_while_a_cited_soul_waits_only_next_soul_acts() -> void:
 	assert_eq(_soul(), "Asgaut")
 
 	_door(&"hel").press()
-	assert_false(_system.stamp_flow.stamp_prompt.visible, "a door press is refused")
+	assert_false(_system.stamp_flow.stamp_prompt.is_asking(), "a door press is refused")
 
 	var before: float = _desk.commands().time_left()
 	_system._process(5.0)
@@ -42,7 +43,9 @@ func test_while_a_cited_soul_waits_only_next_soul_acts() -> void:
 	_system.claim_panel.area("C3").press()
 	assert_false(_system.claim_panel.area("C3").selected, "no new pin starts")
 
-	_system.stamp_flow.next_soul_button.pressed.emit()
+	# Send it on (D15) is refused inside the slam window (D27).
+	await wait_seconds(StampFlow.SLAM_SECONDS + 0.1)
+	_system.stamp_flow.stamp_prompt.send_on()
 	assert_eq(_soul(), "Second", "Next soul seats the next one")
 	_system._process(5.0)
 	assert_lt(_desk.commands().time_left(), before, "and the clock runs again")
@@ -95,6 +98,45 @@ func test_threads_never_cross_any_panel_of_text() -> void:
 				)
 
 
+## The review's case: the whole 3 px stroke of threads in both lanes of every gutter stays out of
+## the papers, not only the route's centre line. Pin heads and knots are checked against the hit
+## areas instead: a pin sits on a paper's edge by design (D12).
+func test_every_drawn_stroke_stays_in_the_gutters_in_both_lanes() -> void:
+	_pin("C1", "W1")
+	_pin("B1", "W2")
+	_pin("B3", "L3")
+	_pin("C2", "L5")
+	await wait_process_frames(2)
+	var lines: Array[ThreadLine] = _threads()
+	var lanes: Dictionary[int, bool] = {}
+	var panels: Array[Rect2] = []
+	for panel: EvidencePanel in [_system.claim_panel, _system.witness_panel, _system.law_panel]:
+		panels.append(panel.get_global_rect())
+	var crossings: Array[String] = []
+	var strokes: int = 0
+	for line: ThreadLine in lines:
+		lanes[line.lane] = true
+		var marks: Array[Rect2] = line.pin_head_rects()
+		if line.has_knot():
+			marks.append(line.knot().get_global_rect())
+		for mark: Rect2 in marks:
+			for area: Rect2 in _hit_rects():
+				if mark.intersects(area):
+					crossings.append("thread %d mark %s on %s" % [line.thread_index, mark, area])
+		for local: Rect2 in line.drawn_rects():
+			var rect := Rect2(local.position + line.global_position, local.size)
+			if _inside_any(rect, marks):
+				continue
+			strokes += 1
+			for panel: Rect2 in panels:
+				if rect.intersects(panel):
+					crossings.append("thread %d stroke %s in %s" % [line.thread_index, rect, panel])
+	assert_eq(lines.size(), 4)
+	assert_eq(lanes.size(), 2, "both lanes are drawn")
+	assert_gt(strokes, 100, "the strokes were drawn and read")
+	assert_eq(crossings, [] as Array[String])
+
+
 ## The review's case: a restart from a soul at the desk (D31) leaves nothing of that soul under
 ## the dawn card, although no soul is at the desk before or after the run restarts. A click drops
 ## the lit pair, so the half-made pin is checked on a second restart.
@@ -106,7 +148,7 @@ func test_a_restart_from_a_soul_at_the_desk_clears_the_whole_desk() -> void:
 	assert_eq(_system.huginn_thread, 0, "a grey knot is selected for Huginn")
 	assert_eq(_system._lit, ["C1", "W1"] as Array[String], "the threaded pair is lit")
 	assert_ne(_system.caption_strip.shown_text(), "", "a caption shows")
-	assert_true(_system.stamp_flow.stamp_prompt.visible, "a stamp preview is open")
+	assert_true(_system.stamp_flow.stamp_prompt.is_asking(), "a stamp preview is open")
 	_restart()
 	_assert_empty_dawn()
 	assert_eq(_system._lit, [] as Array[String], "nothing lit")
@@ -134,7 +176,7 @@ func _assert_empty_dawn() -> void:
 	assert_false(_system.claim_panel.has_item("C1"), "no claim")
 	assert_false(_system.witness_panel.visible, "no witness")
 	assert_eq(_system.caption_strip.shown_text(), "", "no caption")
-	assert_false(_system.stamp_flow.stamp_prompt.visible, "no stamp preview")
+	assert_false(_system.stamp_flow.stamp_prompt.is_asking(), "no stamp preview")
 	for door: Door in _system.doors:
 		assert_false(door.selected, "the %s door is not selected" % door.realm)
 	assert_eq(_threads().size(), 0, "no threads")
@@ -184,6 +226,13 @@ func _knot(thread_index: int) -> PinSelectable:
 		if line.thread_index == thread_index and line.has_knot():
 			return line.knot()
 	return null
+
+
+func _inside_any(rect: Rect2, boxes: Array[Rect2]) -> bool:
+	for box: Rect2 in boxes:
+		if box.encloses(rect):
+			return true
+	return false
 
 
 func _hit_rects() -> Array[Rect2]:

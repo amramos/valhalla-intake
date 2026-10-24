@@ -26,3 +26,8 @@ var mentor_line: String = ""
 ## The net change at this stamp: citation, reward and any demotion refill.
 var feathers_delta: int = 0
 var demoted: bool = false
+## The figures this stamp added to Hel's tide: 0 or 1. The tide's step at the slam reads this, once
+## per stamp, never a desk refresh (D38).
+var tide_delta: int = 0
+## The stamped encounter's id, so the slam can tell the departing soul from the next one.
+var departing_id: StringName = &""

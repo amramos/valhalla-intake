@@ -6,7 +6,7 @@ its owner connects it.
 
 | Component | Behavior |
 |---|---|
-| `pin_selectable/` | A clickable evidence hit area (at least 8×8): select, cancel, hover, highlight |
+| `pin_selectable/` | A clickable evidence hit area (at least 8×8): select (a stuck pin), cancel, hover (an ink underline or corner marks), highlight (D12) |
 | `hover_label/` | A small parchment label shown next to a hovered area, kept on screen |
 | `guarded_button/` | A button that ignores double-clicks and presses right after it appears (D9) |
 | `placeholder_art/` | Loads a style frame from disk as placeholder art until the final asset lands |
@@ -15,3 +15,5 @@ its owner connects it.
 | `drag_source/` | Something the player picks up and drops on a target (the soul onto a door, D9) |
 | `clickable_sprite/` | A sprite that can be clicked and hovered (the black feather, the mentor's portrait) |
 | `pixel_font/` | Applies the pixel font's crisp rendering settings at runtime (ADR-0008) |
+| `teller/` | Tells a label's text line by line at a set pace with pauses and voice blips; finish-now and pause (D4, D41) |
+| `parchment_frame/` | Draws a parchment sheet in code from a seed: deckled or torn edge, rule, shadow; never over its `inner` rect (D8) |

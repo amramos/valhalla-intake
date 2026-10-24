@@ -25,4 +25,4 @@ new_decree_ids = Array[String](["L5"])
 new_doors = Array[StringName]([&"folkvangr"])
 encounters = Array[ExtResource("7_gsvuo")]([ExtResource("8_rk4or"), ExtResource("9_teffk"), ExtResource("10_ilauo")])
 return_slot = 1
-dawn_lines = Array[String](["Day 3.", "Odin wants 2 souls for Valhalla.", "The clock: {clock}.", "NEW L5: Those who fell defending hearth and kin go to Fólkvangr, whatever L1, L3 and L4 say.", "NEW door: Fólkvangr opens.", "Huginn perches on your desk. He answers only about a thread you made: which side of a grey thread lies. 2 answers a day, 5 s each. A third costs 2 feathers."])
+dawn_lines = Array[String](["Day 3.", "Odin wants 2 souls for Valhalla.", "The clock: {clock}.", "NEW V: Those who fell defending hearth and kin go to Fólkvangr, whatever I, III and IV say.", "NEW door: Fólkvangr opens.", "Huginn perches on your desk. He answers only about a thread you made: which side of a grey thread lies. 2 answers a day, 5 s each. A third costs 2 feathers."])

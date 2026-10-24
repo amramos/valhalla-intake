@@ -17,6 +17,7 @@ func before_each() -> void:
 	add_child_autofree(_viewport)
 	_desk = DESK_SCENE.instantiate() as Desk
 	_desk.use_commands(Fixture.commands())
+	_desk.use_options(Fixture.instant())
 	_viewport.add_child(_desk)
 	_system = _desk.system()
 	_system.phase_card.next_button().pressed.emit()
@@ -36,6 +37,7 @@ func test_a_no_seam_pin_that_ends_the_day_keeps_the_horns_caption() -> void:
 func test_an_answer_that_ends_the_day_never_replaces_the_horn() -> void:
 	_click(_system.claim_panel.area("C1"))
 	_click(_system.witness_panel.area("W1"))
+	await _threads_drawn()
 	_click(_knot(0))
 	_system._process(Fixture.CLOCK_SECONDS - 3.0)
 	assert_eq(_desk.commands().phase(), RunState.DESK, "3 s left")
@@ -47,25 +49,27 @@ func test_an_answer_that_ends_the_day_never_replaces_the_horn() -> void:
 	assert_eq(strip.shown_text(), DeskSystem.HORN_TEXT, "past the hold, the horn still stands")
 
 
-func test_an_open_stamp_prompt_lets_no_pin_through() -> void:
+## A click elsewhere puts the raised stamp down and does nothing else (D14): no pin starts
+## under the stamp, and nothing is charged.
+func test_a_click_under_the_raised_stamp_puts_it_down_and_pins_nothing() -> void:
 	_click(_door(&"hel"))
-	assert_true(_system.stamp_flow.stamp_prompt.visible)
+	assert_true(_system.stamp_flow.stamp_prompt.is_asking())
 	var before: float = _desk.commands().time_left()
 	_click(_system.claim_panel.area("C3"))
-	_click(_system.law_panel.area("L1"))
-	_click(_system.claim_panel.area("C1"))
-	_click(_system.witness_panel.area("W1"))
-	assert_eq(_desk.commands().threads().size(), 0, "no thread under the prompt")
-	assert_eq(_desk.commands().time_left(), before, "no no-seam charge under the prompt")
+	assert_false(_system.stamp_flow.stamp_prompt.is_asking(), "the click put the stamp down")
+	assert_false(_system.claim_panel.area("C3").selected, "and selected nothing")
+	assert_eq(_desk.commands().threads().size(), 0, "no thread under the stamp")
+	assert_eq(_desk.commands().time_left(), before, "no charge under the stamp")
 
 
 func test_an_open_stamp_prompt_lets_no_huginn_answer_through() -> void:
 	_click(_system.claim_panel.area("C1"))
 	_click(_system.witness_panel.area("W1"))
+	await _threads_drawn()
 	_click(_knot(0))
 	assert_eq(_system.huginn_thread, 0, "the grey knot is selected")
 	_click(_door(&"hel"))
-	assert_true(_system.stamp_flow.stamp_prompt.visible)
+	assert_true(_system.stamp_flow.stamp_prompt.is_asking())
 	var before: float = _desk.commands().time_left()
 	_click(_system.ask_huginn)
 	assert_eq(_desk.commands().huginn_left(), 2, "no answer spent under the prompt")
@@ -86,6 +90,18 @@ func _knot(thread_index: int) -> PinSelectable:
 		if line != null and not line.is_queued_for_deletion() and line.thread_index == thread_index:
 			return line.knot()
 	return null
+
+
+## A new thread is drawn taut in about 0.15 s (D12) and its knot takes clicks once it is whole.
+func _threads_drawn() -> void:
+	for _frame: int in range(120):
+		var drawing: bool = false
+		for child: Node in _system.thread_layer.get_children():
+			var line: ThreadLine = child as ThreadLine
+			drawing = drawing or (line != null and line.is_drawing_in())
+		if not drawing:
+			return
+		await get_tree().process_frame
 
 
 ## A move, a press and a release on `target`, pushed through the desk's viewport.

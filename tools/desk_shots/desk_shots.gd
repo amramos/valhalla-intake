@@ -9,12 +9,23 @@ extends SceneTree
 ## the viewport, as a player's would be, and each step's outcome is checked; the run prints FAIL
 ## lines and exits 1 when one does not hold. Day 1 is played by hand; later souls go to their
 ## legal doors by door click and confirm.
+##
+## Every soul's tale is let run to its end at the player's text speed before anything is pressed
+## (a press during it would only finish it, D27). For the time budget (D42) the run prints one
+## `FORCED <soul> <seconds>` line per soul: the presentation gate's gated seconds (tellings,
+## written captions, the slam window) from the end of the previous soul's slam to the end of this
+## soul's, so a soul's slam and the first moments of the next tale, which overlap, count once, for
+## the soul stamped.
 
 const TITLE_SCENE := "res://scenes/title/title.tscn"
+## No tale takes longer than this; a longer wait is a failure, not a hang.
+const MAX_TALE_SECONDS := 30.0
 
 var _out: String = ""
 var _desk: Desk = null
 var _failures: int = 0
+## The soul whose forced seconds the gate is counting; "" for none.
+var _forced_soul: String = ""
 
 
 func _initialize() -> void:
@@ -41,23 +52,28 @@ func _run() -> void:
 		return
 	await _day_one()
 	await _finish_day()
+	_account("")
 	await _dusk("16_dusk1")
 	_expect(_desk.commands().day_number() == 2, "Next day opens day 2")
 	await _shot("20_dawn2")
 	await _begin()
 	await _escape_and_resume()
 	await _finish_day("21_day2", &"hakon")
+	_account("")
 	await _dusk("22_dusk2")
 	_expect(_desk.commands().promise_state() == RunState.PROMISE_OPEN, "Hel's offer is recorded")
 	_expect(_desk.commands().day_number() == 3, "day 3 dawns")
 	await _shot("26_dawn3")
 	await _begin()
+	_account(_soul())
+	await _await_tale()
 	var tray: LedgerTray = _desk.system().ledger_tray
 	await _click_control(tray)
 	_expect(tray.shown_line() == _desk.commands().ledger_line(), "the tray shows the ledger")
 	await _shot("27_ledger_tray")
 	await _click_control(tray)
 	await _finish_day("28_day3", &"hakon")
+	_account("")
 	await _dusk("30_dusk3")
 	_expect(_desk.commands().phase() == RunState.ENDING, "day 3's dusk leads to the ending")
 	await _wait(0.4)
@@ -83,6 +99,11 @@ func _day_one() -> void:
 	await _click_control(system.phase_card.next_button())
 	_expect(_soul() == "Ulf", "Begin seats Ulf")
 	_expect(system.body_chart.layers().size() == 5, "Ulf's chart is his own art stack")
+	_account(_soul())
+	await _wait(1.0)
+	_expect(system.is_telling(), "Ulf tells his tale line by line (D4)")
+	await _shot("02a_ulf_telling")
+	await _await_tale()
 	await _shot("02_ulf")
 	await _hover(system.body_chart.area("B2"))
 	_expect(system.hover_label.shown_text() == "no wound, back", "an absence hovers its label")
@@ -95,13 +116,16 @@ func _day_one() -> void:
 	await _shot("05_law_thread")
 	await _double_click_control(_door(&"valhalla"))
 	var asked: String = system.stamp_flow.stamp_prompt.question()
-	_expect(asked == "Stamp Ulf to Valhalla?", "a door click asks")
+	_expect(asked == "Valhalla?", "a door click raises the stamp")
 	await _shot("06_stamp_prompt")
 	await _double_click_control(system.stamp_flow.stamp_prompt.confirm_button())
 	_expect(_soul() == "Ulf", "a double-click on the confirm stamps nothing")
 	await _wait(0.4)
 	await _click_control(system.stamp_flow.stamp_prompt.confirm_button())
+	await _wait(0.7)
 	_expect(_soul() == "Kolbeinn", "one deliberate click on the confirm stamps")
+	_account(_soul())
+	await _await_tale()
 	await _shot("08_kolbeinn")
 	await _click_control(system.body_chart.area("B1"))
 	await _click_control(system.claim_panel.area("C1"))
@@ -117,15 +141,21 @@ func _day_one() -> void:
 	_expect(system.hover_label.shown_glyph() == &"boar", "the barred door hovers its glyph")
 	await _shot("12_locked_door")
 	await _drag(system.soul.figure(), _door(&"valhalla"), "12b_drag_preview")
+	# Presses inside the slam window are ignored (D27); the held soul waits past it.
+	await _wait(0.6)
 	var held: bool = _desk.commands().awaiting_next()
 	_expect(held, "the soul dropped on the door is stamped and held (D48)")
-	var shown: bool = system.feather.visible and system.stamp_flow.next_soul_button.visible
-	_expect(shown, "feather and Next soul")
+	var prompt: StampPrompt = system.stamp_flow.stamp_prompt
+	_expect(system.feather.visible and prompt.is_held(), "the feather and the held writ (D15)")
 	await _shot("13_warning_holds_soul")
 	await _click_control(system.feather)
 	await _wait(0.4)
-	await _click_control(system.stamp_flow.next_soul_button)
-	_expect(_soul() == "Hallr", "Next soul seats Hallr")
+	await _hover(prompt.writ())
+	_expect(system.hover_label.shown_text() != "", "the held writ says what a click does")
+	await _shot("13b_send_it_on")
+	await _click_control(prompt.writ())
+	_expect(_soul() == "Hallr", "a click on the held writ seats Hallr")
+	await _wait(0.7)
 
 
 ## Stamps every soul left today at its legal door by door click and confirm; shoots each soul
@@ -138,8 +168,11 @@ func _finish_day(shot_prefix: String = "", soul: StringName = &"") -> void:
 			return
 		await _wait(0.4)
 		if commands.awaiting_next():
-			await _click_control(system.stamp_flow.next_soul_button)
+			await _click_control(system.stamp_flow.stamp_prompt.writ())
+			await _wait(0.7)
 			continue
+		_account(_soul())
+		await _await_tale()
 		var encounter: Encounter = commands.current_encounter()
 		if shot_prefix != "" and String(encounter.id).begins_with(String(soul)):
 			await _shot("%s_%s" % [shot_prefix, encounter.id])
@@ -205,8 +238,8 @@ func _drag(from: Control, to: Control, shot_name: String) -> void:
 		root.push_input(motion)
 		await _frames(1)
 	await _frames(2)
-	var question: String = _desk.system().stamp_flow.stamp_prompt.question()
-	_expect(question.begins_with("Stamp "), "dragging over an open door previews the stamp")
+	var raised: bool = _desk.system().stamp_flow.stamp_prompt.is_asking()
+	_expect(raised, "dragging over an open door raises the stamp")
 	await _shot(shot_name)
 	var release := InputEventMouseButton.new()
 	release.button_index = MOUSE_BUTTON_LEFT
@@ -215,6 +248,27 @@ func _drag(from: Control, to: Control, shot_name: String) -> void:
 	release.global_position = end
 	root.push_input(release)
 	await _frames(3)
+
+
+## Waits for the soul's tale to end by itself, at the player's text speed.
+func _await_tale() -> void:
+	var system: DeskSystem = _desk.system()
+	var start: int = Time.get_ticks_msec()
+	while system.is_telling() and Time.get_ticks_msec() - start < MAX_TALE_SECONDS * 1000.0:
+		await process_frame
+	_expect(not system.is_telling(), "the tale ends by itself within %d s" % MAX_TALE_SECONDS)
+
+
+## Prints the forced seconds of the soul counted so far (if it is not `soul`) and starts counting
+## for `soul` ("" ends the count: the day is over).
+func _account(soul: String) -> void:
+	if soul == _forced_soul:
+		return
+	var gate: PresentationGate = _desk.gate()
+	if _forced_soul != "":
+		print("FORCED %s %.2f" % [_forced_soul, gate.gated_seconds()])
+	gate.reset_gated_seconds()
+	_forced_soul = soul
 
 
 func _expect(condition: bool, what: String) -> void:

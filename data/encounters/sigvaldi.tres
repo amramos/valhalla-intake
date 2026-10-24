@@ -32,8 +32,8 @@ a = "C1"
 b = "L1"
 kind = 2
 destination = &"valhalla"
-caption = "the saga is true. L1 sends him to Valhalla."
-pair_text = "'Fell in battle. Ness' and L1"
+caption = "the saga is true. Decree I sends him to Valhalla."
+pair_text = "'Fell in battle. Ness' and decree I"
 
 [resource]
 script = ExtResource("3_0h37m")

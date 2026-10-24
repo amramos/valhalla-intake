@@ -20,7 +20,7 @@ const DECREES: Array[Array] = [
 	["L2", "Whoever lies to the Gate goes to Hel, whatever else the Law says."],
 	["L3", "Even so, a warrior without a weapon in hand goes to Hel."],
 	["L4", "Even so, those who fled the battle go to Hel."],
-	["L5", "Those who fell defending hearth and kin go to Fólkvangr, whatever L1, L3 and L4 say."],
+	["L5", "Those who fell defending hearth and kin go to Fólkvangr, whatever I, III and IV say."],
 ]
 const PLACES: Dictionary = {
 	"chest": &"torso_front",

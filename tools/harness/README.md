@@ -16,6 +16,10 @@ godot --headless -s tools/harness/play.gd -- <session-file> stamp valhalla
 Each run replays the session file (one accepted command per line), runs the new command, appends
 it if the desk accepted it, then prints the result, the desk and the available actions.
 
+Thread captions are written by `CaptionFormatter` in the desk's font (m5x7 at 16 px, a 330 px
+note line), so they quote the same excerpts as the desk; no caption names an id, while commands
+and the desk listing keep the ids (`harness_caption_test.gd`).
+
 Screens, as the game shows them, with the same text (`ScreenText`, `DeskText`): the title, the
 dawn card, the desk, the dusk cards, the ending and the pause menu. The session starts on the
 title.

@@ -57,7 +57,7 @@ func test_a_closed_worthy_door_fails() -> void:
 func test_a_law_caption_naming_the_wrong_realm_fails() -> void:
 	var ulf: Encounter = _broken(&"ulf")
 	ulf.seams[0].destination = Realm.HEL
-	ulf.seams[0].caption = "the saga is true. L1 sends him to Hel."
+	ulf.seams[0].caption = "the saga is true. Decree I sends him to Hel."
 	var problems: String = _problems(ulf, 0)
 	assert_string_contains(problems, "but L1 sends to valhalla (D44)")
 	assert_string_contains(problems, "(R2, R3)")
@@ -65,7 +65,7 @@ func test_a_law_caption_naming_the_wrong_realm_fails() -> void:
 
 func test_a_caption_stating_precedence_fails() -> void:
 	var egil: Encounter = _broken(&"egil")
-	egil.seams[2].caption = "L5 sends him to Fólkvangr, but L2 rules."
+	egil.seams[2].caption = "Decree V sends him to Fólkvangr, but decree II rules."
 	assert_string_contains(_problems(egil, 2), "(R2, R3)")
 
 
@@ -73,13 +73,20 @@ func test_a_law_thread_from_a_lie_or_a_grey_line_fails() -> void:
 	var kolbeinn: Encounter = _broken(&"kolbeinn")
 	kolbeinn.seams.append(
 		Seam.make(
-			"C1", "L1", Seam.Kind.LAW, Seam.Liar.NONE, Realm.VALHALLA, "L1 sends him to Valhalla."
+			"C1",
+			"L1",
+			Seam.Kind.LAW,
+			Seam.Liar.NONE,
+			Realm.VALHALLA,
+			"Decree I sends him to Valhalla."
 		)
 	)
 	assert_string_contains(_problems(kolbeinn, 0), "(R4)")
 	var grim: Encounter = _broken(&"grim")
 	grim.seams.append(
-		Seam.make("W1", "L4", Seam.Kind.LAW, Seam.Liar.NONE, Realm.HEL, "L4 sends him to Hel.")
+		Seam.make(
+			"W1", "L4", Seam.Kind.LAW, Seam.Liar.NONE, Realm.HEL, "Decree IV sends him to Hel."
+		)
 	)
 	assert_string_contains(_problems(grim, 1), "(R5)")
 
@@ -88,7 +95,12 @@ func test_a_law_thread_on_a_grey_only_soul_fails() -> void:
 	var ketil: Encounter = _broken(&"ketil")
 	ketil.seams.append(
 		Seam.make(
-			"C1", "L1", Seam.Kind.LAW, Seam.Liar.NONE, Realm.VALHALLA, "L1 sends him to Valhalla."
+			"C1",
+			"L1",
+			Seam.Kind.LAW,
+			Seam.Liar.NONE,
+			Realm.VALHALLA,
+			"Decree I sends him to Valhalla."
 		)
 	)
 	assert_string_contains(_problems(ketil, 2), "(R6)")
@@ -97,7 +109,7 @@ func test_a_law_thread_on_a_grey_only_soul_fails() -> void:
 func test_an_unprefixed_law_thread_without_a_red_seam_fails() -> void:
 	var asa: Encounter = _broken(&"asa")
 	asa.liar = true
-	asa.seams[0].caption = "L3 sends her to Hel."
+	asa.seams[0].caption = "Decree III sends her to Hel."
 	assert_string_contains(_problems(asa, 0), "(R7)")
 
 
@@ -110,7 +122,7 @@ func test_a_law_thread_on_evidence_that_cant_show_its_condition_fails() -> void:
 			Seam.Kind.LAW,
 			Seam.Liar.NONE,
 			Realm.HEL,
-			"the saga is true. L3 sends him to Hel."
+			"the saga is true. Decree III sends him to Hel."
 		)
 	)
 	assert_string_contains(_problems(ulf, 0), "(R1)")
@@ -147,7 +159,7 @@ func test_an_l5_thread_on_a_line_that_states_no_defence_of_home_fails() -> void:
 func test_a_red_seam_between_two_body_facts_fails() -> void:
 	var asa: Encounter = _broken(&"asa")
 	asa.liar = true
-	asa.seams[0].caption = "L3 sends her to Hel."
+	asa.seams[0].caption = "Decree III sends her to Hel."
 	asa.seams.append(Seam.make("B1", "B2", Seam.Kind.RED, Seam.Liar.CLAIM))
 	var problems: String = _problems(asa, 0)
 	assert_string_contains(problems, "red B1-B2 is not body against testimony")

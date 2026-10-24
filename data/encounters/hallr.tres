@@ -40,7 +40,7 @@ highlight = Array[String](["B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4"])
 
 [sub_resource type="Resource" id="mentor_2"]
 script = ExtResource("2_vvn3i")
-text = "His chest. His C3."
+text = "His chest. His third line."
 highlight = Array[String](["B1", "C3"])
 
 [sub_resource type="Resource" id="mentor_3"]

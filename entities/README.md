@@ -5,9 +5,9 @@ system connects them to the commands. None of them reads the run state directly.
 
 | Entity | What it is |
 |---|---|
-| `body_chart/` | Front and back views drawn from the soul's layer stack (`body_stacks.tres`), a hit area per fact, absences included (D5) |
-| `evidence_panel/` | A parchment panel of numbered lines: claim, witness or Law (D7, D32) |
-| `thread_line/` | A thread's route, pattern and grey knot (D8) |
+| `body_chart/` | Front and back views drawn from the soul's layer stack (`body_stacks.tres`) on the top of a stone slab (a rim and shadow drawn outside its rect), a hit area per fact, absences included (D5, D35) |
+| `evidence_panel/` | A paper of evidence lines: a saga sheet (claim or witness: torn parchment headed by the speaker, a hanging quote per line, no ids) or the Law scroll (knotwork rods, roman numerals, length grows with the decrees); `tell()` writes the lines out through a `Teller` (D4, D6–D9) |
+| `thread_line/` | A thread's route: 5×5 pin heads at its ends, a 3 px line in its kind's colour and pattern, the tied grey knot, the taut draw-in and the slack drop (D8, D12) |
 | `door/` | A realm door: lit or locked sprite, hover glyph and name, NEW tag, Hel's tide, drop target for the soul (D4, D9, D21) |
 | `waiting_soul/` | The soul at the gate (its front-view stack, draggable) and its plain, frost or Hel plate (D21) |
 | `hud/` | Clock (with the 30 s warning), feathers, quota, Huginn, the extra-answer note and the ledger badge (D21, D22, D30); `HudReadout` is what it shows |

@@ -347,7 +347,8 @@ func _check_law_threads(
 				)
 			)
 		var expected: String = (
-			"%s sends %s to %s." % [decree_id, soul.pronoun, Realm.display_name(realm)]
+			"Decree %s sends %s to %s."
+			% [DecreeNumeral.roman(decree_id), soul.pronoun, Realm.display_name(realm)]
 		)
 		if not soul.liar:
 			expected = SAGA_TRUE + expected

@@ -5,10 +5,13 @@ extends SceneTree
 ##
 ##   godot --path . --resolution 480x270 -s tools/fitcheck/fit_check.gd -- [output-folder]
 ##
-## The content: the longest claim and witness lines of the evidence matrix, with their prefixes;
-## the five decrees L1–L5 word for word (D32); Ragna's front-view hit areas (neck, chest, right
-## hand, hem) and her back; a grey thread with its knot; Ask Huginn and the stamp confirm; and a
-## two-line caption.
+## The content: the longest claim and witness lines of the evidence matrix (no ids on the desk,
+## D6: a hanging quote instead); the five decrees I–V word for word (D32, L5 as amended by D6) on
+## the scroll; every soul's and witness's name as a sheet heading; Ragna's front-view hit areas
+## (neck, chest, right hand, hem) and her back; a grey thread with its knot; Ask Huginn and the
+## raised stamp; and on the clerk's note the longest grey caption the slice can write, both
+## speakers named, built by the desk's own CaptionFormatter, then the longest citation with the
+## mentor's comment.
 
 const DESK_SCENE := "res://scenes/desk/desk.tscn"
 const OUT_NAME := "vertical-slice-fitcheck.png"
@@ -35,14 +38,15 @@ const DECREES: Array[String] = [
 	"Whoever lies to the Gate goes to Hel, whatever else the Law says.",
 	"Even so, a warrior without a weapon in hand goes to Hel.",
 	"Even so, those who fled the battle go to Hel.",
-	"Those who fell defending hearth and kin go to Fólkvangr, whatever L1, L3 and L4 say.",
+	"Those who fell defending hearth and kin go to Fólkvangr, whatever I, III and IV say.",
 ]
-## The longest message the strip carries: a citation with the ignored suffix (D14) and Ragna's
-## mentor comment from the matrix.
-const TWO_LINE_CAPTION := (
-	"Citation: L5. C2 against L5. You threaded it yourself. "
-	+ "L5. 'I held the door.' Hel pays well."
+## The longest written messages the note carries, each its own caption: Ragna's citation with the
+## ignored suffix (D14), and the mentor's comment on Hel's promise, in the decrees' numerals (D6).
+const CITATION_CAPTION := (
+	"Citation: decree V. 'I held the door' and decree V. " + "You threaded it yourself."
 )
+const MENTOR_CAPTION := "'I held the door' and decree V. Hel pays well."
+const ENCOUNTERS := "res://data/encounters"
 
 var _out: String = ""
 var _desk: Desk = null
@@ -63,6 +67,9 @@ func _run() -> void:
 	system.body_chart.outline_all = true
 	_desk.commands().begin_day()
 	await _frames(2)
+	# A press during the tale would only finish it (D27): the check reads the told sheets.
+	system.finish_tellings()
+	await _frames(2)
 	system.claim_panel.area("C2").press()
 	system.witness_panel.area("W1").press()
 	await _frames(2)
@@ -73,10 +80,21 @@ func _run() -> void:
 		system.thread_layer.get_child_count() - 1
 	)
 	_door(&"folkvangr").press()
-	system.caption_strip.take_over(TWO_LINE_CAPTION)
 	var hem: PinSelectable = system.body_chart.area("B5")
 	system.hover_label.show_for(hem.hover_text, hem.get_global_rect())
+	await _frames(2)
+	system.caption_strip.take_over(MENTOR_CAPTION)
+	await _frames(2)
+	_measure_note(system, "mentor", true)
+	system.caption_strip.take_over(CITATION_CAPTION)
+	await _frames(2)
+	_measure_note(system, "citation", true)
+	var grey: String = _longest_grey_caption(system)
+	system.caption_strip.take_over_caption(
+		Caption.make(grey, CaptionStrip.Priority.THREAD, &"pin_grey", [] as Array[String])
+	)
 	await _frames(3)
+	_measure_note(system, "longest grey caption", false)
 	_measure(system, thread)
 	await RenderingServer.frame_post_draw
 	var image: Image = root.get_texture().get_image()
@@ -124,9 +142,7 @@ func _measure(system: DeskSystem, thread: ThreadLine) -> void:
 		_problems.append(
 			"the Law runs past its panel (%d > %d)" % [law.content_bottom(), law.size.y]
 		)
-	print("caption: %d lines" % system.caption_strip.line_count())
-	if system.caption_strip.line_count() > 2:
-		_problems.append("the caption takes %d lines" % system.caption_strip.line_count())
+	_measure_headings(system)
 	print("knot at %s, size %s" % [thread.knot().global_position, thread.knot().size])
 	var knot: Rect2 = thread.knot().get_global_rect()
 	var areas: Array[Rect2] = system.body_chart.hit_rects()
@@ -140,6 +156,70 @@ func _measure(system: DeskSystem, thread: ThreadLine) -> void:
 		print("  %s %s: %s" % [id, hit.hover_text, hit.get_global_rect()])
 		if hit.size.x < 8 or hit.size.y < 8:
 			_problems.append("%s is smaller than 8x8" % id)
+
+
+## The note's lines for the shown caption: at most two, the mark column left clear (D10).
+func _measure_note(system: DeskSystem, what: String, finish: bool) -> void:
+	var strip: CaptionStrip = system.caption_strip
+	if finish:
+		strip.finish_writing()
+	var label: Label = strip.get_node("Text") as Label
+	print(
+		(
+			"note (%s): %d lines, text from x %d, width %d px: %s"
+			% [what, strip.line_count(), label.position.x, label.size.x, strip.shown_text()]
+		)
+	)
+	if strip.line_count() > 2:
+		_problems.append("the note's %s takes %d lines (D10 allows 2)" % [what, strip.line_count()])
+	if label.position.x < CaptionStrip.RULE_X + 1:
+		_problems.append("the note's text overlaps its mark column")
+
+
+## Every soul's and witness's name, as the sheets head them, against the sheet's width (D6).
+func _measure_headings(system: DeskSystem) -> void:
+	var widest: String = ""
+	var widest_px: int = 0
+	for encounter: Encounter in _slice_encounters():
+		for name: String in [encounter.soul_name, encounter.witness_heading_name()]:
+			var width: int = PaperLine.width_of(system.claim_panel, name)
+			if width > widest_px:
+				widest = name
+				widest_px = width
+	var inner: int = system.witness_panel.inner_width()
+	print("widest heading: %s, %d px of %d" % [widest, widest_px, inner])
+	if widest_px > inner:
+		_problems.append("the heading %s runs past the sheet" % widest)
+
+
+## The longest caption a grey thread in the slice can write, through the desk's own formatter and
+## with the day-3 Law on the desk, so the excerpts are cut against every decree.
+func _longest_grey_caption(system: DeskSystem) -> String:
+	var font: Font = system.caption_strip.get_theme_font(&"font", &"Label")
+	var formatter := CaptionFormatter.new(font, DeskNote.FONT_SIZE, system.note_width())
+	var law: Array[EvidenceItem] = _desk.commands().day_rules().decrees
+	var longest: String = ""
+	for encounter: Encounter in _slice_encounters():
+		var items: Array[EvidenceItem] = encounter.items.duplicate()
+		items.append_array(law)
+		for seam: Seam in encounter.seams:
+			if seam.kind != Seam.Kind.GREY:
+				continue
+			var text: String = formatter.thread_caption(
+				seam, items, encounter.soul_name, encounter.witness_heading_name()
+			)
+			if formatter.width_of(text) > formatter.width_of(longest):
+				longest = text
+	print("longest grey caption: %d px" % formatter.width_of(longest))
+	return longest
+
+
+func _slice_encounters() -> Array[Encounter]:
+	var found: Array[Encounter] = []
+	for file: String in DirAccess.get_files_at(ENCOUNTERS):
+		if file.ends_with(".tres"):
+			found.append((load(ENCOUNTERS.path_join(file)) as EncounterData).to_core())
+	return found
 
 
 func _fit_check_commands() -> DeskCommands:

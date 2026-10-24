@@ -5,19 +5,22 @@ extends RefCounted
 ##
 ## The desk's columns, left to right: the body chart, the claim and witness column, the Law. Each
 ## gap between them is a gutter two lanes wide; a third gutter runs along the top of the desk band.
+## A gutter is 4 px and a thread's stroke 3 px (D12): lane 0 runs on the gutter's first column and
+## lane 1 on its last, and ThreadLine grows each stroke inward, so the stroke never leaves the
+## gutter (chart | 130-133 | sheets | 270-273 | Law; rows 96-99 above the desk's papers).
 ## A thread from a fact leaves sideways to the chart's margin (see _from_fact).
 
 ## Where an endpoint sits.
 enum Column { BODY, TESTIMONY, LAW }
 
-## The left lane of the gutter between the body chart and the testimony column.
-var body_gutter_x: int = 131
-## The left lane of the gutter between the testimony column and the Law.
-var law_gutter_x: int = 271
-## The upper lane of the gutter along the top of the desk band.
-var top_gutter_y: int = 97
-## Pixels between the two lanes of a gutter.
-var lane_step: int = 2
+## Lane 0 of the gutter between the body chart and the testimony column: its first column.
+var body_gutter_x: int = 130
+## Lane 0 of the gutter between the testimony column and the Law: its first column.
+var law_gutter_x: int = 270
+## Lane 0 of the gutter along the top of the desk band: its first row.
+var top_gutter_y: int = 96
+## Pixels from lane 0 to lane 1: the gutter's last column (or row).
+var lane_step: int = 3
 
 
 ## The route between two endpoints. `item_*` is the pinned item's rectangle and `panel_*` the

@@ -69,7 +69,7 @@ a = "B3"
 b = "L3"
 kind = 2
 destination = &"hel"
-caption = "L3 sends him to Hel."
+caption = "Decree III sends him to Hel."
 
 [resource]
 script = ExtResource("3_lgdsj")

@@ -16,6 +16,12 @@ Everything here is testable without a scene tree, and depends on nothing else in
   - `economy.gd`: the daily loss cap, uncapped spends, demotion after every change;
   - `day_clock.gd`: real time plus action costs, pause, the 30 s warning;
   - `ending_calculator.gd`: Hel's tide and the hollow hall, per encounter by the worthy realm.
+- Shared words, so the desk and the text harness print the same text: `screen_text.gd` (dawn,
+  dusk, the ending), `desk_text.gd` (the text no rule composes), `caption_formatter.gd` (a thread's
+  caption names the pair by its words: quoted excerpts, body labels, decrees by numeral) and
+  `decree_numeral.gd` (decree ids to "I".."V"; ids stay in data and commands).
+- `options.gd`: text speed, reduce motion, volume and mute, read from `user://options.cfg` with
+  validated defaults.
 - Value types: `realm.gd`, `evidence_item.gd`, `seam.gd`, `encounter.gd`, `day_rules.gd`,
   `slice_rules.gd` (the tunables), `verdict_record.gd`, and the results `pin_result.gd`,
   `stamp_result.gd`, `dusk_report.gd`, `ending_report.gd`, `ending_entry.gd`.

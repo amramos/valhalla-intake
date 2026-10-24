@@ -46,8 +46,8 @@ a = "C2"
 b = "L5"
 kind = 2
 destination = &"folkvangr"
-caption = "the saga is true. L5 sends her to Fólkvangr."
-pair_text = "'I held the door' and L5"
+caption = "the saga is true. Decree V sends her to Fólkvangr."
+pair_text = "'I held the door' and decree V"
 
 [sub_resource type="Resource" id="seam_C3_L5"]
 script = ExtResource("4_i70em")
@@ -55,7 +55,7 @@ a = "C3"
 b = "L5"
 kind = 2
 destination = &"folkvangr"
-caption = "the saga is true. L5 sends her to Fólkvangr."
+caption = "the saga is true. Decree V sends her to Fólkvangr."
 
 [sub_resource type="Resource" id="seam_W1_L5"]
 script = ExtResource("4_i70em")
@@ -63,7 +63,7 @@ a = "W1"
 b = "L5"
 kind = 2
 destination = &"folkvangr"
-caption = "the saga is true. L5 sends her to Fólkvangr."
+caption = "the saga is true. Decree V sends her to Fólkvangr."
 
 [resource]
 script = ExtResource("3_dphat")
