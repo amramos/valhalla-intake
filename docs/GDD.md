@@ -8,6 +8,7 @@ the appendix are the owner's to confirm.
 2026-10-21 — **vertical-slice planning: the desk becomes layout A3, doors in the gate band; the clock runs in real time plus action costs; claims run 3–4 lines; decree wording made consistent (§3.1, §3.7, §5; `docs/plans/vertical-slice-ledger.md` D4, D7, D10, D21, D32)**
 2026-10-21 — **vertical slice built (days 1–3, 12 encounters): §2 and §3 marked [BUILT] for it; the clock length waits on the owner's first play (ledger D54)**
 2026-10-23 — **game UI overhaul planned (`docs/plans/game-ui-ledger.md`, ADR-0009): the claim and witness are told line by line and the clock waits for the telling (§3.1, §3.7); dusk and the ending are the clerk's day-book (§3.10); sound and options (§7, §8); disguised gods or monsters parked (§10). Three pillars added to §1**
+2026-10-24 — **game UI overhaul built for the slice (stacked PRs #25–#30, unmerged until the owner plays; `docs/plans/game-ui-ledger.md` "Built"): the telling, the day-book, the dawn writ, the title and the options panel exist as §1, §3.1, §3.7, §3.10, §7 and §8 describe; the stamp's size is bounded by the map and the next step is the owner's (ledger D57)**
 
 This is the **single source of truth for design and scope**. Where it conflicts with an older ADR,
 this document wins and the ADR gets a superseded note. Where it conflicts with the code, the code
@@ -294,7 +295,7 @@ darken toward Ragnarök.
 **Delivery:** short text at the desk and at dusk. There is no voice acting, no cutscenes beyond
 still frames, and no fourth-wall or meta tricks.
 
-## 7. Art and audio direction **[DESIGNED]**
+## 7. Art and audio direction **[BUILT]** for the slice (the style guide `docs/art/art-direction.md`, the desk's sounds); the key art **[DESIGNED]**
 
 - **Style:** limited-palette pixel art.
 - **Camera and resolution:** a fixed desk view at about 480×270, scaled by integer zoom. Text is
@@ -317,7 +318,7 @@ still frames, and no fourth-wall or meta tricks.
 - **Marketing:** a separate painted key-art piece for the capsule: a bloodied soul, an ember door
   and a raven on cold grey.
 
-## 8. Platform and business **[DESIGNED]**
+## 8. Platform and business **[DESIGNED]**; the options panel and the mouse-first input **[BUILT]**
 
 - **Engine and input:** Godot 4. Mouse only; every drag has a click alternative.
 - **Platforms:** Windows and web first. Mac and Linux follow once the demo validates.
