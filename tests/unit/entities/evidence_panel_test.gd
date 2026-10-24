@@ -85,6 +85,146 @@ func test_the_scroll_hangs_between_rods_and_grows_with_the_decrees_in_force() ->
 	assert_true(paper.position.y + paper.size.y + ScrollRod.HEIGHT <= SCROLL_SIZE.y)
 
 
+## D9: the parchment ends 6 px under the last decree with the bottom rod right under it (a full
+## day-3 scroll has 4 px of room, and takes them); the panel's rect stays the full 204x144, the
+## desk showing below the rod.
+func test_the_scroll_parchment_ends_six_px_below_the_last_decree() -> void:
+	var panel: EvidencePanel = _scroll()
+	var paper: Control = panel.get_node(^"Paper") as Control
+	var ends: Array[int] = []
+	for count: int in [3, 5]:
+		panel.show_lines(_decrees(count), "Odin's Law")
+		var room: int = int(SCROLL_SIZE.y) - ScrollRod.HEIGHT - panel.content_bottom()
+		var tail: int = mini(EvidencePanel.SCROLL_TAIL, room)
+		gut.p("%d decrees: %d px under the ink" % [count, tail])
+		assert_true(tail >= EvidencePanel.MIN_SCROLL_TAIL, "the edge fits")
+		assert_eq(panel.paper_bottom(), panel.content_bottom() + tail, "%d decrees" % count)
+		if count == 3:
+			assert_eq(tail, 6, "day 1: 6 px")
+		assert_eq(int(paper.position.y + paper.size.y), panel.paper_bottom(), "the rod is under it")
+		assert_eq(panel.size, SCROLL_SIZE, "the node rect is unchanged")
+		ends.append(panel.paper_bottom())
+	assert_lt(ends[0], ends[1], "day 1 shows a shorter scroll")
+	assert_true(ends[1] + ScrollRod.HEIGHT <= int(SCROLL_SIZE.y), "the rod stays inside the panel")
+
+
+## D9, D33: a new decree carries an 8x9 wax seal left of its numeral, never at a line's end, never
+## over text and inside its own line's row; the heading says "Odin's Law" alone, and the seal
+## moves no line (the day-3 scroll still fits).
+func test_a_new_decree_carries_a_wax_seal_left_of_its_numeral() -> void:
+	var panel: EvidencePanel = _scroll()
+	panel.show_lines(_decrees(5), "Odin's Law")
+	var before: Array[Vector2] = _line_positions(panel)
+	var bottom: int = panel.content_bottom()
+	panel.set_new(["L4", "L5"] as Array[String])
+	assert_eq(_line_positions(panel), before, "the seal pushes no text")
+	assert_eq(panel.content_bottom(), bottom)
+	assert_false(panel.overflows(), "the day-3 scroll still fits")
+	assert_eq(panel.heading_text(), "Odin's Law", "no NEW in the heading")
+	assert_eq(panel.seal_rect("L1"), Rect2(), "an old decree has no seal")
+	for id: String in ["L4", "L5"]:
+		var seal: Rect2 = panel.seal_rect(id)
+		var hit: PinSelectable = panel.area(id)
+		var numeral: Label = hit.get_node(^"Numeral") as Label
+		var numeral_left: float = hit.position.x + numeral.position.x
+		var text_left: float = hit.position.x + PaperLine.text_start(_text_label(panel, id), panel)
+		assert_eq(seal.size, Vector2(8, 9), "%s: 8x9" % id)
+		assert_true(seal.end.x <= numeral_left, "%s: left of the numeral" % id)
+		assert_true(seal.end.x < text_left, "%s: never at the line's end" % id)
+		assert_true(seal.position.x >= 0.0, "%s: on the paper" % id)
+		assert_true(seal.position.y >= hit.position.y, "%s: below the line above" % id)
+		assert_true(seal.end.y <= hit.position.y + PaperLine.LINE_PITCH, "%s: its first line" % id)
+	panel.set_new([] as Array[String])
+	assert_eq(panel.seal_rect("L5"), Rect2(), "the day's first stamp clears it")
+
+
+## D20: the row a hover tag keeps clear of holds the heading's ink, whatever the heading says, and
+## never the first line.
+func test_the_heading_rect_holds_the_headings_ink() -> void:
+	var sheet: EvidencePanel = _sheet()
+	for title: String in ["Ulf", "Sigvaldi the Long"]:
+		sheet.show_lines(_claim(), title)
+		var ink := Rect2(
+			sheet.global_position + Vector2(EvidencePanel.PADDING, EvidencePanel.PADDING + 1),
+			Vector2(PaperLine.width_of(sheet, title), PaperLine.LINE_PITCH - 1)
+		)
+		var row: Rect2 = sheet.heading_rect()
+		assert_true(row.encloses(ink), "%s: the heading's ink %s in %s" % [title, ink, row])
+		var first_line: Rect2 = sheet.area("C1").get_global_rect()
+		assert_true(row.end.y <= first_line.position.y, "%s: never the first line" % title)
+	var scroll: EvidencePanel = _scroll()
+	scroll.show_lines(_decrees(3), "Odin's Law")
+	var top: float = scroll.global_position.y + ScrollRod.HEIGHT
+	var scroll_ink := Rect2(
+		scroll.global_position.x + EvidencePanel.PADDING,
+		top + EvidencePanel.PADDING + 1,
+		scroll.inner_width(),
+		PaperLine.LINE_PITCH - 1
+	)
+	assert_true(scroll.heading_rect().encloses(scroll_ink), "the scroll's centred heading")
+	assert_true(scroll.heading_rect().end.y <= scroll.area("L1").get_global_rect().position.y)
+
+
+## The review's case: beside "IV" a 9 px seal reached 2 px into the law gutter, under the threads.
+## No decree's seal, I to V, ever leaves the paper.
+func test_no_seal_pixel_is_ever_left_of_the_paper() -> void:
+	var panel: EvidencePanel = _scroll()
+	panel.show_lines(_decrees(5), "Odin's Law")
+	var ids: Array[String] = ["L1", "L2", "L3", "L4", "L5"]
+	panel.set_new(ids)
+	var off: Array[String] = []
+	for id: String in ids:
+		var seal: Rect2 = panel.seal_rect(id)
+		assert_true(seal.has_area(), "%s has its seal" % id)
+		if seal.position.x < 0.0:
+			off.append("%s %s" % [id, seal])
+	assert_eq(off, [] as Array[String], "every seal on the paper")
+
+
+## The blind critic's case: at 1:1 the 7x7 seal read as a selected pin. The seal is 8x9, Ember 1
+## wax in an Ember 0 rim with a lighter 3x3 Ember 2 heart (a pin is 5x5 Ember 2 with a dark
+## shadow) and a 2 px drip off its bottom right.
+func test_the_wax_seal_is_a_wax_blob_with_a_light_heart_not_a_pin_head() -> void:
+	var canvas := Palette.new()
+	var named: Dictionary[String, Color] = Palette.by_name()
+	var wax: Color = named["Ember 1"]
+	var rim: Color = named["Ember 0"]
+	var heart: Color = named["Ember 2"]
+	WaxSeal.draw(canvas.paint, Vector2i(10, 20), wax, rim, heart)
+	assert_eq(Palette.bounds(canvas.rects), Rect2(10, 20, 8, 9), "8x9")
+	var hearts: Array[Vector2i] = []
+	var waxed: int = 0
+	for y: int in range(9):
+		for x: int in range(8):
+			var color: Color = Palette.color_at(
+				canvas.rects, canvas.colors, Vector2i(10 + x, 20 + y)
+			)
+			if color == heart:
+				hearts.append(Vector2i(x, y))
+			waxed += 1 if color == wax else 0
+	var expected: Array[Vector2i] = []
+	for y: int in range(2, 5):
+		for x: int in range(2, 5):
+			expected.append(Vector2i(x, y))
+	assert_eq(hearts, expected, "a 3x3 heart in the middle of the blob")
+	assert_gt(waxed, hearts.size() * 2, "the body is Ember 1 wax")
+	var drip: int = 0
+	for y: int in range(6, 9):
+		for x: int in range(4, 8):
+			var at := Vector2i(10 + x, 20 + y)
+			drip += 1 if Palette.color_at(canvas.rects, canvas.colors, at) == wax else 0
+	assert_eq(drip, 3, "the drip: 2 px of wax running down below the right")
+	for color: Color in canvas.colors:
+		assert_true([wax, rim, heart].has(color), "Ember 0-2 only")
+
+
+func test_the_seal_wax_is_ember_1_in_the_desk_theme() -> void:
+	var named: Dictionary[String, Color] = Palette.by_name()
+	assert_eq(
+		THEME.get_color(&"seal_wax", &"DeskPalette").to_html(false), named["Ember 1"].to_html(false)
+	)
+
+
 func test_the_rod_is_knotwork_in_the_wood_ramp() -> void:
 	var canvas := Palette.new()
 	var named: Dictionary[String, Color] = Palette.by_name()
@@ -181,6 +321,13 @@ func test_new_lines_end_a_telling_without_announcing_it() -> void:
 	assert_false(panel.is_telling())
 	assert_signal_not_emitted(panel, "telling_finished", "a restart is not a finished telling")
 	assert_eq(_shown(panel), [true, true, true, true], "the new lines show whole")
+
+
+func _line_positions(panel: EvidencePanel) -> Array[Vector2]:
+	var at: Array[Vector2] = []
+	for index: int in range(5):
+		at.append(panel.area("L%d" % (index + 1)).position)
+	return at
 
 
 func _shown(panel: EvidencePanel) -> Array[bool]:

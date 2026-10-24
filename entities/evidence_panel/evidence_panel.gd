@@ -1,10 +1,12 @@
+# gdlint: disable=max-public-methods
 class_name EvidencePanel
 extends Control
 ## A paper of evidence lines (D6-D9): a saga sheet (the claim or a witness) or the Law scroll.
 ## Every line is a pin hit area. The sheet is torn parchment headed by the speaker in full ink,
 ## each line opening with a straight quote mark; the scroll hangs between two knotwork rods, its
-## decrees numbered in roman numerals right-aligned in their own column, and its parchment grows
-## with the decrees in force. Ids show only with `show_ids` (tools). Decrees wrap at word
+## decrees numbered in roman numerals right-aligned in their own column, and its parchment ends
+## just below the last decree, so it grows with the decrees in force (D9). A new decree carries a
+## wax seal left of its numeral (D33). Ids show only with `show_ids` (tools). Decrees wrap at word
 ## boundaries; testimony never wraps, so a line too long for the sheet shows as overflow.
 ##
 ## `tell` writes the lines out one by one through a Teller (D4); a line's hit area is hidden, and
@@ -27,8 +29,11 @@ const LABEL_TOP := PaperLine.LABEL_TOP
 const ROD_HEIGHT := ScrollRod.HEIGHT
 ## The scroll's parchment never shows shorter than this, rods excluded.
 const MIN_SCROLL_BODY := 40
-## The scroll's parchment ends this far below the last line: the frame's 2 px edge and shadow.
-const SCROLL_TAIL := 3
+## The scroll's parchment ends this far below the last decree's ink, the bottom rod under it (D9),
+## when the panel has the room; a full day-3 scroll keeps at least `MIN_SCROLL_TAIL`.
+const SCROLL_TAIL := 6
+## The least parchment under the last decree: the frame's 2 px edge and its shadow.
+const MIN_SCROLL_TAIL := 3
 
 @export var heading: String = ""
 ## Wrap long lines at word boundaries (decrees); testimony lines never wrap.
@@ -51,7 +56,7 @@ var _content_bottom: int = 0
 var _body_end: int = 0
 ## A telling is under way and its end not yet announced.
 var _awaiting_finish: bool = false
-## Lines marked NEW (D34): a bar in the margin and a note in the heading.
+## Lines marked NEW (D34): each carries a wax seal left of its numeral (D9, D33).
 var _new_ids: Array[String] = []
 ## The heading's hover label (the witness's full description, D52); "" for none.
 var _heading_hover: String = ""
@@ -126,12 +131,12 @@ func teller() -> Teller:
 	return _teller
 
 
-## Marks lines NEW until the day's first stamp (D34); an empty list clears the marks.
+## Marks lines NEW until the day's first stamp (D34): each shows its wax seal (D9, D33); an
+## empty list clears the marks. The heading stays the heading alone.
 func set_new(item_ids: Array[String]) -> void:
 	if item_ids == _new_ids:
 		return
 	_new_ids = item_ids.duplicate()
-	_heading_label.text = _heading_text()
 	queue_redraw()
 
 
@@ -139,9 +144,25 @@ func is_new(item_id: String) -> bool:
 	return _new_ids.has(item_id) and _areas.has(item_id)
 
 
+## Where a new decree's wax seal is drawn, in panel pixels; an empty rect when it has none.
+func seal_rect(item_id: String) -> Rect2:
+	if not is_new(item_id) or not _areas[item_id].has_node(^"Numeral"):
+		return Rect2()
+	var line: PinSelectable = _areas[item_id]
+	var numeral: Label = line.get_node(^"Numeral") as Label
+	return Rect2(WaxSeal.place(line.position, int(numeral.position.x)), WaxSeal.SIZE_VECTOR)
+
+
 ## The heading's hover area (tests and tools).
 func heading_hover_area() -> Control:
 	return _heading_label
+
+
+## The heading's whole row in global coordinates, whatever name it shows: a hover tag keeps clear
+## of it (D20).
+func heading_rect() -> Rect2:
+	var top: int = ROD_HEIGHT if style == &"scroll" else 0
+	return Rect2(global_position + Vector2(0, top), Vector2(size.x, PADDING + LINE_PITCH))
 
 
 func heading_text() -> String:
@@ -201,10 +222,16 @@ func content_bottom() -> int:
 	return _content_bottom
 
 
+## Where the parchment ends, in panel pixels: on the scroll the bottom rod starts here, so the area
+## below it shows the desk (D9); a sheet's paper fills the panel.
+func paper_bottom() -> int:
+	return _body_end
+
+
 ## True when text runs past the paper (the fit check reports it).
 func overflows() -> bool:
 	if style == &"scroll":
-		if _content_bottom + SCROLL_TAIL + ROD_HEIGHT > int(size.y):
+		if _content_bottom + MIN_SCROLL_TAIL + ROD_HEIGHT > int(size.y):
 			return true
 	elif _content_bottom > int(size.y) - PADDING:
 		return true
@@ -227,7 +254,7 @@ func _layout(items: Array[EvidenceItem], note: String) -> void:
 	_heading_label.visible = heading != ""
 	var rule_y: int = -1
 	if heading != "":
-		_heading_label.text = _heading_text()
+		_heading_label.text = heading
 		_heading_label.position = Vector2(PADDING, y - LABEL_TOP)
 		_heading_label.size = Vector2(inner_width() if style == &"scroll" else 0, 0)
 		_heading_label.horizontal_alignment = (
@@ -296,28 +323,18 @@ func _on_heading_entered() -> void:
 		item_hover_started.emit("", _heading_hover, _heading_label.get_global_rect())
 
 
-func _heading_text() -> String:
-	var shown: Array[String] = []
-	for id: String in _new_ids:
-		if _areas.has(id) or _labels.is_empty():
-			shown.append(id if show_ids else DecreeNumeral.roman(id))
-	if shown.is_empty():
-		return heading
-	return "%s  NEW: %s" % [heading, ", ".join(shown)]
-
-
 func _draw() -> void:
 	if style == &"scroll":
 		var width: int = int(size.x)
 		ScrollRod.draw(_paint, Vector2i(0, 0), width, _rod_colors())
 		ScrollRod.draw(_paint, Vector2i(0, _body_end), width, _rod_colors())
+	var wax: Color = get_theme_color(&"seal_wax", &"DeskPalette")
+	var edge: Color = get_theme_color(&"pin_selected_shadow", &"DeskPalette")
+	var heart: Color = get_theme_color(&"pin_selected", &"DeskPalette")
 	for id: String in _new_ids:
-		if _areas.has(id):
-			var line: PinSelectable = _areas[id]
-			draw_rect(
-				Rect2(line.position.x - PADDING, line.position.y, PADDING, line.size.y),
-				get_theme_color(&"select_light", &"DeskPalette")
-			)
+		var seal: Rect2 = seal_rect(id)
+		if seal.has_area():
+			WaxSeal.draw(_paint, Vector2i(seal.position), wax, edge, heart)
 
 
 func _paint(rect: Rect2, color: Color) -> void:

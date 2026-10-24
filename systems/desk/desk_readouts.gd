@@ -35,5 +35,4 @@ static func hud(commands: DeskCommands) -> HudReadout:
 	readout.huginn_on = commands.day_rules().huginn_answers > 0
 	readout.huginn_left = commands.huginn_left()
 	readout.promise_open = commands.promise_state() == RunState.PROMISE_OPEN
-	readout.extra_cost = commands.slice_rules().huginn_extra_cost
 	return readout

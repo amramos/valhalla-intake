@@ -33,6 +33,7 @@ var _options: Options = null
 var _band: Array[Control] = []
 var _band_home: Array[Vector2] = []
 var _jolt: Tween = null
+var _cursor: CursorSprite = null
 
 @onready var _system: DeskSystem = $DeskSystem
 @onready var _pause: PauseOverlay = $PauseOverlay
@@ -72,6 +73,10 @@ func pause_overlay() -> PauseOverlay:
 	return _pause
 
 
+func cursor() -> CursorSprite:
+	return _cursor
+
+
 func _ready() -> void:
 	PixelFont.configure(theme.default_font)
 	if _commands == null:
@@ -85,6 +90,12 @@ func _ready() -> void:
 	_system.options = _options
 	_system.stamp_flow.jolt_callback = jolt
 	_system.bind(_commands)
+	# The in-scene cursor (D13, D48) carries a pin while an item is selected and grabs the soul.
+	_cursor = CursorSprite.new()
+	add_child(_cursor)
+	_system.highlights().selection_changed.connect(_cursor.set_carrying_pin)
+	_system.soul.figure_hover_started.connect(_on_figure_hovered.bind(true))
+	_system.soul.figure_hover_ended.connect(_on_figure_hovered.bind(false))
 	_pause.configure(_commands.slice_rules().text)
 	_pause.resumed.connect(_set_paused.bind(false))
 	_pause.restart_confirmed.connect(_on_restart_confirmed)
@@ -164,6 +175,11 @@ func _notification(what: int) -> void:
 func _set_paused(paused: bool) -> void:
 	_commands.set_paused(paused)
 	_gate.set_paused(paused)
+
+
+## The grab hand over the waiting soul, only while it can be picked up (not under a held stamp).
+func _on_figure_hovered(over: bool) -> void:
+	_cursor.set_grab(over and _system.soul.figure().enabled)
 
 
 func _on_restart_confirmed() -> void:

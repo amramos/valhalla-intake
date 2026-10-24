@@ -107,3 +107,12 @@ size = [60, 10]
 paths = ["assets/art/ui/nameplate*.png"]
 max_colors = 10
 hard_alpha = true
+
+# The gate band's corner fog (D19), made by tools/art/band_frames.py: one sheet per day, three
+# 480x20 frames stacked for the band's rows 76-95, opaque only inside the two corner masks.
+[[canvas]]
+name = "fog"
+size = [480, 60]
+paths = ["assets/art/fog/*.png"]
+max_colors = 8
+hard_alpha = true

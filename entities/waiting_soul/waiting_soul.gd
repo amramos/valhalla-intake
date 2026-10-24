@@ -6,10 +6,14 @@ extends Control
 ## carries Hel's mark; it hovers the encounter's plate label. A soul shown after `prepare_arrival`
 ## waits off-screen to the left, its name off the plate, until `arrive` walks it in (D15). While
 ## it tells its tale it speaks (D4, D17): the plate lights and the figure dips 1 px on each voice
-## blip; otherwise it is still.
+## blip; otherwise it is still. A returned soul's frost glints now and then (D17): three rime pixels
+## on the plate, never on evidence; reduce motion and the gate's pause hold it.
 
 signal plate_hover_started(text: String, area: Rect2)
 signal plate_hover_ended
+## The mouse is over the figure (the cursor shows the grab hand, D13), and has left it.
+signal figure_hover_started
+signal figure_hover_ended
 
 const PLATE_HEIGHT := 10
 ## The figure's top-left inside this node; the node sits at (2, 0), so the figure is at (6, -2).
@@ -21,6 +25,11 @@ const ARRIVE_SECONDS := 0.3
 ## A speaking soul's dip on each blip, and how long it stays down (blips come at most ~13 a second).
 const BOB_PX := 1
 const BOB_SECONDS := 0.05
+## The frost's glint: these rime pixels of the frost plate (Fog 2) turn Parchment 2 for GLINT_HOLD
+## seconds every GLINT_EVERY seconds.
+const GLINT_PIXELS: Array[Vector2i] = [Vector2i(56, 1), Vector2i(57, 1), Vector2i(57, 2)]
+const GLINT_EVERY := 2.0
+const GLINT_HOLD := 0.2
 
 @export var stacks: BodyStacks = null
 @export var plate_plain: Texture2D = null
@@ -42,6 +51,8 @@ var _plate_texture: Texture2D = null
 var _arrival: Tween = null
 var _speaking: bool = false
 var _bob: Tween = null
+var _glint := IdleCycle.new(2, GLINT_EVERY - GLINT_HOLD, GLINT_EVERY - GLINT_HOLD, GLINT_HOLD)
+var _paused: bool = false
 
 
 func _ready() -> void:
@@ -51,6 +62,8 @@ func _ready() -> void:
 	_figure.kind = &"soul"
 	_figure.position = FIGURE_AT
 	_figure.size = FIGURE_SIZE
+	_figure.mouse_entered.connect(func() -> void: figure_hover_started.emit())
+	_figure.mouse_exited.connect(func() -> void: figure_hover_ended.emit())
 	add_child(_figure)
 	_plate = Control.new()
 	_plate.name = "Plate"
@@ -95,6 +108,7 @@ func show_soul(encounter: Encounter) -> void:
 		_plate_texture = plate_hel
 	elif encounter.returned:
 		_plate_texture = plate_frost
+	_glint.reset()
 	_plate.queue_redraw()
 
 
@@ -176,6 +190,29 @@ func bob() -> Tween:
 	return _bob
 
 
+## True while the frost plate's glint shows (never while speaking or under reduce motion).
+func is_glinting() -> bool:
+	return (
+		_plate_texture != null
+		and _plate_texture == plate_frost
+		and not _speaking
+		and not reduce_motion
+		and _glint.frame() == 1
+	)
+
+
+## The gate's pause holds the glint where it is.
+func set_paused(paused: bool) -> void:
+	_paused = paused
+
+
+func _process(delta: float) -> void:
+	if _paused or reduce_motion or _plate_texture != plate_frost or not is_visible_in_tree():
+		return
+	if _glint.advance(delta):
+		_plate.queue_redraw()
+
+
 ## The lit plate's backing inside the plate's 1 px rim, in the plate's pixels (tests).
 func speaking_backing() -> Rect2:
 	return Rect2(Vector2.ONE, _plate.size - Vector2(2, 2))
@@ -190,6 +227,10 @@ func _draw_plate() -> void:
 		)
 	if _speaking:
 		_plate.draw_rect(speaking_backing(), get_theme_color(&"select_light", &"DeskPalette"))
+	elif is_glinting():
+		var glint: Color = get_theme_color(&"parchment_light", &"DeskPalette")
+		for at: Vector2i in GLINT_PIXELS:
+			_plate.draw_rect(Rect2(Vector2(at), Vector2.ONE), glint)
 
 
 func _stop_bob() -> void:

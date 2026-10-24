@@ -18,15 +18,11 @@ static func ask(commands: DeskCommands, thread_index: int) -> String:
 	return commands.slice_rules().text.huginn_bought_format % answer
 
 
-## The control's hover: "Select a grey thread first." with none selected, "Extra answer: 2
-## feathers." once today's answers are spent, nothing otherwise. A thread already answered is
-## asked again for free (ask()), so its hover names no price.
-static func hover_text(commands: DeskCommands, thread_index: int) -> String:
-	var text: DeskText = commands.slice_rules().text
-	if thread_index < 0:
-		return text.huginn_select_hover
-	if commands.thread_answer(thread_index) != "":
-		return ""
-	if commands.huginn_left() <= 0:
-		return text.huginn_extra_hover
-	return ""
+## True when asking about `thread_index` now buys the answer: today's answers are spent and the
+## thread has none yet. A thread already answered is asked again for free (ask()).
+static func charges(commands: DeskCommands, thread_index: int) -> bool:
+	return (
+		thread_index >= 0
+		and commands.thread_answer(thread_index) == ""
+		and commands.huginn_left() <= 0
+	)

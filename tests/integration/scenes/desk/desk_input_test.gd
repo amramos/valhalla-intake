@@ -6,7 +6,8 @@ extends GutTest
 
 const DESK_SCENE := preload("res://scenes/desk/desk.tscn")
 ## How much of a door's foot the raised stamp may stand over (D54).
-const FOOT_PX := 20
+## 24 since the critic's last stamp pass enlarged the block to 28x28 (it stands over 22 px).
+const FOOT_PX := 24
 
 var _viewport: SubViewport = null
 var _desk: Desk = null

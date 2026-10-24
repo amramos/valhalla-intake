@@ -1,16 +1,17 @@
 class_name StampPrompt
 extends Control
 ## The writ and the stamp under the doors (D9, D14, D15, D54-D56). The writ always carries the name
-## of the soul at the desk. Asking raises the stamp (a 24×24 block on its handle) over the writ, its
-## top over the foot of the door behind, with "<Realm>?" beside it, and the desk dims (0.25) under
-## everything but the writ, the stamp and the doors; the stamp is the guarded confirm (a
-## double-click or a press before it arms does nothing), and it commits on the press. A right-click
-## on it withdraws it (the desk's stamp flow also withdraws it on any click elsewhere). The slam
-## squashes the stamp, presses its 2× glyph into the writ, darkens the veil to 0.55, bursts ink
-## from the block and, as the stamp lifts, sends a shockwave round the ink box; all timed, never
-## counted in frames. The sweep slides the writ off the desk edge, and the next soul's writ comes up
-## in its place. Nothing here reads anything but a name and a realm: no slam can tell a liar from a
-## hero.
+## of the soul at the desk. Asking raises the stamp (a 28×28 block on its handle) 8 px over the
+## writ, its 1 px shadow on the paper below and its top over the foot of the door behind, with
+## "<Realm>?" beside it, and the desk dims (0.25) under everything but the writ, the stamp and the
+## doors; the stamp is the guarded confirm (a double-click or a press before it arms does nothing),
+## and it commits on the press. A right-click on it withdraws it (the desk's stamp flow also
+## withdraws it on any click elsewhere). The slam squashes the stamp, presses its 2× glyph into the
+## writ, which dents and flashes with the stamp (the brightest instant) before the veil darkens to
+## 0.55, bursts ink outward from the block and, as the stamp lifts, sends a shockwave round the ink;
+## all timed, never counted in frames. The sweep slides the writ off the desk edge, and the next
+## soul's writ comes up in its place. Nothing here reads anything but a name and a realm: no slam
+## can tell a liar from a hero.
 
 signal confirmed(realm: StringName)
 signal cancelled
@@ -22,26 +23,33 @@ signal hover_ended
 enum State { IDLE, ASKING, PRESSED, INKED }
 
 ## The stamp's top when raised and when on the paper (its face on the ink box), in this node's
-## pixels; it rises from the paper over RISE_SECONDS when asked.
-const RAISED_Y := -5.0
+## pixels; it rises 8 px from the paper over RISE_SECONDS when asked. Raised, its click target
+## stands over the doors' feet by 24 px at most (22 px: D54's rule, widened for the 28 px block).
+const RAISED_Y := -10.0
 const CONTACT_Y := -2.0
-## The ink box's centre in this node's pixels (the writ sits at (90, 13)): the shockwave's centre.
-const INK_CENTER := Vector2(168.5, 21.5)
+## The ink box's centre in this node's pixels (the writ sits at (90, 15)): the shockwave's centre.
+const INK_CENTER := Vector2(162.5, 24.5)
 ## The veil (D56): while the stamp is raised, and from the impact until the lift.
 const CHOICE_DIM := 0.25
 const IMPACT_DIM := 0.55
 const RISE_SECONDS := 0.08
-## From the impact (D54-D56), in seconds, never frames: the burst's far stage and its end, the
-## squash, the lift (the veil goes, the shockwave starts), the shockwave's wide stage and its end.
-const BURST_FAR_SECONDS := 0.04
-const BURST_SECONDS := 0.08
+## From the impact (D54-D56), in seconds, never frames: the flash's end (the veil deepens), the
+## burst's middle and far stages and its end, the squash and the writ's dent, the lift (the veil
+## goes, the shockwave starts), the shockwave's wide stage and its end.
+const FLASH_SECONDS := 0.03
+const BURST_MID_SECONDS := 0.03
+const BURST_FAR_SECONDS := 0.06
+const BURST_SECONDS := 0.09
 const SQUASH_SECONDS := 0.06
+const DENT_SECONDS := 0.06
 const LIFT_SECONDS := 0.15
 const WAVE_WIDE_SECONDS := 0.2
 const WAVE_SECONDS := 0.25
 ## The writ slides down off the desk edge, then the next one slides up.
 const SWEEP_SECONDS := 0.2
 const COME_UP_SECONDS := 0.15
+## Columns between the stamp's block and its question: 3 empty columns, so the first letter never
+## reads as clipped by the block; "Fólkvangr?" (55 px) then ends 2 px inside the prompt's edge.
 const GAP := 3
 ## The realm doors' carved glyphs (as on the doors in the desk scene).
 const GLYPHS: Dictionary[StringName, StringName] = {
@@ -181,9 +189,9 @@ func stamp_down(p_realm: StringName) -> void:
 	_choice_veil()
 
 
-## The impact: the stamp squashes on the paper and the glyph is inked on the writ in Ink; then the
-## stamp lifts away and the ink box rings. The same for every soul and realm but its glyph (D14).
-## Returns the lift's tween (null when there is no tree to run it).
+## The impact: the stamp squashes on the paper, the glyph is inked on the writ in Ink and the writ
+## dents; then the stamp lifts away and the ink rings. The same for every soul and realm but its
+## glyph (D14). Returns the lift's tween (null when there is no tree to run it).
 func slam(p_realm: StringName) -> Tween:
 	if _state != State.PRESSED:
 		stamp_down(p_realm)
@@ -194,16 +202,21 @@ func slam(p_realm: StringName) -> Tween:
 		_face.visible = false
 		return null
 	_face.set_squashed(true)
-	# Under reduce motion there is no veil at the impact either (D55); the squash, the ink, the
-	# burst and the shockwave stay as its cues.
-	_impact.set_veil(0.0 if reduce_motion else IMPACT_DIM)
+	_writ.set_dented(true)
+	# The hit is the brightest instant: the writ and the stamp flash while the doors yield to the
+	# choice's veil, which deepens only as the flash ends. Under reduce motion there is no flash and
+	# no veil (D37, D55); the squash, the ink, the dent, the burst and the shockwave stay as cues.
+	_set_flash(not reduce_motion)
+	_impact.set_veil(0.0 if reduce_motion else CHOICE_DIM)
 	_impact.set_burst(1)
 	_motion = _timeline(
 		[
-			[BURST_FAR_SECONDS, _impact.set_burst.bind(2)],
+			[FLASH_SECONDS, _end_flash.bind(0.0 if reduce_motion else IMPACT_DIM)],
+			[BURST_MID_SECONDS, _impact.set_burst.bind(2)],
 			[SQUASH_SECONDS, _face.set_squashed.bind(false)],
+			[DENT_SECONDS, _writ.set_dented.bind(false)],
+			[BURST_FAR_SECONDS, _impact.set_burst.bind(3)],
 			[BURST_SECONDS, _impact.set_burst.bind(0)],
-			[LIFT_SECONDS, _impact.set_veil.bind(0.0)],
 			[LIFT_SECONDS, _lift],
 			[WAVE_WIDE_SECONDS, _impact.set_ring.bind(2)],
 			[WAVE_SECONDS, _impact.set_ring.bind(0)],
@@ -275,10 +288,23 @@ func reset_writ() -> void:
 	_end_sweep()
 
 
-## The stamp comes off the paper: it is gone, and the ink it left rings for a moment (D54).
+## The stamp comes off the paper: it is gone, the veil lifts, and the ink it left rings for a
+## moment (D54).
 func _lift() -> void:
 	_face.visible = false
+	_impact.set_veil(0.0)
 	_impact.set_ring(1)
+
+
+func _set_flash(on: bool) -> void:
+	_face.set_flash(on)
+	_writ.set_flash(on)
+
+
+## The flash ends and the desk yields under the impact's veil (`alpha`).
+func _end_flash(alpha: float) -> void:
+	_set_flash(false)
+	_impact.set_veil(alpha)
 
 
 ## The desk dims while the stamp is raised (D56); under reduce motion the raised stamp is the cue.
@@ -310,10 +336,20 @@ func _set_held_now(held: bool) -> void:
 	_writ.set_held(held)
 
 
+## The raised stamp, its question and its shadow on the writ (D37 keeps the shadow: a state cue).
 func _show_stamp(shown: bool) -> void:
 	_stamp.visible = shown
 	_face.visible = shown
 	_question.visible = shown
+	_writ.set_shadow(_shadow_area() if shown else Rect2i())
+
+
+## The raised stamp's shadow in the writ's pixels: 2 px narrower than the block on each side, one
+## row above the row its face lands on, so a parchment row keeps it apart from the paper's own
+## shadow under the writ's edge.
+func _shadow_area() -> Rect2i:
+	var row := Vector2(_face.position.x + 2, CONTACT_Y + StampFace.SIZE.y - 2) - _slot.position
+	return Rect2i(Vector2i(row), Vector2i(StampFace.SIZE.x - 4, 1))
 
 
 ## The question sits right of the stamp; the click target covers both.
@@ -359,6 +395,8 @@ func _stop_motion() -> void:
 		_motion.kill()
 	_motion = null
 	_face.set_squashed(false)
+	_set_flash(false)
+	_writ.set_dented(false)
 	_impact.set_ring(0)
 	_impact.set_burst(0)
 	_impact.set_veil(0.0)

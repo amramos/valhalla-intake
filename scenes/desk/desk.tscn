@@ -40,6 +40,37 @@
 [ext_resource type="AudioStream" path="res://assets/audio/no_seam_tick.wav" id="38_tick"]
 [ext_resource type="AudioStream" path="res://assets/audio/horn.wav" id="39_horn"]
 [ext_resource type="AudioStream" path="res://assets/audio/caw.wav" id="40_caw"]
+[ext_resource type="Script" path="res://entities/raven/raven.gd" id="41_raven"]
+[ext_resource type="Script" path="res://scenes/desk/gate_band.gd" id="42_band"]
+[ext_resource type="Texture2D" path="res://assets/art/portraits/huginn-tilt.png" id="43_tilt"]
+[ext_resource type="Texture2D" path="res://assets/art/portraits/huginn-ruffle.png" id="44_ruffle"]
+[ext_resource type="Texture2D" path="res://assets/art/portraits/mentor-blink.png" id="45_blink"]
+[ext_resource type="Texture2D" path="res://assets/art/scenes/gate-desk-day2.png" id="46_day2"]
+[ext_resource type="Texture2D" path="res://assets/art/scenes/gate-desk-day3.png" id="47_day3"]
+[ext_resource type="Texture2D" path="res://assets/art/fog/fog-day1.png" id="48_fog1"]
+[ext_resource type="Texture2D" path="res://assets/art/fog/fog-day2.png" id="49_fog2"]
+[ext_resource type="Texture2D" path="res://assets/art/fog/fog-day3.png" id="50_fog3"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/valhalla-lit-dim.png" id="51_vdim"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/hel-lit-dim.png" id="52_hdim"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/folkvangr-lit-dim.png" id="53_fdim"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/day2/valhalla-lit.png" id="54_v2lit"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/day2/valhalla-locked.png" id="55_v2lock"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/day2/valhalla-lit-dim.png" id="56_v2dim"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/day2/hel-lit.png" id="57_h2lit"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/day2/hel-locked.png" id="58_h2lock"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/day2/hel-lit-dim.png" id="59_h2dim"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/day2/folkvangr-lit.png" id="60_f2lit"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/day2/folkvangr-locked.png" id="61_f2lock"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/day2/folkvangr-lit-dim.png" id="62_f2dim"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/day3/valhalla-lit.png" id="63_v3lit"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/day3/valhalla-locked.png" id="64_v3lock"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/day3/valhalla-lit-dim.png" id="65_v3dim"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/day3/hel-lit.png" id="66_h3lit"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/day3/hel-locked.png" id="67_h3lock"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/day3/hel-lit-dim.png" id="68_h3dim"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/day3/folkvangr-lit.png" id="69_f3lit"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/day3/folkvangr-locked.png" id="70_f3lock"]
+[ext_resource type="Texture2D" path="res://assets/art/doors/day3/folkvangr-lit-dim.png" id="71_f3dim"]
 
 [node name="Desk" type="Control"]
 layout_mode = 3
@@ -56,6 +87,15 @@ offset_bottom = 270.0
 mouse_filter = 2
 texture = ExtResource("17_backdrop")
 
+[node name="GateBand" type="Control" parent="."]
+layout_mode = 0
+offset_right = 480.0
+offset_bottom = 96.0
+mouse_filter = 2
+script = ExtResource("42_band")
+day_textures = Array[Texture2D]([ExtResource("17_backdrop"), ExtResource("46_day2"), ExtResource("47_day3")])
+fog_sheets = Array[Texture2D]([ExtResource("48_fog1"), ExtResource("49_fog2"), ExtResource("50_fog3")])
+
 [node name="DoorValhalla" type="Control" parent="."]
 layout_mode = 0
 offset_left = 89.0
@@ -67,6 +107,10 @@ realm = &"valhalla"
 glyph = &"spear"
 lit_texture = ExtResource("18_vlit")
 locked_texture = ExtResource("19_vlock")
+lit_dim_texture = ExtResource("51_vdim")
+later_lit = Array[Texture2D]([ExtResource("54_v2lit"), ExtResource("63_v3lit")])
+later_locked = Array[Texture2D]([ExtResource("55_v2lock"), ExtResource("64_v3lock")])
+later_dim = Array[Texture2D]([ExtResource("56_v2dim"), ExtResource("65_v3dim")])
 
 [node name="DoorHel" type="Control" parent="."]
 layout_mode = 0
@@ -79,6 +123,10 @@ realm = &"hel"
 glyph = &"serpent"
 lit_texture = ExtResource("20_hlit")
 locked_texture = ExtResource("21_hlock")
+lit_dim_texture = ExtResource("52_hdim")
+later_lit = Array[Texture2D]([ExtResource("57_h2lit"), ExtResource("66_h3lit")])
+later_locked = Array[Texture2D]([ExtResource("58_h2lock"), ExtResource("67_h3lock")])
+later_dim = Array[Texture2D]([ExtResource("59_h2dim"), ExtResource("68_h3dim")])
 
 [node name="DoorFolkvangr" type="Control" parent="."]
 layout_mode = 0
@@ -91,16 +139,22 @@ realm = &"folkvangr"
 glyph = &"boar"
 lit_texture = ExtResource("22_flit")
 locked_texture = ExtResource("23_flock")
+lit_dim_texture = ExtResource("53_fdim")
+later_lit = Array[Texture2D]([ExtResource("60_f2lit"), ExtResource("69_f3lit")])
+later_locked = Array[Texture2D]([ExtResource("61_f2lock"), ExtResource("70_f3lock")])
+later_dim = Array[Texture2D]([ExtResource("62_f2dim"), ExtResource("71_f3dim")])
 
-[node name="Huginn" type="TextureRect" parent="."]
+[node name="Raven" type="Control" parent="."]
 visible = false
 layout_mode = 0
 offset_left = 268.0
 offset_top = 34.0
 offset_right = 316.0
-offset_bottom = 74.0
-mouse_filter = 2
-texture = ExtResource("24_huginn")
+offset_bottom = 96.0
+script = ExtResource("41_raven")
+rest_texture = ExtResource("24_huginn")
+tilt_texture = ExtResource("43_tilt")
+ruffle_texture = ExtResource("44_ruffle")
 
 [node name="WalkLayer" type="Control" parent="."]
 layout_mode = 0
@@ -135,20 +189,10 @@ offset_right = 477.0
 offset_bottom = 21.0
 script = ExtResource("33_ledger")
 
-[node name="AskHuginn" type="Button" parent="."]
-visible = false
-layout_mode = 0
-offset_left = 384.0
-offset_top = 26.0
-offset_right = 478.0
-offset_bottom = 40.0
-focus_mode = 0
-text = "Ask Huginn"
-
 [node name="StampPrompt" parent="." instance=ExtResource("6_prompt")]
 offset_left = 97.0
 offset_top = 65.0
-offset_right = 330.0
+offset_right = 334.0
 offset_bottom = 101.0
 
 [node name="BodyChart" type="Control" parent="."]
@@ -169,6 +213,10 @@ offset_bottom = 236.0
 script = ExtResource("13_sprite")
 texture = ExtResource("25_mentor")
 hover_text = "the mentor"
+idle_frames = Array[Texture2D]([ExtResource("45_blink")])
+idle_every = Vector2(4, 7)
+idle_hold = 0.15
+idle_seed = 7
 
 [node name="Feather" type="Control" parent="."]
 visible = false
@@ -185,8 +233,8 @@ hover_text = "black feather: a citation"
 layout_mode = 0
 offset_left = 70.0
 offset_top = 204.0
-offset_right = 130.0
-offset_bottom = 268.0
+offset_right = 164.0
+offset_bottom = 244.0
 script = ExtResource("14_bubble")
 
 [node name="ClaimPanel" type="Control" parent="."]
@@ -288,7 +336,7 @@ thud_player = NodePath("../ThudPlayer")
 caw_player = NodePath("../CawPlayer")
 walk_layer = NodePath("../WalkLayer")
 
-[node name="DeskSystem" type="Node" parent="." node_paths=PackedStringArray("body_chart", "claim_panel", "witness_panel", "law_panel", "doors", "thread_layer", "caption_strip", "hover_label", "soul", "hud", "ask_huginn", "huginn", "phase_card", "feather", "mentor_portrait", "mentor_bubble", "stamp_flow", "seam_player", "ledger_tray", "gate", "blip_player", "tack_player", "pull_player", "tick_player", "horn_player")]
+[node name="DeskSystem" type="Node" parent="." node_paths=PackedStringArray("body_chart", "claim_panel", "witness_panel", "law_panel", "doors", "thread_layer", "caption_strip", "hover_label", "soul", "hud", "raven", "gate_band", "phase_card", "feather", "mentor_portrait", "mentor_bubble", "stamp_flow", "seam_player", "ledger_tray", "gate", "blip_player", "tack_player", "pull_player", "tick_player", "horn_player")]
 script = ExtResource("12_system")
 body_chart = NodePath("../BodyChart")
 claim_panel = NodePath("../ClaimPanel")
@@ -300,8 +348,8 @@ caption_strip = NodePath("../CaptionStrip")
 hover_label = NodePath("../HoverLabel")
 soul = NodePath("../Soul")
 hud = NodePath("../Hud")
-ask_huginn = NodePath("../AskHuginn")
-huginn = NodePath("../Huginn")
+raven = NodePath("../Raven")
+gate_band = NodePath("../GateBand")
 phase_card = NodePath("../PhaseCard")
 feather = NodePath("../Feather")
 mentor_portrait = NodePath("../MentorPortrait")

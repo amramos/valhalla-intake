@@ -688,7 +688,7 @@ table A3).
 | Illegal on an honest soul, days 2-3 | "{pair}. Nothing in that saga was a lie." |
 | Stamp on an unresolved grey thread | none (permitted uncertainty, D37) |
 | First grey thread, day 2 | "One of them lies. The body may say which." |
-| First grey thread, day 3 | "Huginn answers that. Two a day." |
+| First grey thread, day 3 | "Huginn answers that. Click the raven to ask him." (game UI D40) |
 | Keeping Hel's promise (Ragna to Hel) | "{pair}. Hel pays well." |
 
 ### A3. Citations

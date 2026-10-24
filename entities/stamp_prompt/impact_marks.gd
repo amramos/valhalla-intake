@@ -6,23 +6,26 @@ extends RefCounted
 ##   stamp, its label and the marks are lifted above it, and the companions (the three doors) with
 ##   them for the choice only, never the impact; and only then, so the pause and the cards still
 ##   cover them the rest of the time;
-## - the burst: eight short light streaks radiating 3 px from the block's corners and mid-edges at
-##   the impact in Parchment 2, then the same at 6 px in Fog 2 (light, to read on the dark band);
-## - the shockwave: an ink outline 21×21 round the ink box as the stamp lifts, then 27×27 in Fog 2.
+## - the burst: eight short light streaks flying out from the block's corners and mid-edges, 3 px
+##   out at the impact in Parchment 2, then 6 px in Fog 2, then 9 px in Fog 1 (light, to read on the
+##   dark band), each stage wholly beyond the last;
+## - the shockwave: a Fog 2 outline 23×23 round the ink box as the stamp lifts, then 29×29 in
+##   Fog 1 (never Ink, which would read as a frame round the mark).
 ## Everything is whole pixels in palette colours; nothing here knows the soul (D14).
 
 ## The veil's z above everything at z 0; the lifted items go one higher while it shows.
 const VEIL_Z := 10
-## The burst's reach per stage (stage 1 near in Parchment 2, stage 2 far in Fog 2); each streak is
+## The burst's reach per stage (1 near in Parchment 2, 2 in Fog 2, 3 far in Fog 1); each streak is
 ## 2 px.
-const BURST_REACH: Array[int] = [0, 3, 6]
-## The shockwave's sizes per stage (stage 1 in ink, stage 2 in Fog 2).
-const RING_SIZES: Array[int] = [0, 21, 27]
+const BURST_REACH: Array[int] = [0, 3, 6, 9]
+## The shockwave's sizes per stage (stage 1 in Fog 2, stage 2 in Fog 1).
+const RING_SIZES: Array[int] = [0, 23, 29]
 const THEME_TYPE := &"DeskPalette"
-## Palette fallbacks (docs/art/palette.gpl): Night 0, Parchment 2, Fog 2.
+## Palette fallbacks (docs/art/palette.gpl): Night 0, Parchment 2, Fog 2, Fog 1.
 const NIGHT_0 := Color8(11, 23, 34)
 const PARCHMENT_2 := Color8(246, 238, 210)
 const FOG_2 := Color8(163, 174, 176)
+const FOG_1 := Color8(122, 126, 123)
 
 var _host: Control = null
 var _veil: ColorRect = null
@@ -48,7 +51,7 @@ func _init(host: Control, ring_center: Vector2, block: Rect2i, lifted: Array[Can
 	_ring = _mark(
 		"Ring", Rect2(ring_center - Vector2(wide, wide) / 2.0, Vector2(wide, wide)), _draw_ring
 	)
-	var reach: int = BURST_REACH[2] + 1
+	var reach: int = BURST_REACH[BURST_REACH.size() - 1] + 1
 	_burst = _mark("Burst", Rect2(block).grow(reach), _draw_burst)
 	_veil = ColorRect.new()
 	_veil.name = "Dim"
@@ -88,7 +91,7 @@ func is_dimming() -> bool:
 	return _veil.visible
 
 
-## 0 none, 1 the near Parchment 2 burst, 2 the far Fog 2 burst.
+## 0 none, 1 the near Parchment 2 burst, 2 the Fog 2 burst, 3 the far Fog 1 burst.
 func set_burst(stage: int) -> void:
 	_burst_stage = stage
 	_burst.queue_redraw()
@@ -98,7 +101,7 @@ func burst_stage() -> int:
 	return _burst_stage
 
 
-## 0 none, 1 the 21×21 ink ring, 2 the 27×27 Fog 2 ring.
+## 0 none, 1 the 23×23 Fog 2 ring, 2 the 29×29 Fog 1 ring.
 func set_ring(stage: int) -> void:
 	_ring_stage = stage
 	_ring.queue_redraw()
@@ -125,15 +128,17 @@ func burst_pixels() -> Array[Rect2]:
 	return pixels
 
 
-## The colours drawn now (tests): the burst Parchment 2 then Fog 2, the ring Ink then Fog 2.
+## The colours drawn now (tests): the burst Parchment 2, Fog 2, Fog 1; the ring Fog 2 then Fog 1.
 func burst_color() -> Color:
 	if _burst_stage < 2:
 		return _color(&"pin_highlight", PARCHMENT_2)
-	return _color(&"text_muted", FOG_2)
+	if _burst_stage == 2:
+		return _color(&"text_muted", FOG_2)
+	return _color(&"glyph_dim", FOG_1)
 
 
 func ring_color() -> Color:
-	return _color(&"ink", NIGHT_0) if _ring_stage < 2 else _color(&"text_muted", FOG_2)
+	return _color(&"text_muted", FOG_2) if _ring_stage < 2 else _color(&"glyph_dim", FOG_1)
 
 
 func _apply_veil() -> void:

@@ -225,9 +225,10 @@ func test_the_mentors_next_waits_while_the_stamp_is_raised() -> void:
 	_system.finish_tellings()
 	_click(_door(&"valhalla"))
 	assert_true(_system.stamp_flow.stamp_prompt.is_asking(), "the stamp is raised")
-	var next: GuardedButton = _system.mentor_bubble.next_button()
-	next.arm_now()
-	_click(next)
+	var bubble: MentorBubble = _system.mentor_bubble
+	bubble.finish_reveal()
+	bubble.arm_now()
+	_click(bubble)
 	assert_eq(_desk.commands().mentor_step(), step, "no guidance advances under a pending stamp")
 
 

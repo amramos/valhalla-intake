@@ -28,6 +28,8 @@ func _ready() -> void:
 	_quit.text = text.quit_label
 	_start.pressed.connect(_on_start)
 	_quit.pressed.connect(_on_quit)
+	# The same in-scene cursor as the desk's (D48).
+	add_child(CursorSprite.new())
 	if OS.get_cmdline_user_args().has(AUTO_START_ARG):
 		_on_start.call_deferred()
 

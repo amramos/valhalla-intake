@@ -20,6 +20,11 @@ extends SceneTree
 ## After "Play again" a second pass plays days 1 and 2 again at the normal text speed, each tale
 ## let run to its end before anything is pressed (a press during it would only finish it, D27),
 ## and prints one `TELLING <soul> <seconds>` line per soul: the same count with the tellings in.
+##
+## The run plays as a player at the window would, whatever window has the OS focus: the desk stops
+## every clock while the game is out of focus (D35), but this run's timers and pushed events go on,
+## so a focus loss mid-run (another window or a console coming forward) would freeze a slam under
+## its clicks. The run hands the focus straight back (`_notification`).
 
 const TITLE_SCENE := "res://scenes/title/title.tscn"
 ## No tale takes longer than this; a longer wait is a failure, not a hang.
@@ -46,6 +51,13 @@ func _initialize() -> void:
 	root.add_child(title)
 	current_scene = title
 	_run.call_deferred()
+
+
+## The engine has just told the scene a focus loss; tell it the focus came back, so the desk's
+## clocks run on under the pushed events (the header).
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and root != null:
+		root.propagate_notification(NOTIFICATION_APPLICATION_FOCUS_IN)
 
 
 func _run() -> void:

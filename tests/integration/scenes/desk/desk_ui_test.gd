@@ -44,13 +44,14 @@ func test_hels_tide_shows_its_figures_and_empty_slots_up_to_the_threshold() -> v
 func test_new_marks_show_until_the_days_first_stamp() -> void:
 	_open(Fixture.commands())
 	assert_true(_system.law_panel.is_new("L5"), "the new decree is marked (D34)")
-	assert_string_contains(
-		_system.law_panel.heading_text(), "NEW: V", "D6: the numeral, never the id"
-	)
+	assert_eq(_system.law_panel.heading_text(), "Odin's Law", "D9: the seal replaces NEW: V")
+	assert_eq(_system.law_panel.seal_rect("L5").size, Vector2(8, 9), "D33: its wax seal")
 	assert_false(_system.law_panel.is_new("L4"))
+	assert_eq(_system.law_panel.seal_rect("L4"), Rect2(), "an old decree has none")
 	assert_true(_door(&"folkvangr").is_new, "the newly opened door is marked")
 	_stamp(&"hel")
 	assert_false(_system.law_panel.is_new("L5"), "the first stamp clears the marks")
+	assert_eq(_system.law_panel.seal_rect("L5"), Rect2(), "and the seal")
 	assert_false(_door(&"folkvangr").is_new)
 
 
@@ -59,7 +60,11 @@ func test_a_barred_door_says_when_it_opens_and_shows_its_locked_sprite() -> void
 	var folkvangr: Door = _door(&"folkvangr")
 	assert_false(folkvangr.is_open)
 	assert_eq(folkvangr.hover_text(), "Fólkvangr: Closed until day 3")
-	assert_eq(folkvangr.shown_texture(), folkvangr.locked_texture)
+	# Day 2's copy of the locked sprite: its stones a ramp value darker with the band (D39).
+	assert_eq(folkvangr.shown_texture(), folkvangr.later_locked[0])
+	assert_eq(
+		folkvangr.shown_texture().resource_path, "res://assets/art/doors/day2/folkvangr-locked.png"
+	)
 
 
 func test_the_clock_warning_turns_the_clock_over() -> void:
@@ -69,28 +74,56 @@ func test_the_clock_warning_turns_the_clock_over() -> void:
 	assert_true(_system.hud.is_warning(), "30 s left shows on the HUD (D22)")
 
 
-func test_the_extra_answer_note_shows_once_todays_answers_are_spent() -> void:
+func test_the_extra_answer_price_shows_on_the_raven_once_todays_answers_are_spent() -> void:
 	_open(Fixture.commands())
 	_pin("C1", "W1")
 	_pin("C3", "W3")
 	_pin("C3", "W2")
-	assert_eq(_system.hud.extra_note(), "", "no note while answers remain")
 	for thread: int in [0, 1]:
 		_knot(thread).press()
-		_system.ask_huginn.pressed.emit()
+		_hover_raven()
+		assert_false(_system.hover_label.shown_text().contains("feathers"), "no price yet")
+		_system.raven.press()
 	assert_eq(_desk.commands().huginn_left(), 0)
-	assert_eq(_system.hud.extra_note(), "extra answer:\n2 feathers", "D29, D30")
 	var before: int = _desk.commands().feathers()
 	_knot(2).press()
 	var text: DeskText = _desk.commands().slice_rules().text
-	_system._on_ask_huginn_hovered()
+	_hover_raven()
+	# The price is the raven's hover alone (D40): the HUD writes its tallies and no note.
+	await wait_process_frames(1)
+	var drawn: Array[String] = _system.hud.drawn_texts()
+	assert_has(drawn, "0", "the HUD still counts the answers left")
+	assert_false(" ".join(drawn).contains("feathers"), "the HUD names no price: %s" % [drawn])
 	assert_eq(_system.hover_label.shown_text(), text.huginn_extra_hover, "A4: an unanswered one")
-	_system.ask_huginn.pressed.emit()
+	_system.raven.press()
 	assert_ne(_desk.commands().thread_answer(2), "", "the third answer is bought and given")
 	assert_eq(_desk.commands().feathers(), before - 2)
 	var bought: String = text.huginn_bought_format % _desk.commands().thread_answer(2)
 	_system.caption_strip._process(_system.caption_strip.hold_seconds)
 	assert_eq(_system.caption_strip.shown_text(), bought, "A4: the bought answer says its price")
+
+
+## The day-3 capture's case: a knot sits between the claim and witness sheets, so every spot for its
+## tag covers some paper; the tag may cover lines but never a sheet's heading or the note (D20).
+func test_a_knots_tag_never_covers_a_sheet_heading_or_the_note() -> void:
+	_open(Fixture.commands())
+	_pin("C1", "W1")
+	_pin("C3", "W3")
+	_pin("C3", "W2")
+	var clear: Array[Rect2] = [_system.caption_strip.get_global_rect()]
+	for panel: EvidencePanel in [_system.claim_panel, _system.witness_panel, _system.law_panel]:
+		clear.append(panel.heading_rect())
+	var checked: int = 0
+	for line: ThreadLine in _threads():
+		if not line.has_knot():
+			continue
+		line.knot().mouse_entered.emit()
+		var tag: Rect2 = _system.hover_label.tag_rect()
+		assert_ne(_system.hover_label.shown_text(), "", "the knot's tag shows")
+		for rect: Rect2 in clear:
+			assert_false(tag.intersects(rect), "tag %s clear of %s" % [tag, rect])
+		checked += 1
+	assert_gt(checked, 0, "a grey thread's knot was hovered")
 
 
 ## The review's case: re-asking about an answered thread is free, so its hover names no price.
@@ -100,25 +133,37 @@ func test_the_extra_answer_hover_is_silent_on_an_already_answered_thread() -> vo
 	_pin("C3", "W3")
 	for thread: int in [0, 1]:
 		_knot(thread).press()
-		_system.ask_huginn.pressed.emit()
+		_system.raven.press()
 	assert_eq(_desk.commands().huginn_left(), 0, "today's answers are spent")
 	assert_eq(_system.huginn_thread, 1, "the answered thread 1 is still selected")
 	var before: int = _desk.commands().feathers()
-	_system._on_ask_huginn_hovered()
-	assert_eq(_system.hover_label.shown_text(), "", "no price on a thread already answered")
-	_system.ask_huginn.pressed.emit()
+	_hover_raven()
+	assert_eq(
+		_system.hover_label.shown_text(),
+		"Ask Huginn: 0 answers left",
+		"no price on a thread already answered"
+	)
+	_system.raven.press()
 	assert_eq(_desk.commands().feathers(), before, "and asking again costs nothing")
 
 
-func test_ask_huginn_is_greyed_until_a_grey_thread_is_selected() -> void:
+## D40: the raven asks nothing until a grey thread is selected, and a click without one costs
+## nothing; his hover says what is missing, then the answers left.
+func test_the_raven_asks_nothing_until_a_grey_thread_is_selected() -> void:
 	_open(Fixture.commands())
 	_pin("C1", "W1")
-	assert_true(_system.ask_huginn.disabled)
-	_system._on_ask_huginn_hovered()
+	_hover_raven()
 	var text: DeskText = _desk.commands().slice_rules().text
 	assert_eq(_system.hover_label.shown_text(), text.huginn_select_hover, "A4")
+	var caption: String = _system.caption_strip.shown_text()
+	_system.raven.press()
+	assert_eq(_desk.commands().huginn_left(), 2, "a click with nothing selected spends nothing")
+	assert_eq(_system.caption_strip.shown_text(), caption, "and says nothing")
 	_knot(0).press()
-	assert_false(_system.ask_huginn.disabled)
+	assert_eq(_system.hover_label.shown_text(), "Ask Huginn: 2 answers left", "D40: the count")
+	_system.raven.press()
+	assert_eq(_desk.commands().huginn_left(), 1, "the selected thread is asked about")
+	assert_eq(_system.hover_label.shown_text(), "Ask Huginn: 1 answer left", "said again")
 
 
 func test_the_three_thread_kinds_differ_by_colour_and_pattern_and_use_no_reserved_colour() -> void:
@@ -264,3 +309,8 @@ func _knot(thread_index: int) -> PinSelectable:
 		if line.thread_index == thread_index and line.has_knot():
 			return line.knot()
 	return null
+
+
+## The mouse comes over the raven (his hover).
+func _hover_raven() -> void:
+	_system.raven.mouse_entered.emit()

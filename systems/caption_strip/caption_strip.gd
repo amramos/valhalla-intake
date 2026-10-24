@@ -9,6 +9,9 @@ extends Control
 ## A thread's caption and Huginn's answer show at once; a `written` caption (the mentor, a
 ## citation) is written out by a quill at `write_cps`, never longer than `MAX_WRITE_SECONDS`, and
 ## its hold starts when the writing ends (D43).
+##
+## A blank note is a page waiting for the quill, never an empty strip: one faint ruled line where
+## the text will go and the quill in the mark column.
 
 ## A message reached the note (posted, taken over, or out of the queue).
 signal text_shown(text: String)
@@ -31,8 +34,21 @@ const MARK_AT := Vector2i(1, 2)
 const RULE_X := 9
 ## The quill writes at least this fast: no written caption takes longer (D43).
 const MAX_WRITE_SECONDS := 1.0
-## The page runs on below the note, past the screen's bottom edge, so only its top is torn.
-const PAGE_OVERHANG := 6
+## The page's torn foot inside the note's rect: its deckled bottom edge and a 1 px Wood 1 shadow,
+## so it reads as a sheet lying on the desk, not one cut off by the screen's edge.
+const PAGE_FOOT := 2
+## The blank note's ruled line: the foot of the first text line.
+const BLANK_RULE_Y := TEXT_TOP + 9
+## The blank note's quill: "#" ink (shaft and nib), "o" soft ink (vane), "." nothing.
+const QUILL: Array[String] = [
+	"...ooo#",
+	"..ooo#o",
+	"..oo#o.",
+	"..o#o..",
+	"..#o...",
+	".#.....",
+	"#......",
+]
 
 @export var hold_seconds: float = 3.0
 ## The quill's pace in characters a second (60 at normal text speed; INF writes at once).
@@ -48,6 +64,9 @@ var _paused: bool = false
 var _current: Caption = null
 ## Waiting messages, newest last.
 var _pending: Array[Caption] = []
+## What the last `_draw` painted, in order (tests).
+var _rects: Array[Rect2] = []
+var _colors: Array[Color] = []
 
 
 func _ready() -> void:
@@ -56,8 +75,10 @@ func _ready() -> void:
 	_frame.show_behind_parent = true
 	_frame.torn = true
 	_frame.seed = hash(String(name))
-	_frame.size = size + Vector2(0, PAGE_OVERHANG)
-	_frame.inner = Rect2(TEXT_LEFT, TEXT_TOP, size.x - TEXT_LEFT - TEXT_RIGHT, size.y - TEXT_TOP)
+	_frame.size = size
+	# The text rows stay where they were; only the last two rows give way to the page's foot.
+	var text_height: float = size.y - TEXT_TOP - PAGE_FOOT
+	_frame.inner = Rect2(TEXT_LEFT, TEXT_TOP, size.x - TEXT_LEFT - TEXT_RIGHT, text_height)
 	add_child(_frame)
 	_label = Label.new()
 	_label.name = "Text"
@@ -135,6 +156,21 @@ func teller() -> Teller:
 	return _teller
 
 
+## True while the note shows nothing: only its ruled line and the quill.
+func is_blank() -> bool:
+	return _label.text == ""
+
+
+## Every rectangle the last draw painted, in order, in local pixels (tests).
+func drawn_rects() -> Array[Rect2]:
+	return _rects.duplicate()
+
+
+## The colour of each rectangle in `drawn_rects()`.
+func drawn_colors() -> Array[Color]:
+	return _colors.duplicate()
+
+
 ## A paused note neither counts its hold nor shows the next message (the pause, focus loss).
 func set_paused(paused: bool) -> void:
 	_paused = paused
@@ -192,8 +228,13 @@ func _on_written() -> void:
 
 
 func _draw() -> void:
+	_rects.clear()
+	_colors.clear()
 	var rule: Color = get_theme_color(&"rule", &"DeskPalette")
-	draw_rect(Rect2(RULE_X, TEXT_TOP, 1, size.y - TEXT_TOP), rule)
+	if is_blank():
+		_draw_blank(rule)
+		return
+	_paint(Rect2(RULE_X, TEXT_TOP, 1, size.y - TEXT_TOP - PAGE_FOOT), rule)
 	if _current == null:
 		return
 	var colors: Dictionary[StringName, Color] = {
@@ -207,5 +248,20 @@ func _draw() -> void:
 	NoteMarks.draw(_paint, _current.mark, MARK_AT, colors)
 
 
+func _draw_blank(rule: Color) -> void:
+	var width: float = size.x - TEXT_LEFT - TEXT_RIGHT
+	_paint(Rect2(TEXT_LEFT, BLANK_RULE_Y, width, 1), rule)
+	var ink: Color = get_theme_color(&"ink", &"DeskPalette")
+	var vane: Color = get_theme_color(&"ink_soft", &"DeskPalette")
+	for y: int in range(QUILL.size()):
+		for x: int in range(QUILL[y].length()):
+			var code: String = QUILL[y][x]
+			if code != ".":
+				var at := Vector2(MARK_AT + Vector2i(x, y))
+				_paint(Rect2(at, Vector2.ONE), ink if code == "#" else vane)
+
+
 func _paint(rect: Rect2, color: Color) -> void:
 	draw_rect(rect, color)
+	_rects.append(rect)
+	_colors.append(color)

@@ -28,13 +28,13 @@ reads.
   painted.
 - Pair every colour cue with a shape. Each realm door carries its own carved glyph: Valhalla a
   spear, Fólkvangr a boar, Hel a coiled serpent, Rán a wave. Threads differ by line pattern as well
-  as colour (GDD §7). The frames don't show the glyphs yet; the first door asset adds them.
+  as colour (GDD §7). The door sprites in `assets/art/doors/` carry the glyphs.
 - Start every generation from the prompt core below, with the matching file in `frames/source/` as
   an image reference wherever the generator takes one.
 
 ## Don't
 
-- No ember outside Valhalla's door, its light and UI accents (the wax seal, the selected thread).
+- No ember outside Valhalla's door, its light and UI accents (see "UI objects" below).
   No bile outside Hel's door and its light. No blood outside wounds. `pixelforge.toml` reserves all
   three **by asset path**: lint fails when one appears in a file whose folder may not use it. Inside
   an allowed file (a soul may carry blood, a scene both doors) the placement is checked by review
@@ -65,7 +65,31 @@ are enforced by `pixelforge.toml`.
 | Body chart | 128×100 | 1:1 | Front and back side by side on the desk's left; 20-colour budget for evidence |
 | Prop | 32×32 | 1:1 | Stamp, feather, trinkets; bottom-anchored |
 | Law scroll | 80×150 | 1:1 or 2/3 | UI panel; the engine renders the decrees on it |
+| Door | 60×87 | 1:1 | Opaque: the leaf (lit or barred) and the arch stones its glow reaches. Each lit door has a `-lit-dim` pulse frame; `doors/day2/` and `doors/day3/` hold each day's copies |
+| Gate band by day | 480×270 | 1:1 | `scenes/gate-desk-day2.png`, `-day3`: the backdrop with the band's Night and Fog one ramp step darker per day (D39); the desk rows unchanged |
+| Corner fog | 480×60 | 1:1 | `fog/fog-day<N>.png`: three 480×20 frames stacked for band rows 76–95, opaque only in the two corner masks (D19) |
+| Mentor portrait | 32×32 | 1:1 | `portraits/mentor*.png`; `mentor-blink.png` is her idle frame (D17) |
+| Huginn | 48×40 | 1:1 | `portraits/huginn*.png`: the rest frame (with a moonlit rim for the darker band), `-tilt` and `-ruffle` |
+| Name plate | 60×10 | 1:1 | `ui/nameplate-*.png`: a carved wooden plate, plain, frost or Hel's mark; the engine writes the name |
 | UI marks under 32×32 | — | 1:1 | Never generated: placed pixel by pixel by a code-writing agent |
+
+The frames and plates above that are not generations (the day recolours, the door copies and
+pulse frames, the fog, the idle frames, the plates) are made by the scripts in `tools/art/`
+(`tools/README.md`); run one again rather than editing its output by hand.
+
+## UI objects
+
+Everything the player handles is an object drawn in code, pixel by pixel, in palette colours.
+The Law's **wax seal** is a 7×7 blob of Ember 2 with an Ember 0 rim and three pressed Ember 0
+pixels, left of a new decree's numeral. A **hover tag** is a small parchment tag held by a 3×3
+Wood 3 pin head, its text in Ink. The mentor's **bubble** is parchment with its corners cut and a
+3 px tail toward her portrait. The **cursor** is a 7×9 pointer (Ink outline, Parchment 2 fill)
+that carries a pin head while an item is selected, and a 9×9 grab hand over the soul. **Huginn**
+is a sprite on his post, rimmed in Night 4–5 so he reads on day 3's band. The **stamp** is a
+wooden block carved with the realm's glyph; the mark it leaves on the writ is Ink, never a
+reserved colour. Ember among the UI objects is only the wax seal and the selected pin (the pin a
+selected item, a selected knot or the cursor shows); the HUD's candle flame and the ledger book's
+wax dot are its other two ember accents.
 
 ## Prompt core
 

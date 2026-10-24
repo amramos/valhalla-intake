@@ -8,8 +8,8 @@ extends SceneTree
 ## The content: the longest claim and witness lines of the evidence matrix (no ids on the desk,
 ## D6: a hanging quote instead); the five decrees I–V word for word (D32, L5 as amended by D6) on
 ## the scroll; every soul's and witness's name as a sheet heading; Ragna's front-view hit areas
-## (neck, chest, right hand, hem) and her back; a grey thread with its knot; Ask Huginn and the
-## raised stamp; and on the clerk's note the longest grey caption the slice can write, both
+## (neck, chest, right hand, hem) and her back; a grey thread with its knot; the raven on his post
+## and the raised stamp; and on the clerk's note the longest grey caption the slice can write, both
 ## speakers named, built by the desk's own CaptionFormatter, then the longest citation with the
 ## mentor's comment.
 

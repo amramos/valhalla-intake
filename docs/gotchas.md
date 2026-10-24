@@ -52,6 +52,12 @@ files; a comma list selects nothing useful. Run one file per invocation and read
 
 **A wide tolerance swallows the bug it points at.** Assert exact equality where a value is exact.
 
+**A windowed real-input harness fails when the window loses the OS focus.** The desk pauses every
+clock on a focus loss (D35), but a harness's timers and `push_input` events go on: a stamp lands
+with its slam frozen, the next soul's evidence never arrives, and desk-shots failed intermittently
+(`FORCED Ulf 0.00`) whenever another window or console came forward mid-run. Such a harness hands
+the focus straight back in its `_notification` (`tools/desk_shots/desk_shots.gd`).
+
 ## Scripts and nodes
 
 **`_ready()` overwrites what a caller set before `add_child()`.** A component that sets a default in
