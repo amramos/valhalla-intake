@@ -1,6 +1,6 @@
 # Game UI overhaul — decisions ledger
 
-**State:** BUILT (WP1-WP5, stacked PRs #26-#30 on the plan's #25), unmerged: awaiting the owner's play and merge
+**State:** BUILT and MERGED (#25-#30, 2026-10-24, on the owner's instruction after the owner's play)
 **Mode:** hands-off · **Plan:** `game-ui-plan.md` · **Epic:** [#19](https://github.com/amramos/valhalla-intake/issues/19) (features #20-#24)
 **After the plan:** the owner chose `team-lead-handsoff` (2026-10-23). See D-row on delivery.
 
@@ -330,7 +330,9 @@ on the desk by `tests/integration/scenes/desk/desk_day_book_test.gd`, `desk_endi
 
 **What the owner decides next:** the assumed decisions (D4, D5, D21, D25, D32, D37) on the first
 play; D57 (the stamp as built, or the writ onto the desk); whether the m5x7 capital N (a Π when
-zoomed) needs a glyph fix (ADR-0008); and the merge of #25-#30 in order.
+zoomed) needs a glyph fix (ADR-0008). The owner played the result on 2026-10-24 ("a very
+substantial improvement, and actually enjoyable to play"; some over-spelling and walls of text
+remain, parked) and had the stack merged the same day.
 
 ## Approval record
 
