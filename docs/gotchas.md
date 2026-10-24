@@ -58,6 +58,23 @@ with its slam frozen, the next soul's evidence never arrives, and desk-shots fai
 (`FORCED Ulf 0.00`) whenever another window or console came forward mid-run. Such a harness hands
 the focus straight back in its `_notification` (`tools/desk_shots/desk_shots.gd`).
 
+**A single `print` from a windowed harness is the only timing evidence that survives.** Screenshots
+cannot show that a forced wait is short or that the clock is fair; desk-shots prints `FORCED`,
+`TELLING` and `DAWN` seconds and `tools/timed_play/` prints the clock left per day, and the
+numbers go into the ledger as measurements. A critic scoring stills will mark motion (the
+stamp's consequence, the book closing) as absent; read its stamp and dusk scores with that in mind.
+
+## Worktrees and hooks
+
+**In a worktree, the edit hook's Godot parse check runs against the main checkout.** The hook finds
+its root from `CLAUDE_PROJECT_DIR` before the edited file's folder, and `.agents/local/godot` lives
+only in the main checkout (worktrees do not carry it), so a script that names a `class_name` new to
+the worktree fails the parse check with "Could not find type" or "Identifier not declared" while
+the worktree itself parses clean. Run the check by hand from the worktree
+(`godot --headless --path . --check-only --script <file>` after `--import`) and trust that; the
+hook's verdict is advisory there. The same goes for `--import` after adding a `class_name`: run it
+in the worktree, not the main checkout.
+
 ## Scripts and nodes
 
 **`_ready()` overwrites what a caller set before `add_child()`.** A component that sets a default in

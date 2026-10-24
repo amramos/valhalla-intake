@@ -30,3 +30,17 @@ quota returned, Codex reviewed those fix rounds after the fact and approved all 
 #17 before it merged. Blind AI playtest median 7 (bar 6); evidence audit 13 of 14.
 Review caught: lie seams that weren't strict (D47); an authoring check whose rules couldn't fail; the
 harness skipping day 3's dusk, which had misled the playtest; and gates missing under the stamp prompt.
+
+**2026-10-23 to 2026-10-24** — The game UI overhaul (epic #19) was planned hands-off from the
+owner's brief ("wall of text", "a web page more than a game UI") into three pillars (the weight of
+the stamp; the dead tell their tale; a desk at the end of the world), a ledger (D1–D58) and a plan,
+then built by an agent team under `team-lead` in stacked PRs #26–#30 on the plan's #25, each
+reviewed by Codex (a fallback Claude model whenever Codex's quota ran out) and scored by a blind
+critic. The hands-off lead could not be invoked by an agent, so nothing merged (ledger D32): the
+stack waits for the owner. The critic moved the stamp from 2/5 to 4/5 over four iterations
+(D54–D57) and then hit the map's bound; the final pass over the six moments on a hero and a liar
+scored 4/5 overall, BEFORE lower on every item, with the stamp's consequence, the pause's shape and
+the telling's stillness marked down as what stills cannot show. Lessons: a blind critic reads
+motion as absent, so timing evidence must be printed by a harness (desk-shots, the timed play); OS
+focus loss pauses the game under a windowed harness; in a worktree the edit hook's parse check runs
+against the main checkout (`docs/gotchas.md`).

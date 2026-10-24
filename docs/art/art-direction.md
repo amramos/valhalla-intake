@@ -91,6 +91,18 @@ reserved colour. Ember among the UI objects is only the wax seal and the selecte
 selected item, a selected knot or the cursor shows); the HUD's candle flame and the ledger book's
 wax dot are its other two ember accents.
 
+Between days and in the shell the same rule holds. **Titles** (the day numeral, PAUSED, the
+endings' names, the game's name) are the carved capitals, a code-drawn 8×11 set in Parchment 2
+over a Night shadow, drawn at 2x for the day card; no second font file (ADR-0008). **Odin's
+writ** is a pinned parchment with a wax seal, its lines in Ink and the signature in soft ink.
+The **day-book** is two parchment pages on a Wood spine with a dog-ear for "Next"; its text is
+written in Ink and finished by a click. A **tag** ("Begin", Start / Options / Quit, "Skip all",
+"Play again") is a torn parchment slip held by a Wood 3 pin head with 3 px of ground after its
+text; over a parchment page it takes a darker face (Wood 4 sheet, Wood 3 edges, Ink text) so it
+reads as nailed over the page. The **pause** is a hanging parchment; the **options** are rows
+on it, the volume a tally of marks filled in Ink up to the level and hollow after. Dawn falls
+to Night like a curtain; dusk dims the desk to candlelight before the book opens.
+
 ## Prompt core
 
 These are the exact text and settings that produced the chosen frames. Every generation starts
