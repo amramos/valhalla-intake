@@ -20,7 +20,7 @@ func _open(options: Options, commands: DeskCommands = Fixture.commands()) -> voi
 	_desk.use_options(options)
 	_viewport.add_child(_desk)
 	_system = _desk.system()
-	_system.phase_card.next_button().pressed.emit()
+	_system.dawn_writ.next_button().pressed.emit()
 
 
 func test_the_clock_waits_for_the_tale_and_runs_once_a_click_ends_it() -> void:
@@ -221,9 +221,73 @@ func test_a_restart_during_the_tale_ends_it_unfinished() -> void:
 	_desk.pause_overlay().restart_button().pressed.emit()
 	_desk.pause_overlay().yes_button().pressed.emit()
 	assert_false(_system.is_telling())
+	watch_signals(_system.gate)
+	_click(_system.dawn_writ.next_button().get_global_rect().get_center())
+	assert_signal_emitted_with_parameters(_system.gate, "consumed", [PresentationGate.DAWN])
+	assert_eq(_desk.commands().phase(), RunState.DAWN, "the click only ends the dark card")
 	assert_false(_system.gate.is_consuming(), "no click is owed to the old tale")
-	_click(_system.phase_card.next_button().get_global_rect().get_center())
-	assert_eq(_desk.commands().phase(), RunState.DAWN, "the dawn card's guard still holds")
+
+
+## A review finding: a text speed changed mid-telling (the options under the pause) must reach the
+## tellers already at work; "instant" ends them and frees the gate at once.
+func test_instant_chosen_mid_tale_shows_it_all_and_frees_the_gate() -> void:
+	_open(Fixture.normal())
+	var told: Array[int] = [0]
+	_system._telling.finished.connect(func() -> void: told[0] += 1)
+	_system.claim_panel.teller()._process(0.2)
+	assert_true(_system.claim_panel.is_telling(), "the claim is half told")
+	assert_true(_system.gate.is_consuming())
+	_desk.use_options(Fixture.instant())
+	assert_false(_system.is_telling(), "the whole tale shows at once")
+	for id: String in ["C1", "C2", "C3", "W1", "W2", "W3"]:
+		assert_true(_panel_of(id).area(id).visible, "%s shows" % id)
+	assert_eq(told[0], 1, "the tale finishes once")
+	assert_false(_system.gate.is_consuming(), "no click is owed any more")
+	_click(_system.claim_panel.area("C1").get_global_rect().get_center())
+	assert_true(_system.claim_panel.area("C1").selected, "the next click acts")
+
+
+func test_a_faster_speed_mid_tale_carries_the_telling_on_at_the_new_pace() -> void:
+	_open(Fixture.normal())
+	var teller: Teller = _system.claim_panel.teller()
+	teller._process(0.1)
+	var fast := Options.new()
+	fast.text_speed = Options.FAST
+	_desk.use_options(fast)
+	assert_true(_system.claim_panel.is_telling(), "fast is still told, not restarted")
+	assert_eq(teller.pace(), fast.cps(), "at the new pace")
+	assert_true(_system.gate.is_consuming())
+
+
+func test_instant_chosen_mid_writing_writes_the_note_at_once_and_frees_the_gate() -> void:
+	_open(Fixture.normal())
+	_system.finish_tellings()
+	var strip: CaptionStrip = _system.caption_strip
+	strip.clear()
+	var comment: String = "Too quick, clerk. Look at the hand before you stamp."
+	strip.post_caption(Caption.make(comment, CaptionStrip.Priority.MENTOR, &"mentor", [], true))
+	var written: Array[int] = [0]
+	strip.writing_finished.connect(func() -> void: written[0] += 1)
+	strip.teller()._process(0.1)
+	assert_true(strip.is_writing())
+	assert_true(_system.gate.is_consuming())
+	_desk.use_options(Fixture.instant())
+	assert_false(strip.is_writing(), "the quill writes the rest at once")
+	assert_eq(written[0], 1, "and finishes once")
+	assert_false(_system.gate.is_consuming(), "the gate lets go")
+
+
+func test_instant_chosen_mid_writing_finishes_the_mentors_bubble_and_frees_the_gate() -> void:
+	_open(Fixture.normal(), SliceLoader.load_slice())
+	# Each sheet told out by itself: `finish_tellings` would finish her writing too.
+	_system.claim_panel.finish_telling()
+	_system.witness_panel.finish_telling()
+	var bubble: MentorBubble = _system.mentor_bubble
+	assert_true(bubble.is_revealing(), "her guided step is being written")
+	assert_true(_system.gate.is_consuming())
+	_desk.use_options(Fixture.instant())
+	assert_false(bubble.is_revealing(), "her words show at once")
+	assert_false(_system.gate.is_consuming(), "the gate lets go")
 
 
 func _door(realm: StringName) -> Door:
@@ -239,6 +303,10 @@ func _line(thread_index: int) -> ThreadLine:
 		if line != null and not line.is_queued_for_deletion() and line.thread_index == thread_index:
 			return line
 	return null
+
+
+func _panel_of(item_id: String) -> EvidencePanel:
+	return _system.claim_panel if item_id.begins_with("C") else _system.witness_panel
 
 
 ## A move, a press and a release at `at`, pushed through the desk's viewport.

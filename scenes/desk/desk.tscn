@@ -10,7 +10,6 @@
 [ext_resource type="Script" path="res://entities/evidence_panel/evidence_panel.gd" id="8_panel"]
 [ext_resource type="Script" path="res://systems/caption_strip/caption_strip.gd" id="9_caption"]
 [ext_resource type="Script" path="res://components/hover_label/hover_label.gd" id="10_hover"]
-[ext_resource type="PackedScene" path="res://entities/phase_card/phase_card.tscn" id="11_card"]
 [ext_resource type="Script" path="res://systems/desk/desk_system.gd" id="12_system"]
 [ext_resource type="Script" path="res://components/clickable_sprite/clickable_sprite.gd" id="13_sprite"]
 [ext_resource type="Script" path="res://entities/mentor/mentor_bubble.gd" id="14_bubble"]
@@ -71,6 +70,11 @@
 [ext_resource type="Texture2D" path="res://assets/art/doors/day3/folkvangr-lit.png" id="69_f3lit"]
 [ext_resource type="Texture2D" path="res://assets/art/doors/day3/folkvangr-locked.png" id="70_f3lock"]
 [ext_resource type="Texture2D" path="res://assets/art/doors/day3/folkvangr-lit-dim.png" id="71_f3dim"]
+[ext_resource type="PackedScene" path="res://entities/phase_card/dawn_writ.tscn" id="72_writ"]
+[ext_resource type="PackedScene" path="res://entities/day_book/day_book.tscn" id="73_book"]
+[ext_resource type="AudioStream" path="res://assets/audio/page_turn.wav" id="74_page"]
+[ext_resource type="AudioStream" path="res://assets/audio/drone.wav" id="75_drone"]
+[ext_resource type="AudioStream" path="res://assets/audio/wind.wav" id="76_wind"]
 
 [node name="Desk" type="Control"]
 layout_mode = 3
@@ -281,11 +285,9 @@ offset_right = 480.0
 offset_bottom = 270.0
 mouse_filter = 2
 
-[node name="PhaseCard" parent="." instance=ExtResource("11_card")]
-offset_left = 140.0
-offset_top = 80.0
-offset_right = 340.0
-offset_bottom = 190.0
+[node name="DawnWrit" parent="." instance=ExtResource("72_writ")]
+
+[node name="DayBook" parent="." instance=ExtResource("73_book")]
 
 [node name="HoverLabel" type="Control" parent="."]
 layout_mode = 0
@@ -322,6 +324,15 @@ stream = ExtResource("39_horn")
 [node name="CawPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("40_caw")
 
+[node name="PageTurnPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("74_page")
+
+[node name="DronePlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("75_drone")
+
+[node name="WindPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("76_wind")
+
 [node name="PresentationGate" type="Node" parent="."]
 script = ExtResource("34_gate")
 
@@ -336,7 +347,7 @@ thud_player = NodePath("../ThudPlayer")
 caw_player = NodePath("../CawPlayer")
 walk_layer = NodePath("../WalkLayer")
 
-[node name="DeskSystem" type="Node" parent="." node_paths=PackedStringArray("body_chart", "claim_panel", "witness_panel", "law_panel", "doors", "thread_layer", "caption_strip", "hover_label", "soul", "hud", "raven", "gate_band", "phase_card", "feather", "mentor_portrait", "mentor_bubble", "stamp_flow", "seam_player", "ledger_tray", "gate", "blip_player", "tack_player", "pull_player", "tick_player", "horn_player")]
+[node name="DeskSystem" type="Node" parent="." node_paths=PackedStringArray("body_chart", "claim_panel", "witness_panel", "law_panel", "doors", "thread_layer", "caption_strip", "hover_label", "soul", "hud", "raven", "gate_band", "dawn_writ", "day_book", "feather", "mentor_portrait", "mentor_bubble", "stamp_flow", "seam_player", "ledger_tray", "gate", "blip_player", "tack_player", "pull_player", "tick_player", "horn_player", "page_turn_player", "drone_player")]
 script = ExtResource("12_system")
 body_chart = NodePath("../BodyChart")
 claim_panel = NodePath("../ClaimPanel")
@@ -350,7 +361,8 @@ soul = NodePath("../Soul")
 hud = NodePath("../Hud")
 raven = NodePath("../Raven")
 gate_band = NodePath("../GateBand")
-phase_card = NodePath("../PhaseCard")
+dawn_writ = NodePath("../DawnWrit")
+day_book = NodePath("../DayBook")
 feather = NodePath("../Feather")
 mentor_portrait = NodePath("../MentorPortrait")
 mentor_bubble = NodePath("../MentorBubble")
@@ -363,3 +375,5 @@ tack_player = NodePath("../TackPlayer")
 pull_player = NodePath("../PullPlayer")
 tick_player = NodePath("../TickPlayer")
 horn_player = NodePath("../HornPlayer")
+page_turn_player = NodePath("../PageTurnPlayer")
+drone_player = NodePath("../DronePlayer")

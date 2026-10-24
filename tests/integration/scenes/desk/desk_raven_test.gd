@@ -24,7 +24,7 @@ func _open(commands: DeskCommands, options: Options = Fixture.instant()) -> void
 	_desk.use_options(options)
 	_viewport.add_child(_desk)
 	_system = _desk.system()
-	_system.phase_card.next_button().pressed.emit()
+	_system.dawn_writ.next_button().pressed.emit()
 
 
 func test_a_click_on_the_bird_asks_about_the_selected_grey_thread() -> void:

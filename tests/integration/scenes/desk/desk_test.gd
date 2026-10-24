@@ -19,13 +19,13 @@ func before_each() -> void:
 	_system = _desk.system()
 
 
-func test_the_desk_opens_on_the_dawn_card_and_begins_the_day() -> void:
+func test_the_desk_opens_on_the_dawn_writ_and_begins_the_day() -> void:
 	assert_eq(_desk.commands().phase(), RunState.DAWN)
-	assert_true(_system.phase_card.visible, "the dawn card shows")
-	assert_string_contains(_system.phase_card.shown_text(), "Day 1.")
+	assert_true(_system.dawn_writ.visible, "the dawn shows")
+	assert_string_contains(_system.dawn_writ.shown_text(), "Day 1.")
 	_begin()
 	assert_eq(_desk.commands().phase(), RunState.DESK)
-	assert_false(_system.phase_card.visible)
+	assert_eq(_system.dawn_writ.shown_text(), "", "the writ is taken down")
 	assert_eq(_system.soul.soul_name(), "Ulf")
 	assert_eq(_system.hud.shown_time(), "untimed", "day 1 is untimed (D10)")
 
@@ -180,7 +180,7 @@ func test_the_pin_gesture_completes_a_pair_on_the_second_item() -> void:
 
 
 func _begin() -> void:
-	_system.phase_card.next_button().pressed.emit()
+	_system.dawn_writ.next_button().pressed.emit()
 
 
 func _pin(a: String, b: String) -> void:

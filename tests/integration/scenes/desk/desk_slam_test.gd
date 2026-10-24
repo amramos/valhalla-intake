@@ -256,6 +256,43 @@ func test_the_thud_starts_on_the_frame_the_stamp_lands() -> void:
 	assert_eq(first_heard, StampFace.SQUASH_HEIGHT, "first heard on the frame the stamp squashes")
 
 
+## The WP2 captures' case: the next soul's seating blanked the plate from the impact to the walk-in.
+## On the frame the stamp lands the plate still names the stamped soul, on his own plate, and the
+## next soul's name and plate come with the walk-in.
+func test_the_plate_names_the_stamped_soul_until_the_walk_in() -> void:
+	_open(Fixture.instant())
+	var face: StampFace = _system.stamp_flow.stamp_prompt.get_node("Face") as StampFace
+	var plain: Texture2D = _system.soul.plate_texture()
+	_stamp(&"hel")
+	assert_eq(_system.soul.soul_name(), "Second", "core seated the next soul")
+	var at_impact: Array = []
+	var started: int = Time.get_ticks_msec()
+	while _desk.gate().is_slamming() and at_impact.is_empty() and _within(started, 1.0):
+		await get_tree().process_frame
+		if face.block_height() == StampFace.SQUASH_HEIGHT:
+			at_impact = [_system.soul.plate_name(), _system.soul.plate_texture()]
+	assert_eq(at_impact, ["Asgaut", plain] as Array, "the impact frame's plate is Asgaut's")
+	# Every other name the plate showed while the slam held the window.
+	var others: Array[String] = []
+	started = Time.get_ticks_msec()
+	while _desk.gate().is_slamming() and _within(started, 1.0):
+		await get_tree().process_frame
+		var shown: String = _system.soul.plate_name()
+		if _desk.gate().is_slamming() and shown != "Asgaut" and not others.has(shown):
+			others.append(shown)
+	assert_false(_desk.gate().is_slamming(), "the slam released within a second")
+	assert_eq(others, [] as Array[String], "Asgaut's name all through the slam")
+	assert_eq(_system.soul.plate_name(), "Second", "the walk-in brings the next name")
+	assert_true(_system.soul.is_arriving(), "as the walk-in starts")
+	await wait_seconds(WaitingSoul.ARRIVE_SECONDS + SLACK)
+	assert_eq(_system.soul.plate_name(), "Second", "after the walk-in")
+	assert_eq(
+		_system.soul.plate_texture().resource_path,
+		"res://assets/art/ui/nameplate-frost.png",
+		"on his own frost-burned plate"
+	)
+
+
 ## In the running desk: the squash comes at the impact, the ring after the stamp lifts, the desk
 ## yields and comes back, and all are over before the walk.
 func test_the_impact_squashes_the_stamp_and_the_lift_rings_the_ink_box() -> void:
@@ -391,7 +428,7 @@ func test_a_restart_in_the_slam_leaves_no_evidence_waiting() -> void:
 	_system.restart()
 	await wait_seconds(StampFlow.SLAM_SECONDS + SLACK)
 	assert_eq(_system.claim_panel.position, claim_home, "no slide left half done")
-	_system.phase_card.next_button().pressed.emit()
+	_system.dawn_writ.next_button().pressed.emit()
 	assert_eq(_system.soul.soul_name(), "Asgaut", "the new run seats its first soul")
 	assert_true(_system.claim_panel.has_item("C1"), "with his evidence at once")
 
@@ -402,7 +439,7 @@ func _open(options: Options, commands: DeskCommands = null) -> void:
 	_desk.use_options(options)
 	add_child_autofree(_desk)
 	_system = _desk.system()
-	_system.phase_card.next_button().pressed.emit()
+	_system.dawn_writ.next_button().pressed.emit()
 
 
 ## Each part of the slam as it changed, read at the start of every frame until the window opens
@@ -455,6 +492,11 @@ func _brightness(colours: Array[Color]) -> float:
 	for colour: Color in colours:
 		total += colour.get_luminance()
 	return total / maxf(1.0, float(colours.size()))
+
+
+## True while fewer than `seconds` have passed since `started` (Time.get_ticks_msec()).
+func _within(started: int, seconds: float) -> bool:
+	return Time.get_ticks_msec() - started < seconds * 1000.0
 
 
 func _note(changes: Array, value: Variant, resting: Variant) -> void:

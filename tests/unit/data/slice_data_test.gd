@@ -231,24 +231,25 @@ func test_the_three_guided_souls_carry_the_mentors_script() -> void:
 	assert_eq(_slice.rules_to_core().mentor_promise_format, "%s. Hel pays well.")
 
 
-func test_the_dawn_cards_explain_the_tide_and_what_a_citation_needs() -> void:
-	# D53, from the WP6 playtest.
+## D21 (amending the slice's D53): the writ keeps the day-2 citation rule; the tide's and
+## Huginn's explanations go to the mentor when they first matter, so day 1 has no tide sentence and
+## day 3 names Huginn in one short line.
+func test_the_writ_keeps_the_citation_rule_and_leaves_the_rest_to_the_mentor() -> void:
 	var days: Array[DayRules] = _days()
-	assert_true(
-		(
-			days[0]
-			. dawn_lines
-			. has(
-				"Send a worthy soul to Hel and they join her tide. At three, they break the line at Ragnarok."
-			)
-		)
-	)
+	var day_1: String = "\n".join(days[0].dawn_lines)
+	assert_false(day_1.contains("tide"), "the tide is the mentor's to explain")
 	assert_true(
 		days[1].dawn_lines.has(
 			"Citations begin today: 2 feathers for any stamp against what the desk can show you."
 		)
 	)
-	assert_eq(_slice.rules_to_core().mentor_tide_line, "The Law is kept. Hel's tide grows by one.")
+	assert_true(days[2].dawn_lines.has("Huginn perches here: 2 answers a day."))
+	assert_false("\n".join(days[2].dawn_lines).contains("which side"), "his role is hers to say")
+	assert_eq(
+		_slice.rules_to_core().mentor_tide_line,
+		"The Law is kept. Hel's tide grows by one. At 3, they march."
+	)
+	assert_eq(_slice.rules_to_core().mentor_tide_suffix, "Hel's tide grows. At 3, they march.")
 
 
 ## The id detector below finds every kind of id and nothing that merely starts with B, C, W, L.

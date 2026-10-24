@@ -242,7 +242,7 @@ func test_every_witness_heading_fits_its_panel() -> void:
 	assert_eq(problems, [] as Array[String])
 
 
-func test_every_dawn_card_fits_the_screen() -> void:
+func test_every_dawn_writ_fits_its_sheet() -> void:
 	var problems: Array[String] = []
 	for day: DayData in _slice.days:
 		problems.append_array(_checker.check_dawn_card(day.to_core()))

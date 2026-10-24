@@ -99,10 +99,18 @@ func _open() -> void:
 	_desk.use_options(Fixture.instant())
 	_viewport.add_child(_desk)
 	_system = _desk.system()
-	var next: GuardedButton = _system.phase_card.next_button()
+	_begin_day()
+	_system.finish_tellings()
+
+
+## Begins the day as a player does: the first click only ends the dark "DAY I" card (the gate
+## consumes it), the dark's lift is run out, and the writ's tab takes a deliberate click.
+func _begin_day() -> void:
+	_click(_system.dawn_writ)
+	_system.dawn_writ._process(DawnWrit.LIFT_SECONDS)
+	var next: GuardedButton = _system.dawn_writ.next_button()
 	next.arm_now()
 	_click(next)
-	_system.finish_tellings()
 
 
 ## Pins `a` then `b` (a pair with no seam) and returns the slack thread it drops.

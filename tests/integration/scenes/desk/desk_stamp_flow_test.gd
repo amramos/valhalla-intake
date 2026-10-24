@@ -344,8 +344,17 @@ func _open(commands: DeskCommands) -> void:
 	_advance_card()
 
 
+## Clicks the screen between souls on as a player does. At dawn the first click only ends the
+## dark "DAY I" card (the gate consumes it), the dark's lift is run out, then the writ's tab; at
+## dusk and the ending the book's ink (and the tableau) is finished, then "Next" or "Play again".
 func _advance_card() -> void:
-	var next: GuardedButton = _system.phase_card.next_button()
+	var next: GuardedButton = _system.day_book.next_button()
+	if _desk.commands().phase() == RunState.DAWN:
+		_click(_system.dawn_writ)
+		_system.dawn_writ._process(DawnWrit.LIFT_SECONDS)
+		next = _system.dawn_writ.next_button()
+	else:
+		_system.day_book.finish_writing()
 	next.arm_now()
 	_click(next)
 

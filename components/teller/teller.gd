@@ -123,6 +123,24 @@ func finish() -> void:
 		finished.emit()
 
 
+## Changes the pace of the telling in progress to `cps` from the next character on, keeping what
+## is shown, the line it is on and any pause (the text speed changed mid-telling, D37). An
+## infinite (or non-positive) `cps` shows the rest at once and emits `finished` now. Nothing is
+## told: nothing changes (the next `start` takes its own pace).
+func set_cps(cps: float) -> void:
+	if not _telling:
+		return
+	if is_inf(cps) or cps <= 0.0:
+		finish()
+		return
+	_cps = cps
+
+
+## The pace of the telling in progress (or the last one), in characters a second.
+func pace() -> float:
+	return _cps
+
+
 ## Stops the telling where it is, without showing the rest or emitting `finished` (a restart).
 func stop() -> void:
 	_telling = false

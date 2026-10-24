@@ -4,7 +4,8 @@ extends Node
 ## redraws what the commands show (the soul, the threads, the doors, the HUD, the mentor's guided
 ## step) and runs the clock while a soul is at the desk. Its helpers own the rest: DeskPins the pin
 ## gesture and its threads, DeskHighlights what is lit, DeskHuginn the knots and Huginn, DeskMentor
-## her step and comments; the stamp itself is StampFlow's. It reads nothing but DeskCommands'
+## her step and comments, DeskScreens the writ and the day-book between souls; the stamp itself is
+## StampFlow's. It reads nothing but DeskCommands'
 ## getters and signals.
 ##
 ## Each soul's tale is told first (DeskTelling, D4, D7): the clock and the mentor's guided step wait
@@ -26,7 +27,8 @@ const LAW_HEADING := "Odin's Law"
 @export var hud: Hud
 @export var raven: Raven
 @export var gate_band: GateBand
-@export var phase_card: PhaseCard
+@export var dawn_writ: DawnWrit
+@export var day_book: DayBook
 @export var feather: ClickableSprite
 @export var mentor_portrait: ClickableSprite
 @export var mentor_bubble: MentorBubble
@@ -39,6 +41,8 @@ const LAW_HEADING := "Odin's Law"
 @export var pull_player: AudioStreamPlayer
 @export var tick_player: AudioStreamPlayer
 @export var horn_player: AudioStreamPlayer
+@export var page_turn_player: AudioStreamPlayer
+@export var drone_player: AudioStreamPlayer
 
 var commands: DeskCommands = null
 ## The player's options (D37); the desk hands them in before bind().
@@ -64,7 +68,7 @@ var _announcement: String = ""
 var _warned: bool = false
 ## The seated soul's evidence waits for the slam to release; the stamped soul's stays meanwhile.
 var _evidence_waits: bool = false
-var _phases := PhaseFlow.new()
+var _screens: DeskScreens = null
 var _telling: DeskTelling = null
 var _note: DeskNote = null
 var _sounds: DeskSounds = null
@@ -97,6 +101,8 @@ func bind(p_commands: DeskCommands) -> void:
 	_huginn = DeskHuginn.new(commands, _note, caption_strip, raven, hover_label, _input_held)
 	_huginn.thread_selected.connect(refresh)
 	_sounds = DeskSounds.new(_sound_players(), gate)
+	_screens = DeskScreens.new(commands, dawn_writ, day_book, gate, _sounds, restart)
+	_screens.caption_strip = caption_strip
 	_pins = DeskPins.new(
 		commands,
 		threads_board,
@@ -150,19 +156,22 @@ func bind(p_commands: DeskCommands) -> void:
 		sprite.hover_ended.connect(hover_label.hide_label)
 	soul.plate_hover_started.connect(hover_label.show_for)
 	soul.plate_hover_ended.connect(hover_label.hide_label)
+	# The HUD's objects hover their names; the ledger's tray, over the book, keeps its click and
+	# hands the book's hover to the HUD.
+	hud.hover_started.connect(hover_label.show_for)
+	hud.hover_ended.connect(hover_label.hide_label)
+	ledger_tray.mouse_entered.connect(hud.hover.bind(&"book"))
+	ledger_tray.mouse_exited.connect(hud.hover.bind(&""))
 	mentor_portrait.clicked.connect(_mentor.clicked)
 	mentor_bubble.acknowledged.connect(_mentor.acknowledged)
-	# A hover tag never covers a sheet's heading or the note (D20), and covers the sheets as
-	# little as it can (a fact's tag stays on the chart).
-	var keep_clear: Array[Rect2] = [caption_strip.get_global_rect()]
+	# A hover tag never covers a sheet's heading, the note or the HUD's numbers (D20), and covers
+	# the sheets as little as it can (a fact's tag stays on the chart).
+	var keep_clear: Array[Rect2] = [caption_strip.get_global_rect(), hud.objects_rect()]
 	var sheets: Array[Rect2] = []
 	for panel: EvidencePanel in _panels():
 		keep_clear.append(panel.heading_rect())
 		sheets.append(panel.get_global_rect())
 	hover_label.set_keep_clear(keep_clear, sheets)
-	_phases.on_restart = restart
-	phase_card.advanced.connect(_on_phase_advanced)
-	phase_card.skipped.connect(_on_phase_skipped)
 	refresh()
 
 
@@ -195,7 +204,7 @@ func refresh() -> void:
 		door.set_day(commands.day_rules().day)
 	_refresh_hud()
 	law_panel.set_new(DeskReadouts.new_decrees(commands))
-	_phases.show(phase_card, commands)
+	_screens.show()
 	ledger_tray.set_line(commands.ledger_line(), _text().ledger_empty)
 	stamp_flow.refresh()
 	# While evidence waits there is no guided step: her bubble and its pair clear (_step_waits).
@@ -221,6 +230,7 @@ func use_options(p_options: Options) -> void:
 		_note.use_options(options)
 		_mentor.use_options(options)
 		_sounds.use_options(options)
+		_screens.use_options(options)
 
 
 ## What is lit and selected; its `selection_changed` tells the cursor to carry a pin (D13).
@@ -257,7 +267,7 @@ func cancel_selection() -> void:
 
 ## A restarted run (D31): every trace of the old one leaves the desk.
 func restart() -> void:
-	_phases.reset()
+	_screens.restart()
 	_announcement = ""
 	_warned = false
 	# Every presentation of the old run ends unfinished (D27).
@@ -358,17 +368,6 @@ func _on_horn() -> void:
 	_sounds.play(&"horn")
 
 
-## A dusk card turned without a desk change (no refresh follows), so the card is drawn here.
-func _on_phase_advanced() -> void:
-	_phases.advance(commands)
-	_phases.show(phase_card, commands)
-
-
-func _on_phase_skipped() -> void:
-	_phases.skip(commands)
-	_phases.show(phase_card, commands)
-
-
 func _on_clock_warning() -> void:
 	_warned = true
 	_refresh_hud()
@@ -390,6 +389,9 @@ func _sound_players() -> Dictionary[StringName, AudioStreamPlayer]:
 		&"tick": tick_player,
 		&"horn": horn_player,
 		&"caw": stamp_flow.caw_player,
+		&"page_turn": page_turn_player,
+		&"drone": drone_player,
+		&"wind": get_node_or_null(^"../WindPlayer") as AudioStreamPlayer,
 	}
 
 

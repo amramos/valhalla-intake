@@ -31,7 +31,12 @@ func _init(players: Dictionary[StringName, AudioStreamPlayer], gate: Presentatio
 func use_options(options: Options) -> void:
 	_muted = options.muted
 	for sound: StringName in _players:
-		_players[sound].volume_db = MUTED_DB if options.muted else options.volume_db
+		_players[sound].volume_db = level_db(options)
+
+
+## The level every player is set to under `options` (the title's wind follows it too).
+static func level_db(options: Options) -> float:
+	return MUTED_DB if options.muted else options.volume_db
 
 
 ## Plays `sound` at `pitch_scale` (a voice's blip); nothing when muted or absent.

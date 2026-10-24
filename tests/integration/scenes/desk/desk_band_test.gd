@@ -74,7 +74,7 @@ func _open(commands: DeskCommands, options: Options = Fixture.instant()) -> void
 	_desk.use_options(options)
 	add_child_autofree(_desk)
 	_system = _desk.system()
-	_system.phase_card.next_button().pressed.emit()
+	_system.dawn_writ.next_button().pressed.emit()
 
 
 func test_day_one_shows_the_band_as_painted() -> void:

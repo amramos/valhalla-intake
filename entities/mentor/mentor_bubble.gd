@@ -39,8 +39,13 @@ const MAX_WRITE_SECONDS := 1.0
 ## Clicks this soon after the writing ends are ignored (a double-click never advances, D18).
 const ARM_SECONDS := 0.3
 
-## Her pace in characters a second (60 at normal text speed; INF writes at once).
-@export var write_cps: float = 60.0
+## Her pace in characters a second (60 at normal text speed; INF writes at once). Words being
+## written take a new pace at once; INF writes the rest now (D37).
+@export var write_cps: float = 60.0:
+	set(value):
+		write_cps = value
+		if _revealing and _teller != null:
+			_teller.set_cps(_pace(_text.text))
 ## No blinking: the arrow shows steadily (D37).
 var reduce_motion: bool = false
 
@@ -205,15 +210,20 @@ func _reveal(text: String) -> void:
 	_revealing = true
 	_blink = 0.0
 	_text.size = Vector2(text_width_for(int(size.x)), 0)
-	var cps: float = write_cps
-	if not is_inf(cps) and cps > 0.0:
-		cps = maxf(cps, text.length() / MAX_WRITE_SECONDS)
-	_teller.start(_text, text, cps, 0.0, 0)
+	_teller.start(_text, text, _pace(text), 0.0, 0)
 	if _teller.is_telling():
 		reveal_started.emit()
 	else:
 		# At once (instant speed or empty): finished now, not on the next frame.
 		_teller.finish()
+
+
+## The writing's pace for `text`: write_cps, faster for a text that would take over a second.
+func _pace(text: String) -> float:
+	var cps: float = write_cps
+	if not is_inf(cps) and cps > 0.0:
+		cps = maxf(cps, text.length() / MAX_WRITE_SECONDS)
+	return cps
 
 
 func _on_revealed() -> void:

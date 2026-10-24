@@ -17,7 +17,7 @@ func before_each() -> void:
 	_desk.use_options(Fixture.instant())
 	add_child_autofree(_desk)
 	_system = _desk.system()
-	_system.phase_card.next_button().pressed.emit()
+	_system.dawn_writ.next_button().pressed.emit()
 
 
 func test_the_stacks_resource_matches_the_art_manifest() -> void:

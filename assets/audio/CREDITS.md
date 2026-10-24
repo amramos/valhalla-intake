@@ -6,7 +6,9 @@ These are synthesized by `tools/audio/synth_sounds.py` (D25, D50): Python's stan
 with a fixed seed, so running the script again writes the same bytes. They are part of the project,
 under its own licence; nothing was downloaded or recorded. Every file is 16-bit, 22050 Hz, mono.
 To change one, edit the script and run it again (`py -3 tools/audio/synth_sounds.py`). The script
-then reads every file back and checks its length and peak level.
+then reads every file back and checks its length and peak level, and that each loop joins itself
+without a click. The two loops carry their loop points in the file (a `smpl` chunk), so Godot
+imports them looping in any checkout.
 
 | File | What it is | Length | Peak |
 |---|---|---|---|
@@ -16,6 +18,9 @@ then reads every file back and checks its length and peak level.
 | `no_seam_tick.wav` | a pin with no seam | 60 ms | -6 dBFS |
 | `horn.wav` | the horn at the end of the day | 1.2 s | -6 dBFS |
 | `caw.wav` | the dry caw of the black feather on a citation (D16) | 150 ms | -6 dBFS |
+| `page_turn.wav` | a page of the day-book turned (D22) | 120 ms | -12 dBFS |
+| `drone.wav` | the low drone under the open day-book (D22); a loop | 4 s | -14 dBFS |
+| `wind.wav` | the wind over the title (D24); a loop | 6 s | -18 dBFS |
 
 ## Kenney's sounds
 

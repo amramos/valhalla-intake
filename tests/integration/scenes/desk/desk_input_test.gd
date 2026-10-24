@@ -1,6 +1,6 @@
 extends GutTest
-## Real mouse events through the desk's own viewport (D9, D14): the stamp, the doors and the phase
-## card's button each take one deliberate click and swallow the second press of a double-click;
+## Real mouse events through the desk's own viewport (D9, D14): the stamp, the doors and the dawn
+## writ's tab each take one deliberate click and swallow the second press of a double-click;
 ## the stamp commits on the press, and a right-click puts it down. The desk sits in a SubViewport
 ## because GUT's window covers the root viewport.
 
@@ -82,8 +82,10 @@ func test_a_door_ignores_the_second_press_of_a_double_click() -> void:
 	assert_true(_system.stamp_flow.stamp_prompt.is_asking())
 
 
-func test_the_phase_card_button_swallows_a_double_click() -> void:
-	var next: GuardedButton = _system.phase_card.next_button()
+func test_the_writs_tab_swallows_a_double_click() -> void:
+	_system.dawn_writ.finish_card()
+	await wait_seconds(DawnWrit.LIFT_SECONDS + 0.01)
+	var next: GuardedButton = _system.dawn_writ.next_button()
 	next.arm_now()
 	var at: Vector2 = next.get_global_rect().get_center()
 	_click(at, true)
@@ -120,7 +122,7 @@ func test_asking_again_rearms_the_confirm() -> void:
 
 
 func _begin() -> void:
-	_system.phase_card.next_button().pressed.emit()
+	_system.dawn_writ.next_button().pressed.emit()
 	_system.finish_tellings()
 
 

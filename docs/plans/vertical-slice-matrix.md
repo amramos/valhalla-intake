@@ -690,6 +690,9 @@ table A3).
 | First grey thread, day 2 | "One of them lies. The body may say which." |
 | First grey thread, day 3 | "Huginn answers that. Click the raven to ask him." (game UI D40) |
 | Keeping Hel's promise (Ragna to Hel) | "{pair}. Hel pays well." |
+| The first figure joins Hel's tide, on a lawful stamp | "The Law is kept. Hel's tide grows by one. At 3, they march." (D53) |
+| The first figure, after one of her comments | the comment, then " Hel's tide grows. At 3, they march." (two note lines at most) |
+| The first figure, on a wrong stamp no visible seam showed | "Hel's tide grows. At 3, they march." |
 
 ### A3. Citations
 
@@ -728,13 +731,14 @@ permitted uncertainty (D37).
 
 ### A5. Dawn cards (D34)
 
-Each card lists its lines in this order; "NEW" marks stay until the day's first stamp.
+Each card lists its lines in this order; "NEW" marks stay until the day's first stamp. Odin's writ
+names the decrees by their numerals (L1 is "I"), as the desk shows them.
 
 **Day 1**
 - "Day 1."
 - "Odin wants 1 soul for Valhalla."
 - "Untimed today."
-- "The Law: L1, L2, L3."
+- "The Law: I, II, III."
 - "Doors: Valhalla and Hel. Fólkvangr is barred."
 - "The senior valkyrie will show you the first three."
 
@@ -742,18 +746,17 @@ Each card lists its lines in this order; "NEW" marks stay until the day's first 
 - "Day 2."
 - "Odin wants 1 soul for Valhalla."
 - "The clock: {clock}. It runs while a soul is at the desk."
-- "NEW L4: Even so, those who fled the battle go to Hel."
+- "NEW IV: Even so, those who fled the battle go to Hel."
 - "Witnesses arrive. Claim against witness makes a grey thread."
-- "Citations begin today: 2 feathers for a stamp against a seam you could see."
+- "Citations begin today: 2 feathers for any stamp against what the desk can show you."
 
 **Day 3**
 - "Day 3."
 - "Odin wants 2 souls for Valhalla."
 - "The clock: {clock}."
-- "NEW L5: Those who fell defending hearth and kin go to Fólkvangr, whatever L1, L3 and L4 say."
+- "NEW V: Those who fell defending hearth and kin go to Fólkvangr, whatever I, III and IV say."
 - "NEW door: Fólkvangr opens."
-- "Huginn perches on your desk. He answers only about a thread you made: which side of a grey
-  thread lies. 2 answers a day, 5 s each. A third costs 2 feathers."
+- "Huginn perches here: 2 answers a day."
 
 ### A6. Dusk cards (D15)
 

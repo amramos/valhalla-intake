@@ -12,7 +12,7 @@ const Palette := preload("res://tests/unit/entities/desk_palette.gd")
 
 func test_the_cue_follows_the_law_captions_lifetime_on_the_desk() -> void:
 	var system: DeskSystem = _desk().system()
-	system.phase_card.next_button().pressed.emit()
+	system.dawn_writ.next_button().pressed.emit()
 	system.finish_tellings()
 	var seen: Array[StringName] = []
 	# A law thread to Hel, then a red thread: its caption replaces the law caption once the law

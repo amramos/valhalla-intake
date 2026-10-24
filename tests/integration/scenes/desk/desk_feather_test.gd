@@ -174,7 +174,7 @@ func _open(options: Options, with_caw: bool = true) -> void:
 		flow.caw_player = null
 	add_child_autofree(_desk)
 	_system = _desk.system()
-	_system.phase_card.next_button().pressed.emit()
+	_system.dawn_writ.next_button().pressed.emit()
 
 
 func _pin(a: String, b: String) -> void:
