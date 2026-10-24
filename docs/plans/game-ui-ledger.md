@@ -1,6 +1,6 @@
 # Game UI overhaul — decisions ledger
 
-**State:** PROVISIONALLY APPROVED
+**State:** BUILT (WP1-WP5, stacked PRs #26-#30 on the plan's #25), unmerged: awaiting the owner's play and merge
 **Mode:** hands-off · **Plan:** `game-ui-plan.md` · **Epic:** [#19](https://github.com/amramos/valhalla-intake/issues/19) (features #20-#24)
 **After the plan:** the owner chose `team-lead-handsoff` (2026-10-23). See D-row on delivery.
 
@@ -283,6 +283,54 @@ Taxes' end-of-shift results on the desk and Papers, Please's citation slip.
   ownership and web storage limits (plan §3, §6); WAV generation and the two kept Kenney sounds
   (D50); instrumented gates and a scored rubric (plan §6); the walkthrough reconciled with D1,
   D36 and D51; amendments land in the package that introduces each change (D49).
+
+## Built
+
+What the team delivered against this ledger (2026-10-23 to 2026-10-24), as evidence for the owner's
+play, which remains the gate (D30, D46). Nothing is merged (D32).
+
+| WP | Pull request | Gate at the PR | Review | The blind critic |
+|---|---|---|---|---|
+| WP1 day 1 on the new desk (#20) | [#26](https://github.com/amramos/valhalla-intake/pull/26) on #25 | the lead's play of day 1 with real input; the fit check; the leak test; GUT green | Codex: findings fixed, re-review approved | not yet scored (the checkpoint was the lead's play) |
+| WP2 the timed probe (#21) | [#27](https://github.com/amramos/valhalla-intake/pull/27) on #26 | forced time 0.52 s per soul (budget 2.0); fit check; GUT green | Codex eight findings, then a fallback Claude review four more, all fixed | the stamp 2/5, then 3/5 after D54-D55, then 4/5 after D56; the leak item 5/5; overall 4/5 PASS |
+| WP3 the rest of the desk (#22) | [#28](https://github.com/amramos/valhalla-intake/pull/28) on #27 | the audit kit; the day-3 fit re-run; desk-shots; GUT green | Codex five findings plus one from the re-review, all fixed | A-D 4/5, the leak 5/5, overall 4/5; the stamp 3/5 and small marks 3/5 (D57) |
+| WP4 between days and the shell (#23) | [#29](https://github.com/amramos/valhalla-intake/pull/29) on #28 | the two-page ending fit; desk-shots from the title to "Play again"; 80 scripts, 731 tests | Codex eight findings, fixed; a fallback Claude re-review approved | Codex 4/3/3/3/2/3, overall 4 FAIL; after a fix round the fallback 4/4/4/3/3/3, overall 4 FAIL; every named defect fixed in the PR |
+| WP5 verification and docs (#24) | [#30](https://github.com/amramos/valhalla-intake/pull/30) on #29 | the final critic; the timed play; every gate re-run: 81 scripts, 733 tests | none needed: a harness, one defect fix with its test, docs | see below |
+
+**The final critic (Codex, blind, 27 before/after captures of the six moments on a hero and a
+liar, D30):** A material and speaker 4/5; B no web pages 3/5; C the dead tell their tale 3/5; D the
+weight of the stamp 3/5; E days and the reckoning 4/5; F touchable controls and readability 3/5;
+overall 4/5, BEFORE lower on every item; "the 12th soul would probably feel faster than the 1st".
+FAIL on B, C, D, F. What it named, and what the lead did with each:
+
+- *the stamp's consequence is not visible, the held writ does not read as the gate refusing* (D):
+  stills cannot show the slam, the veil, the walk or the feather; the stamp is at its D57 bound,
+  and the owner decides the next step. Declined in WP5.
+- *the liar's raised name slip is obscured by the sheet* (F): a real defect. The slip is the next
+  soul's writ, and the capture caught it 0.7 s after a stamp, rising from under the sheets during
+  the sweep inside a clip that ran 1 px onto the Claim and the Law. Fixed in WP5: the next writ is
+  set in its place and fades in over the same 0.15 s (the WP2 sweep had the next writ rise into place; the stamped writ still slides off the desk edge), the clip ends at
+  the sheets' top, and a test holds the longest names whole and off every sheet through every frame
+  of the slam and sweep.
+- *pause and options remain centred dialogs with stacked controls* (B): the hanging parchment keeps
+  the layout D37 chose; a redesign is a new decision for the owner. Declined.
+- *the testimony reads transcribed, the soul stands apart from its transcript* (C): the telling is
+  motion and sound (D4, D17: the plate lights and the figure dips on each voice); a still shows
+  the sheet. Declined; the owner's play judges it.
+- *tiny marks (the continuation mark, the HUD book, pin symbols) at native scale* (F): hover tags
+  name every HUD object (WP4); the marks stay the size the 480x270 map allows (D3). Declined.
+
+**The lead's timed play (D46), a measurement, not a verdict:** `tools/timed_play/` plays all three days as a careful player at the normal text speed: it waits for every telling to end by itself, reads every claim and witness line at 1.5 s a line, pins every seam the soul has, checks each thread, and stamps, with 0.5 s before every click. Two runs agreed within 0.1 s. Per soul (telling / reading / pinning / total, seconds): day 1 Ulf 2.8/6.0/3.7/13.2, Kolbeinn 3.3/6.0/7.4/17.4, Hallr 3.2/6.0/5.8/15.7, Asa 3.3/6.0/1.2/11.2; day 2 Sigvaldi 4.8/10.5/1.2/17.2, Hakon 5.4/10.5/2.4/19.0, Grim 5.1/10.5/6.0/22.3, Brand 5.3/10.5/6.0/22.4; day 3 Freydis 5.0/10.5/1.2/17.4, Hakon (returned) 3.4/6.0/2.4/12.5, Ragna 5.1/10.5/3.6/19.9, Ketil 5.3/10.5/1.2/17.7. The clock (which waits for the tale, D5) left **4:01 on day 2 and 4:12 on day 3**: about 59 s and 48 s of the 300 s were used, and no day ran out. The dawn card's gated wait was 1.49, 1.45 and 1.45 s when left to run out. At the instant speed desk-shots' forced wait is 0.52 s per soul, the slam window and nothing else. What this cannot say: whether 4 minutes of slack makes the clock feel idle (slice D42) or safe; the owner's play decides.
+
+**Harness parity (D44):** the harness prints the same words as the desk, asserted by
+`tests/unit/core/caption_formatter_test.gd`, `screen_text_test.gd`, `screen_text_spreads_test.gd`,
+`tests/unit/tools/harness/harness_caption_test.gd`, `harness_flow_test.gd`, `harness_test.gd`, and
+on the desk by `tests/integration/scenes/desk/desk_day_book_test.gd`, `desk_ending_fit_test.gd`,
+`desk_dawn_test.gd` and `desk_flow_test.gd`.
+
+**What the owner decides next:** the assumed decisions (D4, D5, D21, D25, D32, D37) on the first
+play; D57 (the stamp as built, or the writ onto the desk); whether the m5x7 capital N (a Π when
+zoomed) needs a glyph fix (ADR-0008); and the merge of #25-#30 in order.
 
 ## Approval record
 

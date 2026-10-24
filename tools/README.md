@@ -14,6 +14,9 @@ Development-only scripts and harnesses, **never shipped** and never referenced b
   card and writ, each day-book spread and the ending's tableau included. It prints a `DAWN <day>
   <seconds>` line per dawn (the dark card's gated time) and a `FORCED <soul> <seconds>` line per
   soul: `godot --path . --resolution 480x270 -s tools/desk_shots/desk_shots.gd -- <folder>`.
+- `timed_play/timed_play.gd` — the timed play (D46): all three days as a careful player at the normal
+  text speed, printing `SOUL`, `DAY <n> clock_left=` and `DAWN` lines (its header):
+  `godot --path . --resolution 480x270 -s tools/timed_play/timed_play.gd -- <folder>`.
 - `audit_kit/audit_kit.gd` — the evidence auditor's kit (D26): for every encounter, a 1:1 desk PNG and a
   text file of only what the player can read. Run in a window:
   `godot --path . --resolution 480x270 -s tools/audit_kit/audit_kit.gd -- <folder>`.

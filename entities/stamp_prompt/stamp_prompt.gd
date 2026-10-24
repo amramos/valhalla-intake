@@ -11,8 +11,9 @@ extends Control
 ## writ, which dents and flashes with the stamp (the brightest instant) before the veil darkens to
 ## 0.55, bursts ink outward from the block and, as the stamp lifts, sends a shockwave round the ink;
 ## all timed, never counted in frames. The sweep slides the writ off the desk edge, and the next
-## soul's writ comes up in its place. Nothing here reads anything but a name and a realm: no slam
-## can tell a liar from a hero.
+## soul's writ fades in where it lies, whole: a writ rising from under the edge had its name cut by
+## the sheets' top for a moment. Nothing here reads anything but a name and a realm: no slam can
+## tell a liar from a hero.
 
 signal confirmed(realm: StringName)
 signal cancelled
@@ -46,7 +47,8 @@ const DENT_SECONDS := 0.06
 const LIFT_SECONDS := 0.15
 const WAVE_WIDE_SECONDS := 0.2
 const WAVE_SECONDS := 0.25
-## The writ slides down off the desk edge, then the next one slides up.
+## The writ slides down off the desk edge (the slot's clip, which ends at the sheets' top), then
+## the next one fades in in its place.
 const SWEEP_SECONDS := 0.2
 const COME_UP_SECONDS := 0.15
 ## Columns between the stamp's block and its question: 3 empty columns, so the first letter never
@@ -226,7 +228,7 @@ func slam(p_realm: StringName) -> Tween:
 	return _motion
 
 
-## Slides the stamped writ off the desk edge; the next soul's writ (if any) comes up in its place.
+## Slides the stamped writ off the desk edge; the next soul's writ (if any) fades in in its place.
 ## Returns the tween (null when the end state was taken at once).
 func sweep() -> Tween:
 	_set_held_now(false)
@@ -236,9 +238,9 @@ func sweep() -> Tween:
 		return null
 	_sweep = create_tween()
 	_sweep.tween_property(_writ, "position:y", float(Writ.SIZE.y + 1), SWEEP_SECONDS)
-	# Under the edge the stamped writ becomes the next soul's, and comes up.
-	_sweep.tween_callback(_swap_writ)
-	_sweep.tween_property(_writ, "position:y", 0.0, COME_UP_SECONDS)
+	# Under the edge the stamped writ becomes the next soul's, back in its place and unseen.
+	_sweep.tween_callback(_place_unseen)
+	_sweep.tween_property(_writ, "modulate:a", 1.0, COME_UP_SECONDS)
 	_sweep.tween_callback(_end_sweep)
 	return _sweep
 
@@ -397,6 +399,14 @@ func _swap_writ() -> void:
 func _end_sweep() -> void:
 	_swap_writ()
 	_writ.position.y = 0
+	_writ.modulate.a = 1.0
+
+
+## The next soul's writ, clean, where it lies but not yet seen: it fades in from here.
+func _place_unseen() -> void:
+	_swap_writ()
+	_writ.position.y = 0
+	_writ.modulate.a = 0.0
 
 
 func _finish_sweep() -> void:

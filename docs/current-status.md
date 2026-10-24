@@ -19,22 +19,37 @@ second narrative beside an old one. Detail lives where it can be found on purpos
 
 The vertical slice is built: 3 days, 12 encounters, from the title to the ending. It has one return
 arc (Hakon), one god promise (Hel's offer for Ragna) and three endings: Hel's tide, the Hollow hall
-and The Hall holds.
-The plan and its decisions ledger (D1–D54) are in `docs/plans/vertical-slice-*`. Next: the owner
-plays the slice, then sets the full encounter count (GDD §11, question 1).
+and The Hall holds. The plan and its decisions ledger (D1–D54) are in `docs/plans/vertical-slice-*`.
+
+The game UI overhaul (epic #19) re-presents that slice as a game at a stone desk: the dead tell
+their tale line by line, the Law is a sealed scroll, the stamp slams a writ, dawn is a carved card
+and Odin's writ, dusk and the ending are the clerk's day-book, the title and pause are the gate and
+a hanging parchment. It is built in five stacked pull requests (#25 the plan, #26–#29 WP1–WP4,
+WP5 docs on top) that **wait for the owner to merge** (the ledger's D32: the hands-off lead was not
+invocable, so nothing merged). Its ledger (D1–D58) and plan are `docs/plans/game-ui-*`; its rules
+are ADR-0009. Next: the owner plays the overhauled slice from `feature/game-ui-wp5`, rules on the
+ledger's assumed decisions and D57, merges the stack, then sets the full encounter count (GDD §11,
+question 1).
 
 ## Epics
 
 | Epic | State | Notes |
 |---|---|---|
 | #2 Vertical slice of the inspection desk | In Review (until the owner plays it) | WP0–WP6 (#3–#9) merged by the hands-off lead under ADR-0007 |
+| #19 Game UI overhaul | In Review (PRs #25–#29 and WP5 open, unmerged) | WP1–WP5 (#20–#24) built by the team under `team-lead`; Codex reviewed each, a fallback Claude model where Codex's quota ran out; the blind critic's scores are in each PR |
 
 ## Open and owed
 
-- **The owner's play of the slice** settles three things AI testers couldn't measure:
-  - the 5:00 clock on days 2–3 (D42 is pending, D54);
-  - the stamp's feel;
-  - readability on a real screen.
+- **The owner's play of the slice** (now on the overhauled desk) settles what AI testers couldn't:
+  - the 5:00 clock on days 2–3 (slice D42 pending, D54) against the telling's pace: the timed
+    careful-player run is recorded in the UI ledger's "Built" section as a measurement;
+  - the stamp's feel: the UI ledger's D57 leaves the next step to the owner (keep the stamp as
+    built, or move the writ onto the desk for a bigger one);
+  - readability on a real screen at 1:1, including m5x7's capital N, which reads as a Π when
+    zoomed;
+  - the UI ledger's assumed decisions (D4, D5, D21, D25, D32, D37), the owner's first read.
+- **Merging the UI stack:** #25 ← #26 ← #27 ← #28 ← #29 ← WP5, in that order, by the owner or by
+  `/game-sdlc:team-lead-handsoff` on epic #19 (ADR-0007).
 - **GDD §11, question 1:** the full encounter count. `vertical-slice-measurements.md` recommends
   about 56.
 - **Art provenance:**
@@ -47,7 +62,10 @@ plays the slice, then sets the full encounter count (GDD §11, question 1).
 
 ## Validation
 
-**GUT baseline:** 29 scripts, 248 tests, all passing (2026-10-21, Godot 4.7.1, `main`). A
-script count that drops for no visible reason means a test file failed to load (`docs/gotchas.md`).
-Other checks: lint, art coverage and `tools/desk_shots/`. The authoring check runs inside the
-suite.
+**GUT baseline:** 29 scripts, 248 tests on `main` (2026-10-21); **81 scripts, 733 tests** at the
+top of the UI stack (2026-10-24, Godot 4.7.1). A script count that drops for no visible reason
+means a test file failed to load (`docs/gotchas.md`). Other checks: lint, pixelforge, art coverage,
+the sound self-check (`tools/audio/synth_sounds.py --check`), the fit check (`tools/fitcheck/`),
+`tools/desk_shots/` (prints the forced seconds per soul, budget 2.0), the audit kit
+(`tools/audit_kit/`) and the timed careful-player run (`tools/timed_play/`). The authoring check
+runs inside the suite.
