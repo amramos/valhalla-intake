@@ -123,12 +123,33 @@ def _horn(count: int, _rng: random.Random) -> list[float]:
     return _fade_edges(samples, 0.01, 0.12)
 
 
+def _caw(count: int, rng: random.Random) -> list[float]:
+    """A 150 ms dry caw: a sawtooth buzz falling from 900 to 480 Hz, roughened by noise and a 70 Hz
+    flutter into a rasp, with a quick swell and a dry tail. The black feather's voice (D16): harsh
+    and falling where the soul's blip is a pure, short sine."""
+    samples = []
+    phase = 0.0
+    rough = 0.0
+    seconds = count / RATE
+    for index in range(count):
+        t = index / RATE
+        frequency = 900.0 * (480.0 / 900.0) ** (t / seconds)
+        phase = (phase + frequency / RATE) % 1.0
+        saw = 2.0 * phase - 1.0
+        rough += 0.45 * (rng.uniform(-1.0, 1.0) - rough)
+        flutter = 0.65 + 0.35 * math.sin(2.0 * math.pi * 70.0 * t)
+        envelope = min(1.0, t / 0.012) * (1.0 - t / seconds) ** 0.7
+        samples.append((saw * (0.6 + 0.4 * rough) * flutter + 0.35 * rough) * envelope)
+    return _fade_edges(samples, 0.002, 0.012)
+
+
 SOUNDS = [
     Sound("blip.wav", 0.040, -14.0, _blip),
     Sound("pin_tack.wav", 0.030, -6.0, _pin_tack),
     Sound("thread_pull.wav", 0.120, -6.0, _thread_pull),
     Sound("no_seam_tick.wav", 0.060, -6.0, _no_seam_tick),
     Sound("horn.wav", 1.200, -6.0, _horn),
+    Sound("caw.wav", 0.150, -6.0, _caw),
 ]
 
 

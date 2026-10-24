@@ -85,18 +85,18 @@ func test_the_pause_and_focus_loss_hold_the_stamps_rise() -> void:
 	_open(Fixture.instant())
 	var face: Control = _system.stamp_flow.stamp_prompt.get_node("Face") as Control
 	_door(&"hel").press()
-	assert_eq(face.position.y, float(StampPrompt.RISE_PX), "the stamp starts low")
+	assert_eq(face.position.y, StampPrompt.CONTACT_Y, "the stamp starts low")
 	_desk.toggle_pause()
 	await wait_seconds(StampPrompt.RISE_SECONDS + 0.1)
-	assert_eq(face.position.y, float(StampPrompt.RISE_PX), "the pause holds the rise")
+	assert_eq(face.position.y, StampPrompt.CONTACT_Y, "the pause holds the rise")
 	_desk.pause_overlay().resume_button().pressed.emit()
 	_door(&"valhalla").press()
 	_desk._notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
 	await wait_seconds(StampPrompt.RISE_SECONDS + 0.1)
-	assert_eq(face.position.y, float(StampPrompt.RISE_PX), "so does focus loss")
+	assert_eq(face.position.y, StampPrompt.CONTACT_Y, "so does focus loss")
 	_desk._notification(Node.NOTIFICATION_APPLICATION_FOCUS_IN)
 	await wait_seconds(StampPrompt.RISE_SECONDS + 0.1)
-	assert_eq(face.position.y, 0.0, "resumed, the stamp finishes rising")
+	assert_eq(face.position.y, StampPrompt.RAISED_Y, "resumed, the stamp finishes rising")
 
 
 func test_reduce_motion_draws_a_new_thread_and_its_knot_whole_at_once() -> void:

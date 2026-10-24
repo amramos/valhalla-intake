@@ -1,7 +1,8 @@
 extends GutTest
 ## The soul's arrival (D15): a soul shown after `prepare_arrival` waits off-screen to the left with
 ## its name off the plate; `arrive` walks it in (0.3 s) or places it at once, and a soul shown
-## without it simply stands in its place.
+## without it simply stands in its place. While it speaks (D4, D17) its plate lights and it dips
+## 1 px on each blip; silent, or under reduce motion (D37), it never bobs.
 
 var _soul: WaitingSoul = null
 
@@ -57,6 +58,63 @@ func test_an_empty_gate_forgets_a_pending_arrival() -> void:
 	assert_false(_soul.arrive_pending)
 	_soul.show_soul(_encounter("Ulf"))
 	assert_eq(_soul.figure().position, WaitingSoul.FIGURE_AT, "the next soul simply stands")
+
+
+func test_a_speaking_soul_lights_its_plate() -> void:
+	_soul.show_soul(_encounter("Ulf"))
+	assert_false(_soul.is_speaking(), "a soul is silent until its tale is told")
+	_soul.set_speaking(true)
+	assert_true(_soul.is_speaking())
+	var plate := Rect2(Vector2.ZERO, _soul.get_node("Plate").size)
+	assert_true(plate.encloses(_soul.speaking_backing()), "the lit backing is on the plate")
+	assert_eq(_soul.speaking_backing().position, Vector2.ONE, "inside its 1 px rim")
+	_soul.set_speaking(false)
+	assert_false(_soul.is_speaking())
+
+
+func test_each_blip_dips_a_speaking_soul_one_pixel_and_back() -> void:
+	_soul.show_soul(_encounter("Ulf"))
+	_soul.set_speaking(true)
+	var bob: Tween = _soul.bob()
+	assert_not_null(bob)
+	assert_eq(_soul.figure().position, WaitingSoul.FIGURE_AT + Vector2(0, 1), "1 px down")
+	await wait_seconds(WaitingSoul.BOB_SECONDS + 0.1)
+	assert_eq(_soul.figure().position, WaitingSoul.FIGURE_AT, "and back")
+
+
+func test_a_silent_soul_never_bobs() -> void:
+	_soul.show_soul(_encounter("Ulf"))
+	assert_null(_soul.bob(), "still unless it speaks (D17)")
+	assert_eq(_soul.figure().position, WaitingSoul.FIGURE_AT)
+
+
+func test_the_tale_ending_mid_bob_puts_the_figure_back() -> void:
+	_soul.show_soul(_encounter("Ulf"))
+	_soul.set_speaking(true)
+	_soul.bob()
+	_soul.set_speaking(false)
+	assert_eq(_soul.figure().position, WaitingSoul.FIGURE_AT)
+
+
+func test_reduce_motion_lights_the_plate_but_never_bobs() -> void:
+	_soul.reduce_motion = true
+	_soul.show_soul(_encounter("Ulf"))
+	_soul.set_speaking(true)
+	assert_true(_soul.is_speaking(), "the lit plate is a state cue: it stays")
+	assert_null(_soul.bob(), "no bob (D37)")
+	assert_eq(_soul.figure().position, WaitingSoul.FIGURE_AT)
+
+
+func test_a_bob_during_the_walk_in_keeps_the_walks_course() -> void:
+	_soul.prepare_arrival()
+	_soul.show_soul(_encounter("Kolbeinn"))
+	_soul.arrive()
+	_soul.set_speaking(true)
+	var x: float = _soul.figure().position.x
+	_soul.bob()
+	assert_eq(_soul.figure().position.x, x, "only the height moves")
+	await wait_seconds(WaitingSoul.ARRIVE_SECONDS + 0.1)
+	assert_eq(_soul.figure().position, WaitingSoul.FIGURE_AT, "the walk ends in its place")
 
 
 func _name_label() -> Label:

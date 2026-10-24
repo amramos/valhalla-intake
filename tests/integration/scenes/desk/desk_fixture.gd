@@ -40,6 +40,15 @@ static func matched(liar: bool) -> DeskCommands:
 	return result
 
 
+## The same day with the souls the other way round: the Valhalla-worthy soul first, so a Hel stamp
+## grows the tide while another soul is still to come (the clock can still run out after it).
+static func worthy_first() -> DeskCommands:
+	var result := DeskCommands.new()
+	var days: Array[DayRules] = [_day(3)]
+	result.start_run(days, [[_second(), _first()]], SliceRules.new(), {})
+	return result
+
+
 static func instant() -> Options:
 	var options := Options.new()
 	options.text_speed = Options.INSTANT

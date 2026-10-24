@@ -44,8 +44,8 @@ Every presentation decision is tested against these (`docs/plans/game-ui-ledger.
 2. **The dead tell their tale.** A soul stands before you and speaks its saga in its own voice; it
    is not a form. The telling never tells: voice, pace and sheet are the same for a liar and a
    hero; only the words and the body differ.
-3. **A desk at the end of the world.** Everything the player reads or touches is an object on a
-   stone desk at Valhalla's gate. Heroism is read, not told: the body shows events, never motives.
+3. **A desk at the end of the world.** Everything the player reads or touches is an object on
+   the desk at Valhalla's stone gate. Heroism is read, not told: the body shows events, never motives.
    Days pass as light, sound and a day-book closing, never as a dialog box.
 
 ### The rule that governs everything

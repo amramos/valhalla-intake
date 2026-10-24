@@ -31,6 +31,9 @@ func test_a_liar_and_a_hero_are_told_alike() -> void:
 	assert_eq(liar_events, hero_events, "the same reveal, pitch and sounds, step by step")
 	assert_eq(_sheets(liar), _sheets(hero), "and the same told sheets")
 	assert_true(liar_events.any(func(e: String) -> bool: return e.begins_with("blip")), "voiced")
+	assert_true(
+		liar_events.any(func(e: String) -> bool: return e.begins_with("play blip")), "heard"
+	)
 
 
 func _open(commands: DeskCommands) -> DeskSystem:
@@ -46,8 +49,10 @@ func _open(commands: DeskCommands) -> DeskSystem:
 	return system
 
 
-## Every signal the telling can give, in order: lines shown, blips with their pitch, the sound
-## player started with its pitch, the tale's end.
+## Every signal the telling can give, in order: lines shown, blips with their pitch, each sound
+## the desk asked to play (with its pitch) or stop, the tale's end. Sounds are followed through
+## DeskSounds' own signals, never `AudioStreamPlayer.playing`: that follows the real audio clock,
+## not the lockstep, and made this test flaky.
 func _record(system: DeskSystem) -> Array[String]:
 	var events: Array[String] = []
 	for panel: EvidencePanel in [system.claim_panel, system.witness_panel]:
@@ -55,10 +60,14 @@ func _record(system: DeskSystem) -> Array[String]:
 		teller.line_shown.connect(
 			func(index: int) -> void: events.append("%s line %d" % [panel.name, index])
 		)
-		teller.blip.connect(
-			func(pitch: float) -> void:
-				events.append("blip %.4f on %.4f" % [pitch, system.blip_player.pitch_scale])
-		)
+		teller.blip.connect(func(pitch: float) -> void: events.append("blip %.4f" % pitch))
+		teller.finished.connect(func() -> void: events.append("%s finished" % panel.name))
+	var sounds: DeskSounds = system._sounds
+	sounds.played.connect(
+		func(sound: StringName, pitch: float) -> void:
+			events.append("play %s %.4f" % [sound, pitch])
+	)
+	sounds.stopped.connect(func(sound: StringName) -> void: events.append("stop %s" % sound))
 	system.caption_strip.text_shown.connect(func(text: String) -> void: events.append(text))
 	return events
 
@@ -68,7 +77,7 @@ func _step(system: DeskSystem) -> void:
 	system.witness_panel.teller()._process(STEP)
 
 
-## What shows now: every line's revealed characters and hit area, and whether the voice plays.
+## What shows now: every line's revealed characters and hit area, and whether the tale is told.
 func _snapshot(system: DeskSystem) -> String:
 	var parts: PackedStringArray = []
 	for panel: EvidencePanel in [system.claim_panel, system.witness_panel]:
@@ -76,7 +85,6 @@ func _snapshot(system: DeskSystem) -> String:
 			if panel.has_item(item.id):
 				var label: Label = PaperLine.text_label(panel.area(item.id))
 				parts.append("%d/%s" % [label.visible_characters, panel.area(item.id).visible])
-	parts.append("voice %s %.4f" % [system.blip_player.playing, system.blip_player.pitch_scale])
 	parts.append("telling %s" % system.is_telling())
 	return " ".join(parts)
 

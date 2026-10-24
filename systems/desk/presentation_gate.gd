@@ -7,6 +7,8 @@ extends Node
 ##   happens (no pin, select, stamp, advance or acknowledge); its release is swallowed too;
 ## - ignored: the slam window is open; nothing is finished and the press does nothing;
 ## - passed: otherwise; the press goes on to the desk's controls.
+## Before that decision every press is shown to the press hooks (D51): cosmetic motions that any
+## press simply ends (a slack thread's drop) listen there, and never change the decision.
 ## It also pauses and resumes the presentation clocks it watches (tellers, tweens, players)
 ## without `SceneTree.paused` or `Engine.time_scale`, and cancels them all on a restart.
 
@@ -46,6 +48,8 @@ var _tellers: Array[Teller] = []
 var _paused_tweens: Array[Tween] = []
 var _paused_players: Array[AudioStreamPlayer] = []
 var _gated_seconds: float = 0.0
+## Called with no arguments on every press, before it is decided; they never take it.
+var _press_hooks: Array[Callable] = []
 
 
 ## Starts a consuming presentation of `kind` (TELLING, WRITTEN or DAWN); a consumed press calls
@@ -84,6 +88,17 @@ func is_slamming() -> bool:
 	return _slamming
 
 
+## Calls `hook` (no arguments) on every press from now on, before the press is decided; the hook
+## can't consume, ignore or pass it. A hook already added is not added twice.
+func add_press_hook(hook: Callable) -> void:
+	if not _press_hooks.has(hook):
+		_press_hooks.append(hook)
+
+
+func remove_press_hook(hook: Callable) -> void:
+	_press_hooks.erase(hook)
+
+
 ## Decides a mouse button event; true means the caller must mark it handled (consumed, ignored
 ## or a swallowed release). The wheel is never a press and always passes.
 func on_press(event: InputEventMouseButton) -> bool:
@@ -93,6 +108,7 @@ func on_press(event: InputEventMouseButton) -> bool:
 		return _swallow.erase(event.button_index)
 	# A press means any earlier release of this button already came (or was lost).
 	_swallow.erase(event.button_index)
+	_call_press_hooks()
 	if _slamming:
 		_swallow[event.button_index] = true
 		return true
@@ -211,6 +227,15 @@ func _finish_all() -> void:
 			if finish.is_valid():
 				finish.call()
 	_consumers.clear()
+
+
+## Each hook sees the press; one whose object is gone is dropped.
+func _call_press_hooks() -> void:
+	for hook: Callable in _press_hooks.duplicate():
+		if hook.is_valid():
+			hook.call()
+		else:
+			_press_hooks.erase(hook)
 
 
 ## Drops finished tweens and freed nodes. Checked by index: a freed node can't be assigned to a

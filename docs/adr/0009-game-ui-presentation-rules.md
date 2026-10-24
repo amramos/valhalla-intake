@@ -30,7 +30,11 @@ and bind later work, so they are recorded here.
    sounds stay (D25, D50). Options (text speed, reduce motion, volume, mute) live in
    `user://options.cfg` with validated defaults; on the web a blocked store falls back to defaults
    (D37). No other persistence exists.
-5. **Words.** The caption strip is the *clerk's note*; the between-days book is the *day-book*;
+5. **Timed cues, not frame counts.** Presentation cues (a squash, a ring, a burst, a gutter label) are
+   timed in seconds through tweens the gate watches, never counted in frames, and tests bound
+   their waits by elapsed time. `project.godot` caps `run/max_fps` at 60 so no cue is shorter
+   than a frame on a fast machine (ledger D56).
+6. **Words.** The caption strip is the *clerk's note*; the between-days book is the *day-book*;
    *Ledger* keeps its one meaning, the tray of god requests (D1).
 
 ## Alternatives considered

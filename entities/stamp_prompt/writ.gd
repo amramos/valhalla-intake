@@ -1,8 +1,9 @@
 class_name Writ
 extends Control
 ## The soul's writ (D14, D15): a parchment slip under the doors with the soul's name, the slice's
-## explicit recipient of the stamp (slice D9). The slam inks the realm's glyph in its box in Ink,
-## never a reserved colour, and nothing on it depends on anything but the name and the realm.
+## explicit recipient of the stamp (slice D9). The slam presses the stamp's own face into it: the
+## realm's glyph at 2× (14×14) in Ink inside a 17×17 ink box (D55), never a reserved colour;
+## nothing on it depends on anything but the name and the realm.
 ## While held (a citation or a day-1 warning, D15) a click on it sends the stamped soul on, and its
 ## hover says so.
 
@@ -11,13 +12,15 @@ signal clicked
 signal hover_started(text: String, area: Rect2)
 signal hover_ended
 
-const SIZE := Vector2i(70, 16)
-## The box the slam inks, in the writ's pixels: an 11×11 frame round the 7×7 glyph.
-const INK_BOX := Rect2i(55, 2, 11, 11)
+const SIZE := Vector2i(90, 18)
+## The box the slam inks, in the writ's pixels: a 17×17 frame round the 14×14 glyph (D55).
+const INK_BOX := Rect2i(70, 0, 17, 17)
+## The glyph's place inside the box.
+const GLYPH_IN_BOX := Vector2i(2, 2)
 ## The name's label offset (m5x7 at 16 draws its capitals 5 px under the label's top).
-const NAME_AT := Vector2(4, -1)
+const NAME_AT := Vector2(4, 0)
 ## The widest name that never runs under the ink box.
-const NAME_MAX_WIDTH := 49
+const NAME_MAX_WIDTH := 64
 const HELD_HOVER := "Send it on"
 ## The same deckle on every writ: it never varies with the soul (D14).
 const PAPER_SEED := 14
@@ -110,15 +113,27 @@ func _draw_ink() -> void:
 	var ink: Color = _ink_color()
 	if _held and _hovered:
 		var width: int = mini(int(_name.get_minimum_size().x), NAME_MAX_WIDTH)
-		_ink.draw_rect(Rect2(NAME_AT.x, 12, width, 1), ink)
+		_ink.draw_rect(Rect2(NAME_AT.x, 13, width, 1), ink)
 	if _glyph == &"":
 		return
-	var box := Rect2(INK_BOX)
-	_ink.draw_rect(Rect2(box.position, Vector2(box.size.x, 1)), ink)
-	_ink.draw_rect(Rect2(box.position + Vector2(0, box.size.y - 1), Vector2(box.size.x, 1)), ink)
-	_ink.draw_rect(Rect2(box.position, Vector2(1, box.size.y)), ink)
-	_ink.draw_rect(Rect2(box.position + Vector2(box.size.x - 1, 0), Vector2(1, box.size.y)), ink)
-	PixelGlyph.draw(_ink, _glyph, box.position + Vector2(2, 2), ink)
+	_frame(Rect2(INK_BOX), ink)
+	StampFace.carve(_ink, _glyph, INK_BOX.position + GLYPH_IN_BOX, ink)
+
+
+## A 1 px outline of `area` on `canvas` (the ink box here, the prompt's ring there).
+static func frame(canvas: CanvasItem, area: Rect2, color: Color) -> void:
+	canvas.draw_rect(Rect2(area.position, Vector2(area.size.x, 1)), color)
+	canvas.draw_rect(
+		Rect2(area.position + Vector2(0, area.size.y - 1), Vector2(area.size.x, 1)), color
+	)
+	canvas.draw_rect(Rect2(area.position, Vector2(1, area.size.y)), color)
+	canvas.draw_rect(
+		Rect2(area.position + Vector2(area.size.x - 1, 0), Vector2(1, area.size.y)), color
+	)
+
+
+func _frame(area: Rect2, color: Color) -> void:
+	frame(_ink, area, color)
 
 
 func _ink_color() -> Color:

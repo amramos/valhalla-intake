@@ -1,9 +1,11 @@
 class_name DeskSystem
 extends Node
-## Connects the desk's entities to DeskCommands, the only command layer (D13). It turns clicks into
-## selections and pins, redraws what the commands show (the soul, the threads, the doors, the HUD,
-## the mentor's guided step) and runs the clock while a soul is at the desk. The stamp itself is
-## StampFlow's. It reads nothing but DeskCommands' getters and signals.
+## Connects the desk's entities to DeskCommands, the only command layer (D13). It seats each soul,
+## redraws what the commands show (the soul, the threads, the doors, the HUD, the mentor's guided
+## step) and runs the clock while a soul is at the desk. Its helpers own the rest: DeskPins the pin
+## gesture and its threads, DeskHighlights what is lit, DeskHuginn the knots and Huginn, DeskMentor
+## her step and comments; the stamp itself is StampFlow's. It reads nothing but DeskCommands'
+## getters and signals.
 ##
 ## Each soul's tale is told first (DeskTelling, D4, D7): the clock and the mentor's guided step wait
 ## for it (D5). Captions go to the clerk's note as Captions with their speaker mark and quoted pair
@@ -11,8 +13,6 @@ extends Node
 
 const HORN_TEXT := "The horn. The day is over."
 const LAW_HEADING := "Odin's Law"
-## A new thread is drawn taut in this long (D12).
-const DRAW_IN_SECONDS := 0.15
 
 @export var body_chart: BodyChart
 @export var claim_panel: EvidencePanel
@@ -43,60 +43,96 @@ const DRAW_IN_SECONDS := 0.15
 var commands: DeskCommands = null
 ## The player's options (D37); the desk hands them in before bind().
 var options: Options = Options.new()
-var selection := PinSelection.new()
 ## Draws the threads; built in bind() from the panels.
 var threads_board: ThreadBoard = null
-## The grey thread whose knot is selected for Huginn; -1 for none.
-var huginn_thread: int = -1
+## The half-made pin (DeskHighlights'); null before bind().
+var selection: PinSelection:
+	get:
+		return _highlights.selection if _highlights != null else null
+## The grey thread whose knot is selected for Huginn (DeskHuginn's); -1 for none.
+var huginn_thread: int:
+	get:
+		return _huginn.thread if _huginn != null else -1
 
 var _shown_encounter: Encounter = null
-var _lit: Array[String] = []
-## The cited pair of a held soul: lit until it is sent on, whatever the note shows (D28, D48).
-var _held_pair: Array[String] = []
+## The lit pair (DeskHighlights'), read by tests.
+var _lit: Array[String]:
+	get:
+		return _highlights.lit if _highlights != null else ([] as Array[String])
 ## Said when the desk empties (the horn); outlives the soul it ended.
 var _announcement: String = ""
 var _warned: bool = false
+## The seated soul's evidence waits for the slam to release; the stamped soul's stays meanwhile.
+var _evidence_waits: bool = false
 var _phases := PhaseFlow.new()
 var _telling: DeskTelling = null
 var _note: DeskNote = null
 var _sounds: DeskSounds = null
-## The drawn thread lines, from the last rebuild.
-var _lines: Array[ThreadLine] = []
+var _highlights: DeskHighlights = null
+var _huginn: DeskHuginn = null
+var _pins: DeskPins = null
+var _mentor: DeskMentor = null
 
 
 func bind(p_commands: DeskCommands) -> void:
 	commands = p_commands
 	threads_board = ThreadBoard.new(body_chart, claim_panel, witness_panel, law_panel, thread_layer)
+	# A slack thread never falls onto the note either (D36).
+	threads_board.note = caption_strip
 	_telling = DeskTelling.new(claim_panel, witness_panel, gate)
+	# The soul speaks while its tale is told: its plate lights and it bobs on each blip (D4, D17).
+	_telling.soul = soul
 	_telling.finished.connect(_on_tale_told)
 	_telling.silenced.connect(_on_tale_silenced)
 	_note = DeskNote.new(caption_strip, gate)
-	_note.pair_shown.connect(_light)
-	_note.pair_dropped.connect(_on_pair_dropped)
+	_mentor = DeskMentor.new(
+		commands, mentor_bubble, doors, caption_strip, _note, stamp_flow, _step_waits, _input_held
+	)
+	_highlights = DeskHighlights.new(commands, body_chart, _panels(), _mentor.guided_step)
+	_note.pair_shown.connect(_highlights.light)
+	_note.pair_dropped.connect(_highlights.drop)
+	_huginn = DeskHuginn.new(
+		commands, _note, caption_strip, ask_huginn, huginn, hover_label, _input_held
+	)
+	_huginn.thread_selected.connect(refresh)
 	_sounds = DeskSounds.new(_sound_players(), gate)
+	_pins = DeskPins.new(
+		commands,
+		threads_board,
+		_highlights,
+		_huginn,
+		caption_strip,
+		_note,
+		_sounds,
+		hud,
+		gate,
+		_input_held
+	)
 	for panel: EvidencePanel in [claim_panel, witness_panel]:
 		panel.teller().blip.connect(_on_blip)
 	# The note's hold and the doors' flares keep their own clocks; the gate's pause stops them.
 	gate.pause_changed.connect(caption_strip.set_paused)
 	for door: Door in doors:
 		gate.pause_changed.connect(door.set_paused)
+	gate.pause_changed.connect(hud.set_paused)
 	use_options(options)
 	# The stamp's slam window and its refusal while a tale is told are the gate's (D4, D27).
 	stamp_flow.gate = gate
 	stamp_flow.bind(commands)
-	stamp_flow.stamp_prompt.hover_started.connect(_show_hover)
+	stamp_flow.stamp_prompt.hover_started.connect(hover_label.show_for)
 	stamp_flow.stamp_prompt.hover_ended.connect(hover_label.hide_label)
 	stamp_flow.pair_lit.connect(_light_held)
 	stamp_flow.selection_cleared.connect(cancel_selection)
+	stamp_flow.slam_released.connect(_on_slam_released)
 	commands.desk_changed.connect(refresh)
 	commands.horn.connect(_on_horn)
 	commands.clock_warning.connect(_on_clock_warning)
-	body_chart.item_clicked.connect(_on_item_clicked)
+	body_chart.item_clicked.connect(_pins.click)
 	body_chart.cancel_requested.connect(cancel_selection)
 	body_chart.item_hover_started.connect(_on_hover_started)
 	body_chart.item_hover_ended.connect(_on_hover_ended)
 	for panel: EvidencePanel in _panels():
-		panel.item_clicked.connect(_on_item_clicked)
+		panel.item_clicked.connect(_pins.click)
 		panel.cancel_requested.connect(cancel_selection)
 		panel.item_hover_started.connect(_on_hover_started)
 		panel.item_hover_ended.connect(_on_hover_ended)
@@ -104,13 +140,13 @@ func bind(p_commands: DeskCommands) -> void:
 		door.hover_started.connect(hover_label.show_for)
 		door.hover_ended.connect(hover_label.hide_label)
 	for sprite: ClickableSprite in [feather, mentor_portrait]:
-		sprite.hover_started.connect(_show_hover)
+		sprite.hover_started.connect(hover_label.show_for)
 		sprite.hover_ended.connect(hover_label.hide_label)
-	soul.plate_hover_started.connect(_show_hover)
+	soul.plate_hover_started.connect(hover_label.show_for)
 	soul.plate_hover_ended.connect(hover_label.hide_label)
-	mentor_portrait.clicked.connect(_on_mentor_clicked)
-	mentor_bubble.acknowledged.connect(_on_mentor_acknowledged)
-	ask_huginn.pressed.connect(_on_ask_huginn)
+	mentor_portrait.clicked.connect(_mentor.clicked)
+	mentor_bubble.acknowledged.connect(_mentor.acknowledged)
+	ask_huginn.pressed.connect(_huginn.ask)
 	_phases.on_restart = restart
 	phase_card.advanced.connect(_on_phase_advanced)
 	phase_card.skipped.connect(_on_phase_skipped)
@@ -122,7 +158,8 @@ func bind(p_commands: DeskCommands) -> void:
 func _process(delta: float) -> void:
 	if commands == null or commands.phase() != RunState.DESK or commands.is_paused():
 		return
-	if commands.awaiting_next() or is_telling():
+	# The clock waits for the tale (D5), and through a slam for the next soul's evidence to come in.
+	if commands.awaiting_next() or _step_waits():
 		return
 	commands.advance_time(delta)
 	_refresh_hud()
@@ -136,22 +173,29 @@ func refresh() -> void:
 	if encounter != _shown_encounter:
 		_shown_encounter = encounter
 		_show_encounter(encounter)
-	_rebuild_threads()
-	DeskReadouts.show_doors(doors, commands)
+	# While the stamped soul's evidence waits out the slam, its threads and lit pair stay drawn.
+	if not _evidence_waits:
+		_pins.rebuild()
+	# A pending stamp's new tide figure waits for the slam's impact (D38).
+	DeskReadouts.show_doors(doors, commands, stamp_flow.displayed_tide())
 	_refresh_hud()
 	law_panel.set_new(DeskReadouts.new_decrees(commands))
 	_phases.show(phase_card, commands)
 	ledger_tray.set_line(commands.ledger_line(), _text().ledger_empty)
 	stamp_flow.refresh()
-	_show_mentor_step()
-	_apply_highlights()
+	# While evidence waits there is no guided step: her bubble and its pair clear (_step_waits).
+	_mentor.show_step()
+	_highlights.apply()
 
 
 ## Applies the player's options: the telling's and the quill's pace (D37, D43).
 func use_options(p_options: Options) -> void:
 	options = p_options
 	stamp_flow.options = options
+	soul.reduce_motion = options.reduce_motion
+	hud.reduce_motion = options.reduce_motion
 	if _telling != null:
+		_pins.options = options
 		_telling.set_cps(options.cps())
 		_note.use_options(options)
 		_sounds.use_options(options)
@@ -160,6 +204,12 @@ func use_options(p_options: Options) -> void:
 ## True while the soul's tale is being told: the clock waits (D5) and so does the stamp (D4).
 func is_telling() -> bool:
 	return _telling != null and _telling.is_telling()
+
+
+## The mentor's guided step waits for the tale (D5), and for the next soul's evidence to reach the
+## desk after a slam: its pair names lines the stamped soul's sheets still show.
+func _step_waits() -> bool:
+	return is_telling() or _evidence_waits
 
 
 ## Shows the whole tale now, as a consumed click would (tests and tools).
@@ -174,8 +224,7 @@ func note_width() -> int:
 
 
 func cancel_selection() -> void:
-	selection.cancel()
-	_apply_highlights()
+	_highlights.cancel()
 
 
 ## A restarted run (D31): every trace of the old one leaves the desk.
@@ -191,6 +240,7 @@ func restart() -> void:
 	# Pause's Restart and Play again both land here: the last run's comments stay with it.
 	stamp_flow.forget_run()
 	_clear_desk()
+	hud.clear_gutter()
 
 
 ## Empties the desk outright: the soul, its evidence, the caption strip, the stamp preview and door
@@ -203,48 +253,50 @@ func _clear_desk() -> void:
 	refresh()
 
 
+## Seats a soul: its figure and writ now, its evidence (sheets, slab, Law, the note) now too unless
+## a slam is under way. Then the stamped soul's evidence stays on the desk until the slam releases
+## (D14), and the new sheets slide in with the walk-in (D15).
 func _show_encounter(encounter: Encounter) -> void:
-	selection.cancel()
-	huginn_thread = -1
-	_lit.clear()
-	_held_pair.clear()
 	hover_label.hide_label()
 	_telling.stop()
+	stamp_flow.reset()
+	# The new soul walks in when the slam lets it (StampFlow), from off the desk's left.
+	soul.prepare_arrival()
+	soul.show_soul(encounter)
+	_evidence_waits = stamp_flow.is_slamming()
+	if not _evidence_waits:
+		_show_evidence(encounter)
+
+
+## The seated soul's evidence: the note cleared (her carried comment or the horn's announcement on
+## it), the slab, the Law and the sheets, whose tale is told.
+func _show_evidence(encounter: Encounter) -> void:
+	_evidence_waits = false
+	_highlights.forget()
+	_huginn.forget()
 	caption_strip.clear()
 	_note.reset()
 	if _announcement != "":
 		caption_strip.take_over(_announcement)
 		_announcement = ""
-	stamp_flow.reset()
-	# The new soul walks in when the slam lets it (StampFlow), from off the desk's left.
-	soul.prepare_arrival()
-	soul.show_soul(encounter)
+	stamp_flow.reset_note()
 	body_chart.show_body(encounter.id if encounter != null else &"")
 	body_chart.show_facts(_items_in(EvidenceItem.Group.BODY))
-	# D6: the sheets are headed by their speakers.
-	claim_panel.show_lines(
-		_items_in(EvidenceItem.Group.CLAIM), encounter.soul_name if encounter != null else ""
-	)
-	var witness: Array[EvidenceItem] = _items_in(EvidenceItem.Group.WITNESS)
-	var witness_title: String = ""
-	var witness_hover: String = ""
-	var note: String = ""
-	if encounter != null:
-		# D52: the heading names the witness; the full authored description is its hover.
-		witness_title = encounter.witness_heading_name()
-		witness_hover = encounter.witness_name
-		note = encounter.witness_note
-	var show_witness: Callable = witness_panel.show_lines.bind(
-		witness, witness_title, note, witness_hover
-	)
-	witness_panel.visible = not witness.is_empty() or note != ""
 	law_panel.show_lines(_items_in(EvidenceItem.Group.LAW), LAW_HEADING)
-	if encounter == null:
-		show_witness.call()
+	# The sheets are headed by their speakers and the tale is told (D6, D7).
+	_telling.show_sheets(
+		encounter, _items_in(EvidenceItem.Group.CLAIM), _items_in(EvidenceItem.Group.WITNESS)
+	)
+
+
+## The slam released: the waiting evidence comes in, its sheets sliding up with the walk-in.
+func _on_slam_released() -> void:
+	if not _evidence_waits:
 		return
-	# D7: the witness's sheet waits, headed but blank, while the claim is told.
-	witness_panel.show_lines([] as Array[EvidenceItem], witness_title, "", witness_hover)
-	_telling.begin(hash(encounter.soul_name), show_witness)
+	_show_evidence(_shown_encounter)
+	if not options.reduce_motion and _shown_encounter != null:
+		_telling.slide_in()
+	refresh()
 
 
 func _items_in(group: EvidenceItem.Group) -> Array[EvidenceItem]:
@@ -259,137 +311,16 @@ func _panels() -> Array[EvidencePanel]:
 	return [claim_panel, witness_panel, law_panel]
 
 
-func _rebuild_threads() -> void:
-	var answers: Array[String] = []
-	for index: int in range(commands.threads().size()):
-		answers.append(commands.thread_answer(index))
-	_lines = threads_board.rebuild(
-		commands.threads(), commands.visible_items(), answers, huginn_thread
-	)
-	for line: ThreadLine in _lines:
-		line.knot_clicked.connect(_on_knot_clicked)
-		line.knot_hover_started.connect(_show_hover)
-		line.knot_hover_ended.connect(hover_label.hide_label)
-
-
-func _on_item_clicked(item_id: String) -> void:
-	if _input_held():
-		return
-	_lit.clear()
-	var pair: Array[String] = selection.click(item_id)
-	if selection.has_selection():
-		_sounds.play(&"tack")
-	_apply_highlights()
-	if pair.size() == 2:
-		_pin(pair[0], pair[1])
-
-
-func _pin(a: String, b: String) -> void:
-	var before: int = commands.threads().size()
-	var result: PinResult = commands.pin(a, b)
-	if commands.phase() != RunState.DESK:
-		# The pin's cost ended the day: the horn's announcement stands.
-		_apply_highlights()
-		return
-	match result.kind:
-		PinResult.Kind.THREAD:
-			caption_strip.post_caption(_caption(result.seam))
-			_sounds.play(&"seam")
-			_sounds.play(&"pull")
-			if commands.threads().size() > before:
-				_draw_in(before)
-		PinResult.Kind.ALREADY:
-			_lit = [a, b] as Array[String]
-			caption_strip.take_over_caption(_caption(result.seam))
-		PinResult.Kind.NO_SEAM:
-			var text: String = _text().no_seam_line
-			if result.seconds_lost > 0.0:
-				text = _text().no_seam_timed_format % roundi(result.seconds_lost)
-			caption_strip.take_over_caption(Caption.make(text, CaptionStrip.Priority.THREAD))
-			_sounds.play(&"tick")
-	_apply_highlights()
-
-
-## The new thread is drawn taut from its first end (D12); the others stay as they are.
-func _draw_in(thread_index: int) -> void:
-	for line: ThreadLine in _lines:
-		if is_instance_valid(line) and line.thread_index == thread_index:
-			# Reduce motion (D37): the thread and its knot show whole at once.
-			var seconds: float = 0.0 if options.reduce_motion else DRAW_IN_SECONDS
-			gate.watch_tween(line.draw_in(seconds))
-
-
-## A thread's caption on the note, quoting the pair it lights while it shows (D6, D28).
-func _caption(seam: Seam) -> Caption:
-	return _note.thread(seam, commands.current_encounter(), commands.visible_items())
-
-
 func _text() -> DeskText:
 	return commands.slice_rules().text
 
 
-## Lights a pair (a held citation, the feather); the mentor's highlight shows when nothing is lit.
-func _light(pair: Array[String]) -> void:
-	_lit = pair
-	_apply_highlights()
-
-
-func _apply_highlights() -> void:
-	var chosen: String = selection.selected_id
-	var lit: Array[String] = _lit
-	if commands.awaiting_next() and not _held_pair.is_empty():
-		lit = _held_pair
-	var step: MentorStep = _guided_step()
-	if lit.is_empty() and step != null:
-		lit = step.highlight
-	body_chart.set_selected(chosen)
-	body_chart.set_lit(lit)
-	for panel: EvidencePanel in _panels():
-		panel.set_selected(chosen)
-		panel.set_lit(lit)
-
-
 func _on_hover_started(_item_id: String, text: String, area: Rect2) -> void:
-	_show_hover(text, area)
+	hover_label.show_for(text, area)
 
 
 func _on_hover_ended(_item_id: String) -> void:
 	hover_label.hide_label()
-
-
-func _show_hover(text: String, area: Rect2) -> void:
-	hover_label.show_for(text, area)
-
-
-## The mentor's guided step, once the tale is told (D5); null before.
-func _guided_step() -> MentorStep:
-	return null if is_telling() else commands.mentor_step()
-
-
-func _show_mentor_step() -> void:
-	var step: MentorStep = _guided_step()
-	if step == null or commands.phase() != RunState.DESK:
-		mentor_bubble.hide_step()
-	else:
-		mentor_bubble.show_step(step.text, step.until == MentorStep.Until.READ)
-	for door: Door in doors:
-		door.pointed = step != null and step.door == door.realm
-
-
-func _on_mentor_clicked() -> void:
-	# A deliberate click on her shows her last comment again (D33), but only at the desk: never
-	# over the horn's announcement or under a card.
-	if commands.phase() != RunState.DESK:
-		return
-	if stamp_flow.mentor_line() != "":
-		caption_strip.take_over_caption(_note.mentor(stamp_flow.mentor_line()))
-
-
-## The bubble's "Next" finishes a READ step, but never under a pending stamp (D9, D48).
-func _on_mentor_acknowledged() -> void:
-	if _input_held():
-		return
-	commands.mentor_ack()
 
 
 func _on_horn() -> void:
@@ -415,35 +346,8 @@ func _on_clock_warning() -> void:
 	_refresh_hud()
 
 
-## A click on a knot or bead shows its thread's caption again (D33); a grey knot also selects
-## the thread for Huginn, and shows his answer once given.
-func _on_knot_clicked(thread_index: int) -> void:
-	if _input_held():
-		return
-	var threads: Array[Seam] = commands.threads()
-	if thread_index < 0 or thread_index >= threads.size():
-		return
-	var answer: String = commands.thread_answer(thread_index)
-	if answer != "":
-		caption_strip.take_over_caption(_note.raven(answer, threads[thread_index]))
-	else:
-		caption_strip.take_over_caption(_caption(threads[thread_index]))
-	if threads[thread_index].kind == Seam.Kind.GREY:
-		huginn_thread = -1 if huginn_thread == thread_index else thread_index
-		refresh()
-
-
-func _on_ask_huginn() -> void:
-	if _input_held() or huginn_thread < 0:
-		return
-	var answer: String = HuginnAsk.ask(commands, huginn_thread)
-	# An answer whose cost ended the day is not queued over the horn's announcement.
-	if answer != "" and commands.phase() == RunState.DESK:
-		caption_strip.post_caption(_note.raven(answer, commands.threads()[huginn_thread]))
-
-
 func _on_ask_huginn_hovered() -> void:
-	_show_hover(HuginnAsk.hover_text(commands, huginn_thread), ask_huginn.get_global_rect())
+	_huginn.hovered()
 
 
 ## No pin, knot or Huginn answer while a stamped soul waits (D48) or the stamp preview is open
@@ -461,6 +365,7 @@ func _sound_players() -> Dictionary[StringName, AudioStreamPlayer]:
 		&"pull": pull_player,
 		&"tick": tick_player,
 		&"horn": horn_player,
+		&"caw": stamp_flow.caw_player,
 	}
 
 
@@ -471,15 +376,15 @@ func _on_blip(pitch_scale: float) -> void:
 
 ## The tale is told: the mentor's guided step and its highlight may show now (D5).
 func _on_tale_told() -> void:
-	_show_mentor_step()
-	_apply_highlights()
+	_mentor.show_step()
+	_highlights.apply()
 
 
 ## A held citation (or the feather) lights its pair; no caption may darken it (D28, D48).
 func _light_held(pair: Array[String]) -> void:
-	_held_pair = pair.duplicate()
+	_highlights.hold(pair)
 	_note.release_pair()
-	_light(pair)
+	_highlights.light(pair)
 
 
 ## A tale cut short stops its voice at once, mid-blip (D27).
@@ -487,17 +392,8 @@ func _on_tale_silenced() -> void:
 	_sounds.stop(&"blip")
 
 
-## The caption that quoted `pair` gave way to one that quotes nothing: its pair goes dark, but a
-## pair lit by something else since (a held citation, a click) stays (D28).
-func _on_pair_dropped(pair: Array[String]) -> void:
-	if _lit == pair:
-		_light([] as Array[String])
-
-
 func _refresh_hud() -> void:
 	var readout: HudReadout = DeskReadouts.hud(commands)
 	readout.warning = _warned and commands.day_rules().is_timed()
 	hud.refresh(readout)
-	ask_huginn.visible = readout.huginn_on and commands.phase() == RunState.DESK
-	ask_huginn.disabled = huginn_thread < 0
-	huginn.visible = readout.huginn_on
+	_huginn.show(readout.huginn_on)

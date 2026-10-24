@@ -9,6 +9,7 @@ config_version=5
 config/name="Valhalla Intake"
 config/version="0.1.0"
 run/main_scene="res://scenes/title/title.tscn"
+run/max_fps=60
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
 [display]

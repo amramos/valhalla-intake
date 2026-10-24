@@ -1,12 +1,16 @@
 class_name StampPrompt
 extends Control
-## The writ and the stamp under the doors (D9, D14, D15). The writ always carries the name of the
-## soul at the desk. Asking raises the stamp over the writ with the realm's glyph and "<Realm>?"
-## beside it; the stamp is the guarded confirm (a double-click or a press before it arms does
-## nothing), and it commits on the press. A right-click on it withdraws it (the desk's stamp flow
-## also withdraws it on any click elsewhere). The slam inks the glyph on the writ; the sweep slides
-## the writ off the desk edge, and the next soul's writ comes up in its place. Nothing here reads
-## anything but a name and a realm: no slam can tell a liar from a hero (D14).
+## The writ and the stamp under the doors (D9, D14, D15, D54-D56). The writ always carries the name
+## of the soul at the desk. Asking raises the stamp (a 24×24 block on its handle) over the writ, its
+## top over the foot of the door behind, with "<Realm>?" beside it, and the desk dims (0.25) under
+## everything but the writ, the stamp and the doors; the stamp is the guarded confirm (a
+## double-click or a press before it arms does nothing), and it commits on the press. A right-click
+## on it withdraws it (the desk's stamp flow also withdraws it on any click elsewhere). The slam
+## squashes the stamp, presses its 2× glyph into the writ, darkens the veil to 0.55, bursts ink
+## from the block and, as the stamp lifts, sends a shockwave round the ink box; all timed, never
+## counted in frames. The sweep slides the writ off the desk edge, and the next soul's writ comes up
+## in its place. Nothing here reads anything but a name and a realm: no slam can tell a liar from a
+## hero.
 
 signal confirmed(realm: StringName)
 signal cancelled
@@ -17,11 +21,24 @@ signal hover_ended
 
 enum State { IDLE, ASKING, PRESSED, INKED }
 
-## The stamp's rise when asked, and its drop onto the writ on the press, in pixels and seconds.
-const RISE_PX := 2
+## The stamp's top when raised and when on the paper (its face on the ink box), in this node's
+## pixels; it rises from the paper over RISE_SECONDS when asked.
+const RAISED_Y := -5.0
+const CONTACT_Y := -2.0
+## The ink box's centre in this node's pixels (the writ sits at (90, 13)): the shockwave's centre.
+const INK_CENTER := Vector2(168.5, 21.5)
+## The veil (D56): while the stamp is raised, and from the impact until the lift.
+const CHOICE_DIM := 0.25
+const IMPACT_DIM := 0.55
 const RISE_SECONDS := 0.08
-## How long the stamp stays on the paper after the impact before it lifts away.
-const LIFT_SECONDS := 0.08
+## From the impact (D54-D56), in seconds, never frames: the burst's far stage and its end, the
+## squash, the lift (the veil goes, the shockwave starts), the shockwave's wide stage and its end.
+const BURST_FAR_SECONDS := 0.04
+const BURST_SECONDS := 0.08
+const SQUASH_SECONDS := 0.06
+const LIFT_SECONDS := 0.15
+const WAVE_WIDE_SECONDS := 0.2
+const WAVE_SECONDS := 0.25
 ## The writ slides down off the desk edge, then the next one slides up.
 const SWEEP_SECONDS := 0.2
 const COME_UP_SECONDS := 0.15
@@ -42,6 +59,8 @@ var _pending_name: String = ""
 var _name_waits: bool = false
 var _motion: Tween = null
 var _sweep: Tween = null
+## The impact's ring and yield (ImpactMarks); built in _ready.
+var _impact: ImpactMarks = null
 
 @onready var _slot: Control = $WritSlot
 @onready var _writ: Writ = $WritSlot/Writ
@@ -63,6 +82,12 @@ func _ready() -> void:
 	)
 	_show_stamp(false)
 	_slot.visible = false
+	var lifted: Array[CanvasItem] = [_slot, _face, _question, _stamp]
+	var block := Rect2i(
+		Vector2i(_face.position.x, int(CONTACT_Y) + StampFace.HANDLE_HEIGHT),
+		Vector2i(StampFace.SIZE.x, StampFace.BLOCK_HEIGHT)
+	)
+	_impact = ImpactMarks.new(self, INK_CENTER, block, lifted)
 
 
 ## Raises the stamp for `p_realm` over the writ of `soul_name`. Returns the rise's tween, for the
@@ -78,12 +103,13 @@ func ask(soul_name: String, p_realm: StringName) -> Tween:
 	_arrange()
 	_show_stamp(true)
 	_stop_motion()
-	_face.position.y = RISE_PX
+	_choice_veil()
+	_face.position.y = CONTACT_Y
 	if not reduce_motion and is_inside_tree():
 		_motion = create_tween()
-		_motion.tween_property(_face, "position:y", 0.0, RISE_SECONDS)
+		_motion.tween_property(_face, "position:y", RAISED_Y, RISE_SECONDS)
 	else:
-		_face.position.y = 0
+		_face.position.y = RAISED_Y
 	# Asking again (another door) restarts the arm time, as a fresh stamp would.
 	_stamp.rearm()
 	return _motion
@@ -150,23 +176,39 @@ func stamp_down(p_realm: StringName) -> void:
 	_face.glyph = GLYPHS.get(p_realm, &"")
 	_show_stamp(false)
 	_face.visible = true
-	_face.position.y = RISE_PX
+	_face.position.y = CONTACT_Y
+	# The choice is made but the stamp has not landed: the desk stays dimmed for the hold.
+	_choice_veil()
 
 
-## The impact: the glyph inked on the writ in Ink, the stamp lifted away. Returns the lift's tween
-## (null when there is no tree to run it).
+## The impact: the stamp squashes on the paper and the glyph is inked on the writ in Ink; then the
+## stamp lifts away and the ink box rings. The same for every soul and realm but its glyph (D14).
+## Returns the lift's tween (null when there is no tree to run it).
 func slam(p_realm: StringName) -> Tween:
 	if _state != State.PRESSED:
 		stamp_down(p_realm)
 	_state = State.INKED
-	_writ.set_ink(GLYPHS.get(p_realm, &""))
 	_stop_motion()
+	_writ.set_ink(GLYPHS.get(p_realm, &""))
 	if not is_inside_tree():
 		_face.visible = false
 		return null
-	_motion = create_tween()
-	_motion.tween_interval(LIFT_SECONDS)
-	_motion.tween_callback(func() -> void: _face.visible = false)
+	_face.set_squashed(true)
+	# Under reduce motion there is no veil at the impact either (D55); the squash, the ink, the
+	# burst and the shockwave stay as its cues.
+	_impact.set_veil(0.0 if reduce_motion else IMPACT_DIM)
+	_impact.set_burst(1)
+	_motion = _timeline(
+		[
+			[BURST_FAR_SECONDS, _impact.set_burst.bind(2)],
+			[SQUASH_SECONDS, _face.set_squashed.bind(false)],
+			[BURST_SECONDS, _impact.set_burst.bind(0)],
+			[LIFT_SECONDS, _impact.set_veil.bind(0.0)],
+			[LIFT_SECONDS, _lift],
+			[WAVE_WIDE_SECONDS, _impact.set_ring.bind(2)],
+			[WAVE_SECONDS, _impact.set_ring.bind(0)],
+		]
+	)
 	return _motion
 
 
@@ -200,6 +242,22 @@ func is_inked() -> bool:
 	return _writ.inked_glyph() != &""
 
 
+## True while the shockwave shows round the ink box (D56).
+func is_ringing() -> bool:
+	return _impact.ring_stage() > 0
+
+
+## True while the veil dims the desk (D55, D56).
+func is_dimming() -> bool:
+	return _impact.is_dimming()
+
+
+## The marks (veil, burst, shockwave): the desk lifts the doors with them and suspends the veil
+## under the pause (StampFlow); tests read them.
+func marks() -> ImpactMarks:
+	return _impact
+
+
 ## Simulates the player's click on the held writ (tests and tools).
 func send_on() -> void:
 	if is_held():
@@ -215,6 +273,32 @@ func reset_writ() -> void:
 	_set_held_now(false)
 	_show_stamp(false)
 	_end_sweep()
+
+
+## The stamp comes off the paper: it is gone, and the ink it left rings for a moment (D54).
+func _lift() -> void:
+	_face.visible = false
+	_impact.set_ring(1)
+
+
+## The desk dims while the stamp is raised (D56); under reduce motion the raised stamp is the cue.
+func _choice_veil() -> void:
+	_impact.set_veil(0.0 if reduce_motion else CHOICE_DIM, true)
+
+
+## A tween that calls each [seconds, callable] at its time from now, in order.
+func _timeline(events: Array) -> Tween:
+	events.sort_custom(func(a: Array, b: Array) -> bool: return a[0] < b[0])
+	var tween: Tween = create_tween()
+	var at: float = 0.0
+	for event: Array in events:
+		var when: float = event[0]
+		if when > at:
+			tween.tween_interval(when - at)
+			at = when
+		var call: Callable = event[1]
+		tween.tween_callback(call)
+	return tween
 
 
 func _set_name_now(soul_name: String) -> void:
@@ -237,8 +321,8 @@ func _arrange() -> void:
 	_question.size = Vector2.ZERO
 	_question.position.x = _face.position.x + StampFace.SIZE.x + GAP
 	var width: float = _question.position.x + _question.get_minimum_size().x - _face.position.x
-	_stamp.position = Vector2(_face.position.x, 0)
-	_stamp.size = Vector2(width, StampFace.SIZE.y + RISE_PX)
+	_stamp.position = Vector2(_face.position.x, RAISED_Y)
+	_stamp.size = Vector2(width, StampFace.SIZE.y + CONTACT_Y - RAISED_Y)
 
 
 ## The stamped writ is gone: a clean one with the next soul's name (or none) takes its place.
@@ -269,10 +353,15 @@ func _sweep_running() -> bool:
 	return _sweep != null and _sweep.is_valid()
 
 
+## Stops the rise or the slam's lift under way; a squash or a ring it timed ends with it.
 func _stop_motion() -> void:
 	if _motion != null and _motion.is_valid():
 		_motion.kill()
 	_motion = null
+	_face.set_squashed(false)
+	_impact.set_ring(0)
+	_impact.set_burst(0)
+	_impact.set_veil(0.0)
 
 
 func _on_stamp_gui_input(event: InputEvent) -> void:

@@ -1,7 +1,8 @@
 class_name PixelGlyph
 extends RefCounted
 ## Small marks under 32 px, placed pixel by pixel in code and never generated (art direction):
-## the realm glyphs carved on the doors and the HUD icons. Each glyph is 7×7; "#" is ink.
+## the realm glyphs carved on the doors and the HUD icons (the quill beside the feather count).
+## Each glyph is 7×7; "#" is ink.
 
 const SIZE := 7
 const GLYPHS: Dictionary = {
@@ -14,6 +15,7 @@ const GLYPHS: Dictionary = {
 	&"quota": ["#######", "#.....#", "#.#.#.#", "#.#.#.#", "#.#.#.#", "#.....#", "#######"],
 	&"raven": ["..##...", ".####..", "######.", ".#####.", "..####.", "...#.#.", "......."],
 	&"ledger": ["######.", "#....#.", "#.##.#.", "#....#.", "#.##.#.", "#....#.", "######."],
+	&"quill": [".....##", "...####", "..####.", ".####..", ".##....", ".#.....", "#......"],
 }
 
 

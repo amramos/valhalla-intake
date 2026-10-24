@@ -2,7 +2,8 @@ extends GutTest
 ## The presentation gate's input contract (D27, D51, plan section 3): for every presentation
 ## state and every kind of press, exactly one of consumed (the presentation finishes, nothing
 ## else happens), passed (the desk acts) or ignored (the slam window); a consumed press's release
-## is swallowed; pause and restart reach every watched clock.
+## is swallowed; pause and restart reach every watched clock. A press hook sees every press before
+## it is decided and never changes the decision (D51).
 
 const STATES: Array[StringName] = [&"idle", &"telling", &"written", &"dawn", &"slamming"]
 const PRESSES: Array[StringName] = [&"press", &"double_click", &"right_click", &"release"]
@@ -16,6 +17,9 @@ const EXPECTED: Dictionary = {
 
 var _gate: PresentationGate = null
 var _finished: Array[StringName] = []
+## When set, `_outcome` adds a press hook that counts its calls in `_hook_calls`.
+var _hooked: bool = false
+var _hook_calls: int = 0
 
 
 func before_each() -> void:
@@ -195,10 +199,54 @@ func test_gated_seconds_count_only_consuming_or_slamming_unpaused_time() -> void
 	assert_eq(_gate.gated_seconds(), 0.0)
 
 
+func test_a_press_hook_sees_every_press_and_never_changes_its_outcome() -> void:
+	_hooked = true
+	var outcomes: Dictionary = {}
+	var calls: Dictionary = {}
+	for state: StringName in STATES:
+		var row: Array = []
+		var seen: Array = []
+		for press: StringName in PRESSES:
+			_hook_calls = 0
+			row.append(_outcome(state, press))
+			seen.append(_hook_calls)
+		outcomes[state] = row
+		calls[state] = seen
+	_hooked = false
+	assert_eq(outcomes, EXPECTED, "the same outcome for every state and press")
+	for state: StringName in STATES:
+		assert_eq(calls[state], [1, 1, 1, 0], "every press, never a release: %s" % state)
+
+
+func test_a_press_hook_skips_the_wheel_and_stops_when_removed() -> void:
+	_gate.add_press_hook(_count_hook)
+	_gate.add_press_hook(_count_hook)
+	_hook_calls = 0
+	_gate.on_press(_event(MOUSE_BUTTON_WHEEL_UP, true))
+	_gate.on_press(_event(MOUSE_BUTTON_LEFT, true))
+	assert_eq(_hook_calls, 1, "a wheel is no press; a hook added twice is called once")
+	_gate.remove_press_hook(_count_hook)
+	_gate.on_press(_event(MOUSE_BUTTON_LEFT, true))
+	assert_eq(_hook_calls, 1, "a removed hook hears nothing")
+
+
+func test_a_hook_whose_object_is_gone_is_dropped() -> void:
+	var owner := Node.new()
+	_gate.add_press_hook(owner.queue_free)
+	owner.free()
+	assert_false(_gate.on_press(_event(MOUSE_BUTTON_LEFT, true)), "the press still passes")
+
+
+func _count_hook() -> void:
+	_hook_calls += 1
+
+
 ## Plays `press` against a fresh gate in `state` and names what happened.
 func _outcome(state: StringName, press: StringName) -> StringName:
 	_gate = autofree(PresentationGate.new())
 	_finished.clear()
+	if _hooked:
+		_gate.add_press_hook(_count_hook)
 	match state:
 		&"telling":
 			_gate.begin(PresentationGate.TELLING, _finisher(state))

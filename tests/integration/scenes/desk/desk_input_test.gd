@@ -5,6 +5,8 @@ extends GutTest
 ## because GUT's window covers the root viewport.
 
 const DESK_SCENE := preload("res://scenes/desk/desk.tscn")
+## How much of a door's foot the raised stamp may stand over (D54).
+const FOOT_PX := 20
 
 var _viewport: SubViewport = null
 var _desk: Desk = null
@@ -89,18 +91,21 @@ func test_the_phase_card_button_swallows_a_double_click() -> void:
 	assert_eq(_desk.commands().phase(), RunState.DESK)
 
 
-func test_the_writ_and_the_raised_stamp_sit_clear_of_every_door() -> void:
+## D54: the writ sits clear of every door; the raised stamp may stand over a door's foot only, so
+## a click on the door's body is always the door's.
+func test_the_writ_sits_clear_of_every_door_and_the_stamp_over_a_foot_at_most() -> void:
 	_begin()
 	_door(&"valhalla").press()
 	var prompt: StampPrompt = _system.stamp_flow.stamp_prompt
 	for door: Door in _system.doors:
 		var area: Rect2 = door.get_global_rect()
-		assert_false(
-			area.intersects(prompt.get_global_rect()), "writ and stamp over %s" % door.realm
-		)
-		assert_false(area.intersects(prompt.stamp_rect()), "the stamp over %s" % door.realm)
 		assert_false(area.intersects(prompt.writ().get_global_rect()), "writ over %s" % door.realm)
-	assert_true(prompt.get_global_rect().encloses(prompt.stamp_rect()), "the stamp in its rect")
+		var over: Rect2 = area.intersection(prompt.stamp_rect())
+		if over.has_area():
+			assert_eq(over.end.y, area.end.y, "only the foot of %s" % door.realm)
+			assert_lte(over.size.y, float(FOOT_PX), "at most %d px of %s" % [FOOT_PX, door.realm])
+	var face: Rect2 = (prompt.get_node("Face") as Control).get_global_rect()
+	assert_true(prompt.stamp_rect().encloses(face), "the drawn stamp is its click target")
 
 
 func test_asking_again_rearms_the_confirm() -> void:

@@ -60,6 +60,8 @@ func test_the_chart_and_the_gate_draw_the_souls_own_layers() -> void:
 	_system.soul.finish_arrival()
 	assert_eq(_system.soul.figure().global_position, Vector2(6, -2), "the head is not clipped")
 	_stamp(&"valhalla")
+	# Ulf stays on the slab through the slam; Kolbeinn's body comes in when it releases (D14).
+	await wait_seconds(StampFlow.SLAM_SECONDS + 0.1)
 	assert_eq(
 		_system.body_chart.layers()[0].resource_path, "res://assets/art/body/base-nightshirt.png"
 	)

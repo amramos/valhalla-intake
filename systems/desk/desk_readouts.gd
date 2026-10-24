@@ -4,7 +4,9 @@ extends RefCounted
 ## door opens, NEW until the day's first stamp, Hel's tide), the NEW decrees and the HUD's numbers.
 
 
-static func show_doors(doors: Array[Door], commands: DeskCommands) -> void:
+## `tide` is Hel's tide as shown (StampFlow.displayed_tide(): a pending stamp's figure waits for
+## its impact); -1 shows the committed count.
+static func show_doors(doors: Array[Door], commands: DeskCommands, tide: int = -1) -> void:
 	var rules: DayRules = commands.day_rules()
 	var marks: bool = commands.shows_new_marks()
 	var threshold: int = commands.slice_rules().tide_threshold
@@ -12,7 +14,7 @@ static func show_doors(doors: Array[Door], commands: DeskCommands) -> void:
 		var is_new: bool = marks and rules.new_doors.has(door.realm)
 		door.set_state(rules.doors_open.has(door.realm), commands.door_open_day(door.realm), is_new)
 		if door.realm == Realm.HEL:
-			door.set_tide(commands.hel_tide(), threshold)
+			door.set_tide(commands.hel_tide() if tide < 0 else tide, threshold)
 
 
 ## Today's new decrees, while NEW marks show (D34).
@@ -26,6 +28,7 @@ static func new_decrees(commands: DeskCommands) -> Array[String]:
 static func hud(commands: DeskCommands) -> HudReadout:
 	var readout := HudReadout.new()
 	readout.time_left = commands.time_left()
+	readout.clock_seconds = commands.day_rules().clock_seconds
 	readout.clock_shown = commands.phase() == RunState.DAWN or commands.phase() == RunState.DESK
 	readout.feathers = commands.feathers()
 	readout.quota = commands.quota_progress()
